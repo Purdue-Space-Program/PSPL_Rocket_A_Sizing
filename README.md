@@ -2,7 +2,7 @@
 
 Hi! Welcome to the PSPL's "Rocket A" sizing code. "Sizing" is the process of determining the optimal dimensions
 
-The outputs of this code are not the word of god, they are a set of preliminary vehicle parameters that we are confident will be near enough to a rocket we can actually build that might work.
+The outputs of this code are not the word of god, they are a set of preliminary vehicle parameters that we can be confident will be near enough to a rocket we can actually build that might work.
 
 
 ## How to Run the Sizing Script (in VS code)
@@ -10,8 +10,10 @@ The outputs of this code are not the word of god, they are a set of preliminary 
 1. Clone repository onto your computer
 2. Open folder in VS Code
 3. Open an integrated terminal: <kbd>⌃ ⇧ `</kbd>
-4. Run the below code in the terminal to activate the virtual environment. [Learn more about virtual environments 🙂](https://www.youtube.com/watch?v=KxvKCSwlUv8)
-```activate```
+4. Run the following code in the terminal to activate a virtual environment (or don't). [Learn more about virtual environments](https://www.youtube.com/watch?v=KxvKCSwlUv8) 🙂
+    1. ```python -m venv .venv```
+    2. MacOS: ```source myvenv/bin/activate``` Windows: ```.venv\Scripts\activate.bat```
+    3. ```activate```
 
 5. Run the below code in the terminal to import all required packages
 ```pip install -r requirements.txt```
