@@ -1,0 +1,25 @@
+name: Convert Visio to PDF
+
+on:
+  push:
+    paths:
+      - 'Pumps/Harbor/P&ID/**'
+
+jobs:
+  convert-visio:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'  # Match your pom.xml classifier
+
+      - name: Build and run converter
+        run: |
+          cd Pumps/Harbor/P&ID/demo
+          mvn clean compile exec:java -Dexec.mainClass="com.example.VisioToPdfConverter"
