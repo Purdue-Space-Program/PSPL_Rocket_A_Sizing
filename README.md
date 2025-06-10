@@ -12,8 +12,7 @@ The outputs of this code are not the word of god, they are a set of preliminary 
 3. Open an integrated terminal: <kbd>⌃ ⇧ `</kbd>
 4. Run the following code in the terminal to activate a virtual environment (or don't). [Learn more about virtual environments](https://www.youtube.com/watch?v=KxvKCSwlUv8) 🙂
     1. ```python -m venv .venv```
-    2. MacOS: ```source myvenv/bin/activate``` Windows: ```.venv\Scripts\activate.bat```
-    3. ```activate```
+    2. MacOS🍎: ```source .venv/bin/activate``` Windows🪟: ```.venv\Scripts\activate.bat```
 
 5. Run the below code in the terminal to import all required packages
 ```pip install -r requirements.txt```
