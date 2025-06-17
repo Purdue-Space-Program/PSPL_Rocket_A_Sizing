@@ -7,12 +7,14 @@ The outputs of this code are not the word of god, they are a set of preliminary 
 
 ## How to Run the Sizing Script (in VS code)
 
-1. Clone repository onto your computer
-2. Open folder in VS Code
+1. Clone the repository onto your computer (video on how to do it using [GitHub desktop](https://www.youtube.com/watch?v=CAwStH0ay-M) [click "Clone a Repository" instead of creating one at 0:43])
+2. Open this folder in VS Code
 3. Open an integrated terminal: <kbd>⌃ ⇧ `</kbd>
 4. Run the following code in the terminal to activate a virtual environment (or don't). [Learn more about virtual environments](https://www.youtube.com/watch?v=KxvKCSwlUv8) 🙂
     1. ```python -m venv .venv```
-    2. MacOS🍎: ```source .venv/bin/activate``` Windows🪟: ```.venv\Scripts\activate.bat```
+    2. Choose next line based off your operating system:
+        1. MacOS🍎: ```source .venv/bin/activate```
+        2. Windows🪟: ```.venv\Scripts\activate.bat```
 
 5. Run the below code in the terminal to import all required packages
 ```pip install -r requirements.txt```
