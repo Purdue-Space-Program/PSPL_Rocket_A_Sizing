@@ -3,3 +3,7 @@
 
 # MacOS folder info
 .DS_Store
+
+# PyCharm files (i think mypy comes from PyCharm?)
+.mypy_cache
+.idea
