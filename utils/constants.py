@@ -43,7 +43,7 @@ FT2M = 1 / M2FT  # [m/ft] Conversion factor from ft to m
 
 ## Area
 
-IN22M2 = 0.0064516  # [m^2/in^2] Conversion factor from in^2 to m^2
+IN22M2 = IN2M**2  # [m^2/in^2] Conversion factor from in^2 to m^2
 M22IN2 = 1 / IN22M2  # [in^2/m^2] Conversion factor from m^2 to in^2
 
 ## Volume
@@ -66,9 +66,9 @@ LBF2N = 1 / N2LBF  # [N/lbf] Conversion factor from lbf to N
 
 RPM2RADS = (2 * np.pi) / 60
 
-# Material Properties
+### Material Properties
 
-## 6000-Series Aluminum (https://asm.matweb.com/search/specificmaterial.asp?bassnum=ma6061t6)
+# 6000-Series Aluminum (https://asm.matweb.com/search/specificmaterial.asp?bassnum=ma6061t6)
 
 DENSITY_AL = 2700  # [kg/m^3] Density
 YIELD_STRENGTH_AL = 276 * 10**6  # [Pa] Yield strength
@@ -76,7 +76,7 @@ ULTIMATE_STRENGTH_AL = 310 * 10**6  # [Pa] Ultimate tensile strength
 YOUNGS_MODULUS = 68.9 * 10**9  # [Pa] Modulus of elasticity
 POISSON_RATIO_AL = 0.33  # [1] Poisson's ratio
 
-## Inconel 718 (https://asm.matweb.com/search/specificmaterial.asp?bassnum=ninc34)
+# Inconel 718 (https://asm.matweb.com/search/specificmaterial.asp?bassnum=ninc34)
 
 DENSITY_INCO = 8190  # [kg/m^3] Density
 
@@ -146,17 +146,6 @@ DENSITY_GASOLINE = 703  # [kg/m^3] Gasoline density at STP (https://www.engineer
 DENSITY_E98 = 794
 DENSIY_ETHANOL = PropsSI("D", "T", 290, "P", 101325, "ethanol")
 
-# Pump Constants
-
-AVAILABLE_NPSH = (
-    80 * PSI2PA
-)  # [Pa] Pfleiderer correlation for min NPSH for LOX with 100% margin
-PUMP_CHAMBER_PRESSURE = (
-    365 * PSI2PA
-)  # [Pa] Chamber pressure with pumps [BASED ON UPPER LIMIT OF TEST STAND, SHOULD ITERATE TO CONFIRM]
-
-PUMPFED_TANK_PRESSURE = 270 * PSI2PA  # [Pa] Tank pressure with pumps
-
 MAX_POWER = 12000  # max pump power [W]
 
 # FAR Constants
@@ -165,21 +154,6 @@ FAR_ALTITUDE = 615.09  # [m] altitude of FAR launch site
 RAIL_HEIGHT = 18.29  # [m] height of the rail
 
 # Components
-
-BZB_COPV_VOLUME = 9 * L2M3  # [m^3] Volume of the BZB COPV (Luxfer T90A)
-BZB_COPV_PRESSURE = 4950 * PSI2PA  # [Pa] Maximum pressure of the BZB COPV
-BZB_COPV_MASS = 5.7  # [kg] Mass of BZB COPV
-
-BZ1_COPV_VOLUME = 4.7 * L2M3  # [m^3] Volume of the BZ1 COPV (Luxfer L45M)
-BZ1_COPV_PRESSURE = 4500 * PSI2PA  # [Pa] Maximum pressure of the BZ1 COPV
-BZ1_COPV_MASS = 3  # [kg] Mass of BZ1 COPV
-
-# Motor Constants (based on the Neumotors 2020 Series motor)
-
-MOTOR_RPM = 30000  # [1/min] max RPM of pump based on neumotors 2020
-MOTOR_WEIGHT = 0.660  # [kg] weight of a single motor
-MOTOR_LENGTH = 0.093  # [m] length of a single motor
-MOTOR_DIAMETER = 3.1 * IN2M
 
 # LIPO Battery Constants
 
@@ -190,10 +164,6 @@ LIPO_CELL_DISCHARGE_CURRENT = 80  # [A] maximum discharge current of a LiPo cell
 # Misc
 
 GRAVITY = 9.81  # [m/s^2] acceleration due to gravity
-
-# Assumptions
-
-MASS_GROWTH_FACTOR = 1  # [1] iteration growth factor [NEED TO DISCUSS]
 
 # Fins
 
