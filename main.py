@@ -1,4 +1,4 @@
-import engine
-import constants as c
+import scripts.engine as engine
+import utils.constants as c
 
-rohan.diameter_to_area(5)
+engine.diameter_to_area(5)

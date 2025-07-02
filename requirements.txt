@@ -1,4 +1,5 @@
 numpy
 matplotlib
 scipy
+CoolProp
 # genericf2py; sys.platform == 'darwin' # only needed if on mac (darwin means MacOS for some reason lol)
