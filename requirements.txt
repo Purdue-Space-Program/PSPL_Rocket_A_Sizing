@@ -1,1 +1,15 @@
+# Fluids/Combustion
+genericf2py; sys.platform == 'darwin' # only needed if on mac (darwin means MacOS for some reason lol)
+CoolProp
+
+# Math
 numpy
+scipy
+
+
+# Plotting
+matplotlib
+# plotly thing
+
+# GUI
+nicegui
