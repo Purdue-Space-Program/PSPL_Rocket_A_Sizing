@@ -1,6 +1,7 @@
 # Fluids/Combustion
-genericf2py; sys.platform == 'darwin' # only needed if on mac (darwin means MacOS for some reason lol)
-CoolProp
+rocketcea
+# genericf2py; sys.platform == 'darwin' # only needed if on mac (darwin means MacOS for some reason lol)
+# CoolProp
 
 # Math
 numpy
