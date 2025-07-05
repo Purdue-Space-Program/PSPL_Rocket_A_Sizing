@@ -1,3 +1,7 @@
+import CEA_Wrap
+import numpy as np
+import coding_utils.constants as c
+
 """we need to input
   chamberPressure : float
         Pressure within the combustion chamber [Pa].
@@ -24,23 +28,22 @@ cstar : float
     characteristicLength : float
         Characteristic length of the combustion chamber, based on propellant choice [m].
 """
-
-
-import numpy as np
-
-chamberpressure = input("What is your chamber pressure? ")
-exitpressure = input("What is your exit pressure? ")
-fuel = input("What is your fuel type? ")
-oxidizer = input("What oxidizer are you using? ")
-fuelmixratio = input("What is your fuel mix ratio? ")
-
-
-def contraction_ratio_to_nozzle_area():
-        print("Hello World")
-contraction_ratio_to_nozzle_area()
-
-def diameter_to_area(diameter):
-    area = np.pi*((diameter/2)**2)
+def radius_to_area(radius):
+    area = np.pi * (radius**2)
     return area
 
-print(diameter_to_area(3))
+def calculate_chamber_length(throat_radius, chamber_radius, fuel_name, oxidizer_name):
+    L_star = find_L_star(fuel_name, oxidizer_name)
+    throat_area = radius_to_area(throat_radius)
+
+def find_L_star(fuel_name, oxidizer_name):
+    L_star = None
+    if (oxidizer_name == "Liquid Oxygen"):
+        if (fuel_name == "Ethanol"):
+            # L_star = 40
+            raise Exception("No value for L*")
+        if (fuel_name == "Kerosene"):
+            L_star = 50
+    return L_star
+
+

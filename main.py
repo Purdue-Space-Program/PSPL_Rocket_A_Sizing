@@ -1,4 +1,5 @@
 import scripts.engine as engine
-import utils.constants as c
+import coding_utils.constants as c
+import scripts.inputs as inputs
 
-engine.diameter_to_area(5)
+print (engine.find_L_star(inputs.OXIDIZER_NAME, inputs.FUEL_NAME))
