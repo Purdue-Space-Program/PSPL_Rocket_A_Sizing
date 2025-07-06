@@ -9,7 +9,7 @@ scipy
 
 
 # Plotting
-matplotlib
+matplotlib.pyplot as plt
 # plotly thing
 
 # GUI
