@@ -1,0 +1,13 @@
+C:\Users\rgop0\Documents\GitHub\PSPL_Rocket_A_Sizing\.venv\Scripts\python.exe C:\Users\rgop0\Documents\GitHub\PSPL_Rocket_A_Sizing\scripts\Example.py
+CompletedProcess(args=['C:\\Users\\rgop0\\AppData\\Local\\CEA_Wrap\\CEA_Wrap\\Dan_CEA2.exe', 'C:\\Users\\rgop0\\AppData\\Local\\Temp\\CEA_Wrap_bjvhhqep\\thermo.lib', 'C:\\Users\\rgop0\\AppData\\Local\\Temp\\CEA_Wrap_bjvhhqep\\trans.lib'], returncode=3221225781, stdout='', stderr='')
+Traceback (most recent call last):
+  File "C:\Users\rgop0\Documents\GitHub\PSPL_Rocket_A_Sizing\scripts\Example.py", line 13, in <module>
+    results = problem1.run()
+  File "C:\Users\rgop0\Documents\GitHub\PSPL_Rocket_A_Sizing\.venv\Lib\site-packages\CEA_Wrap\wrapper.py", line 375, in run
+    out_file, plt_file = self.CEA.run_cea_backend(contents=file_contents)
+                         ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rgop0\Documents\GitHub\PSPL_Rocket_A_Sizing\.venv\Lib\site-packages\CEA_Wrap\cea_interface.py", line 122, in run_cea_backend
+    raise RuntimeError(f"Running CEA failed with errors. Output dumped to {self.OUT_ERROR_FILE}")
+RuntimeError: Running CEA failed with errors. Output dumped to CEA_Wrap_error.out
+
+Process finished with exit code 1
