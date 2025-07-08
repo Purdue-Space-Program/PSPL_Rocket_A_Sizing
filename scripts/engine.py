@@ -1,4 +1,4 @@
-import CEA_Wrap
+# import CEA_Wrap
 import numpy as np
 import coding_utils.constants as c
 
@@ -29,7 +29,7 @@ def find_L_star(fuel_name, oxidizer_name):
     if (oxidizer_name == "Liquid Oxygen"):
         if (fuel_name == "Ethanol"):
             # L_star = 40
-            raise Exception("No value for L*")
+            raise ValueError("No value for L*")
         if (fuel_name == "Kerosene"):
             L_star = 50
     return L_star

@@ -1,5 +1,5 @@
 import numpy as np
-from CoolProp.CoolProp import PropsSI
+# from CoolProp.CoolProp import PropsSI
 
 # Main function
 
@@ -144,7 +144,7 @@ DENSITY_METHANOL = 792  # [kg/m^3] Methanol density at STP (https://www.engineer
 DENSITY_WATER = 1000  # [kg/m^3] Water density at STP (https://www.engineeringtoolbox.com/water-density-specific-weight-d_595.html)
 DENSITY_GASOLINE = 703  # [kg/m^3] Gasoline density at STP (https://www.engineeringtoolbox.com/gasoline-d_1592.html)
 DENSITY_E98 = 794
-DENSIY_ETHANOL = PropsSI("D", "T", 290, "P", 101325, "ethanol")
+# DENSITY_ETHANOL = PropsSI("D", "T", 290, "P", 101325, "ethanol")
 
 MAX_POWER = 12000  # max pump power [W]
 
