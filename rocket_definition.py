@@ -4,28 +4,34 @@ import numpy as np
 import pandas as pd
 from itertools import product
 import numbers
+import sys
+np.set_printoptions(threshold=sys.maxsize)
+
+
+
 
 def CreateEmptyPossibleRocketsArray():
 
-    # Convert the dictionary to a structured data type to make the array more computationally efficient:
+    # Converting the dictionary to a structured numpy array is more computationally efficient:
     # https://numpy.org/doc/stable/reference/arrays.ndarray.html
     # https://numpy.org/doc/stable/user/basics.rec.html
-    variable_dtype_fields = []
-    constant_dtype_fields = []
 
-    # Go through each input to define how the field in the dtype should be stored
+    # Goes through each input to define which datatype (e.g. float or string) should be used in the numpy array
+    variable_inputs_fields_dtype = []
+    constant_inputs_fields_dtype = []
+
     for key, value in inputs.variable_inputs.items():
         # print(f"key: {key}, value: {value}")
         # print(type(value))
 
         if IsBoolean(value):
-            variable_dtype_fields.append((key, "?"))       # 1-byte bool
+            variable_inputs_fields_dtype.append((key, "?"))       # 1-byte bool
             # print("Its a bool\n")
 
         # could optimize this by making the field an integer if its an integer but i dont feel like it rn
         elif IsNumberOrListOfNumbers(value):
             # print("It's a number\n")
-            variable_dtype_fields.append((key, np.float16))       # 16-bit float
+            variable_inputs_fields_dtype.append((key, np.float16))       # 16-bit float
 
         elif IsStringOrListOfStrings(value):
             # print("Its a string\n")
@@ -35,24 +41,23 @@ def CreateEmptyPossibleRocketsArray():
                 max_length = max(len(s) for s in value)
             else:
                 max_length = len(value)
-            variable_dtype_fields.append((key, np.str_,max_length))  # String of length = len(value)
+            variable_inputs_fields_dtype.append((key, np.str_,max_length))  # String of length = len(value)
 
         else:
             raise TypeError(f"Unsupported type for key: {key}\n")
 
-    # Go through each input to define how the field in the dtype should be stored
     for key, value in inputs.constant_inputs.items():
         # print(f"key: {key}, value: {value}")
         # print(type(value))
 
         if IsBoolean(value):
-            constant_dtype_fields.append((key, "?"))       # 1-byte bool
+            constant_inputs_fields_dtype.append((key, "?"))       # 1-byte bool
             # print("Its a bool\n")
 
         # could optimize this by making the field an integer if its an integer but i dont feel like it rn
         elif IsNumberOrListOfNumbers(value):
             # print("It's a number\n")
-            constant_dtype_fields.append((key, np.float16))       # 16-bit float
+            constant_inputs_fields_dtype.append((key, np.float16))       # 16-bit float
 
         elif IsStringOrListOfStrings(value):
             # print("Its a string\n")
@@ -62,27 +67,33 @@ def CreateEmptyPossibleRocketsArray():
                 max_length = max(len(s) for s in value)
             else:
                 max_length = len(value)
-            constant_dtype_fields.append((key, np.str_,max_length))  # String of length = len(value)
+            constant_inputs_fields_dtype.append((key, np.str_,max_length))  # String of length = len(value)
 
         else:
             raise TypeError(f"Unsupported type for variable input: {key}\n")
 
 
-    possible_combinations = list(product(*inputs.variable_inputs.values())) # use cartesian product to generate all possible combinations of variable inputs
-    # Shape of this is ^: n dimensions with size m in each dimension
+    variable_inputs_possible_combinations = list(product(*inputs.variable_inputs.values())) # use cartesian product to generate all possible combinations of variable inputs
+    # Shape of this ^ needs to be n-dimensional with size m of each element (each element being a dictionary)
     # n = number of variable inputs
     # m = number of rockets needed to fully explore the range of each variable input (step size)
+    shape = [len(variable_input_range) for variable_input_range in inputs.variable_inputs.values()]
+
 
     # holy shit i cooked
-    variable_inputs_array = np.array(possible_combinations, dtype=np.dtype(variable_dtype_fields))
+    variable_inputs_array = np.array(variable_inputs_possible_combinations, dtype=np.dtype(variable_inputs_fields_dtype))
+    variable_inputs_array = variable_inputs_array.reshape(shape)
+
+    # print()
+    constant_inputs_array = np.array(tuple(inputs.constant_inputs.values()), dtype=np.dtype(constant_inputs_fields_dtype))
+
+
+
     print(variable_inputs_array)
-    print(variable_inputs_array["CONTRACTION_RATIO"])
+    print(variable_inputs_array["FUEL_TEMPERATURE"])
 
-
-    # constant_inputs_array = np.zeros(len(inputs.constant_inputs), dtype=np.dtype(constant_dtype_fields))
-
-
-    # constant_inputs_array = inputs.constant_inputs
+    print(constant_inputs_array)
+    print(constant_inputs_array["PROPELLANT_TANK_OUTER_DIAMETER"])
 
 
 
