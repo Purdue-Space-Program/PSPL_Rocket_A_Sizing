@@ -9,14 +9,22 @@ step_size = 10
 
 # rocket_definition_inputs_scope = {
 
+# MAXIMUM OF 7 VARIABLE INPUTS TO REASONABLY COMPUTE THIS
 variable_inputs = {
     # "FUEL_NAME":          ["Ethanol", "Kerosene"],
 
-    # "CONTRACTION_RATIO":  np.linspace(3, 6, step_size),
-    # "OF_RATIO":           np.linspace(2, 3, step_size),
+    "CONTRACTION_RATIO":  np.linspace(3, 6, step_size),
+    "OF_RATIO":           np.linspace(2, 3, step_size),
 
     "OXIDIZER_ON_TOP_FUEL_ON_BOTTOM": [True, False], # [boolean (true or false)] whether the oxidizer tank is above the fuel tank or not
     "FUEL_TANK_LENGTH":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size), # [meters] possible speedy metals pipe lengths: speedymetals.com/pc-4624-8371-4-12-od-x-125-wall-tube-6061-t6-aluminum.aspx
+    "a":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size),
+    "b":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size),
+    "c":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size),
+    "d":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size),
+    "e":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size),
+    "f":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size),
+    "g":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size),
 }
 
 constant_inputs = {
@@ -35,7 +43,6 @@ constant_inputs = {
     "GRAPHITE_CHAMBER_OUTER_DIAMETER":        4.25  * c.IN2M, # [meters] the same diameter as "ALUMINUM_ENGINE_COVER_INNER_DIAMETER" since they're touching
     "GRAPHITE_CHAMBER_INNER_DIAMETER":        4.00  * c.IN2M, # [meters] this will be the diameter of the volume where combustion occurs
     "GRAPHITE_CHAMBER_THICKNESS":             0.125 * c.IN2M, # [meters]
-    # "FUEL_NAME":          "Ethanol",
 }
 
 
