@@ -74,28 +74,28 @@ def CreateEmptyPossibleRocketsArray():
 
 
     variable_inputs_possible_combinations = list(product(*inputs.variable_inputs.values())) # use cartesian product to generate all possible combinations of variable inputs
-    # Shape of this ^ needs to be n-dimensional with size m of each element (each element being a dictionary)
+    # Shape of this ^ needs to be n-dimensional with size m of each element (each element being a dictionary).
+    # This makes it easy to index to find a rocket for a certain input combination
     # n = number of variable inputs
     # m = number of rockets needed to fully explore the range of each variable input (step size)
     shape = [len(variable_input_range) for variable_input_range in inputs.variable_inputs.values()]
-
 
     # holy shit i cooked
     variable_inputs_array = np.array(variable_inputs_possible_combinations, dtype=np.dtype(variable_inputs_fields_dtype))
     variable_inputs_array = variable_inputs_array.reshape(shape)
 
-    # print()
+    # this doesn't need to be a n-dimensional whatever cause it's going to be the same for every rocket (hence the constant lol)
     constant_inputs_array = np.array(tuple(inputs.constant_inputs.values()), dtype=np.dtype(constant_inputs_fields_dtype))
 
 
 
-    print(variable_inputs_array)
-    print(variable_inputs_array["FUEL_TEMPERATURE"])
+    # print(variable_inputs_array)
+    # print(variable_inputs_array[0][0]["OF_RATIO"])
 
-    print(constant_inputs_array)
-    print(constant_inputs_array["PROPELLANT_TANK_OUTER_DIAMETER"])
+    # print(constant_inputs_array)
+    # print(constant_inputs_array["PROPELLANT_TANK_OUTER_DIAMETER"])
 
-
+    return variable_inputs_array, constant_inputs_array
 
 
 def IsBoolean(unknown_variable):
@@ -150,7 +150,6 @@ def IsStringOrListOfStrings(unknown_variable):
 
     else:
         return False
-
 
 if __name__ == "__main__":
     CreateEmptyPossibleRocketsArray()
