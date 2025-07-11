@@ -1,7 +1,5 @@
 # import CEA_Wrap
 import numpy as np
-import coding_utils.constants as c
-
 
 
 def size_engine(chamber_radius, fuel_name, oxidizer_name, contraction_ratio):
@@ -34,4 +32,6 @@ def find_L_star(fuel_name, oxidizer_name):
             L_star = 50
     return L_star
 
-
+if __name__ == "__main__":
+    import coding_utils.draw_tool as draw
+    draw.DrawEngine(3,5,1.5,2,2,6,10)

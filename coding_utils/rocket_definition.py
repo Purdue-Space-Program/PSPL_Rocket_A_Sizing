@@ -10,6 +10,11 @@ np.set_printoptions(threshold=sys.maxsize)
 
 
 
+# Every combination (not sure if thats the right math term) of inputs will make a rocket.
+# Each of these rockets and its inputs will be stored as a dictionary in an n-dimensional array,
+# where n = # of variable inputs
+
+
 def CreateEmptyPossibleRocketsArray():
 
     # Converting the dictionary to a structured numpy array is more computationally efficient:
@@ -95,7 +100,7 @@ def CreateEmptyPossibleRocketsArray():
     # print(constant_inputs_array)
     # print(constant_inputs_array["PROPELLANT_TANK_OUTER_DIAMETER"])
 
-    return variable_inputs_array, constant_inputs_array
+    return (variable_inputs_array, constant_inputs_array)
 
 
 def IsBoolean(unknown_variable):
