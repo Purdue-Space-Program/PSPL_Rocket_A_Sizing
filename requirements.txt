@@ -14,3 +14,5 @@ matplotlib
 
 # GUI
 nicegui
+pyqtgraph
+pyqt5

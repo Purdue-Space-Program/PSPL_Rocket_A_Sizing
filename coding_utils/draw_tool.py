@@ -1,5 +1,5 @@
-# import pyqtgraph.examples
-# pyqtgraph.examples.run()
+import pyqtgraph.examples
+pyqtgraph.examples.run()
 
 import numpy as np
 import pyqtgraph as pg
