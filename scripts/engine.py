@@ -42,7 +42,6 @@ def get_characteristic_velocity(Oxidizer, Fuel):
     raise Exception("Put in a value")
 
 def find_mass_flow_rate(throat_area, characteristic_velocity, chamber_pressure):
+    mass_flow_rate = (chamber_pressure * throat_area) / (characteristic_velocity)
+    return mass_flow_rate
 
-if __name__ == "__main__":
-    import coding_utils.draw_tool as draw
-    draw.DrawEngine(3,5,1.5,2,2,6,10)
