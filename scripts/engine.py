@@ -32,15 +32,6 @@ def find_L_star(fuel_name, oxidizer_name):
             L_star = 50
     return L_star
 
-
-def get_characteristic_velocity(Oxidizer, Fuel):
-    if(Oxidizer == "liquid Oxygen"):
-        if(Fuel == "Ethanol"):
-            return 1700
-        if(Fuel == "Kerosene"):
-            return 1800
-    raise Exception("Put in a value")
-
 def find_mass_flow_rate(throat_area, characteristic_velocity, chamber_pressure):
     mass_flow_rate = (chamber_pressure * throat_area) / (characteristic_velocity)
     return mass_flow_rate
