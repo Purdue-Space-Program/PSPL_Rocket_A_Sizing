@@ -1,7 +1,6 @@
 # import CEA_Wrap
 import numpy as np
 
-
 def size_engine(chamber_radius, fuel_name, oxidizer_name, contraction_ratio):
     chamber_area = radius_to_area(chamber_radius)
     throat_area = chamber_area / contraction_ratio

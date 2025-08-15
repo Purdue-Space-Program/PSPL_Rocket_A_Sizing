@@ -1,12 +1,14 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import coding_utils.constants as c
-import inputs as inputs
+import inputs
 import numpy as np
-import pandas as pd
 from itertools import product
 import numbers
-import sys
-np.set_printoptions(threshold=sys.maxsize)
 
+np.set_printoptions(threshold=sys.maxsize)
 
 
 
@@ -15,7 +17,7 @@ np.set_printoptions(threshold=sys.maxsize)
 # where n = # of variable inputs
 
 
-def CreateEmptyPossibleRocketsArray():
+def CreatePossibleRocketsInputsArray():
 
     # Converting the dictionary to a structured numpy array is more computationally efficient:
     # https://numpy.org/doc/stable/reference/arrays.ndarray.html
@@ -157,4 +159,4 @@ def IsStringOrListOfStrings(unknown_variable):
         return False
 
 if __name__ == "__main__":
-    CreateEmptyPossibleRocketsArray()
+    print(CreatePossibleRocketsInputsArray())
