@@ -1,5 +1,51 @@
 # import CEA_Wrap
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+import coding_utils.constants as c
+import CEA_Wrap as CEA
 import numpy as np
+
+
+EFFICIENCY_FACTOR = 0.9  # Efficiency factor for cstar and specific impulse
+
+def RunCEA(
+    chamberPressure,
+    exitPressure,
+    fuel,
+    oxidizer,
+    OF_Ratio,
+):
+
+    if fuel.lower() == "ethanol":
+        fuel = CEA.Fuel("C2H5OH(L)", temp=c.T_AMBIENT)
+    elif fuel.lower() == "jet-a":
+        fuel = CEA.Fuel("Jet-A(L)", temp=c.T_AMBIENT)
+
+    if oxidizer.lower() == "liquid oxygen":
+        oxidizer = CEA.Oxidizer("O2(L)", temp=90) # 90 K is temperature of oxidizer upon injection into combustion
+
+
+    rocket = CEA.RocketProblem(
+        pressure=chamberPressure,
+        pip=pressureRatio, # pip is the "Pressure ratio of chamber pressure/exit pressure." https://github.com/civilwargeeky/CEA_Wrap/blob/main/README.md
+        materials=[fuel, gasoline, oxidizer],
+        o_f=mixRatio,
+        filename="engineCEAoutput",
+        pressure_units="bar",
+    )
+
+    data = rocket.run()
+
+
+
+
+
+
+
+
+
 
 def size_engine(chamber_radius, fuel_name, oxidizer_name, contraction_ratio):
     chamber_area = radius_to_area(chamber_radius)
@@ -25,13 +71,17 @@ def find_L_star(fuel_name, oxidizer_name):
     L_star = None
     if (oxidizer_name == "Liquid Oxygen"):
         if (fuel_name == "Ethanol"):
-            # L_star = 40
+            # L_star = ??? * c.IN2M
             raise ValueError("No value for L*")
-        if (fuel_name == "Kerosene"):
-            L_star = 50
+
+        if (fuel_name == "Jet-A"):
+            L_star = 45 * c.IN2M # page 87 of nasa sp-125 https://ntrs.nasa.gov/citations/19710019929
     return L_star
 
 def find_mass_flow_rate(throat_area, characteristic_velocity, chamber_pressure):
     mass_flow_rate = (chamber_pressure * throat_area) / (characteristic_velocity)
     return mass_flow_rate
 
+
+if __name__ == "__main__":
+    RunCEA()

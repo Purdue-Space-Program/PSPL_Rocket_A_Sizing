@@ -17,7 +17,7 @@ np.set_printoptions(threshold=sys.maxsize)
 # where n = # of variable inputs
 
 
-def CreatePossibleRocketsInputsArray():
+def CreatePossibleRocketsInputsArrays():
 
     # Converting the dictionary to a structured numpy array is more computationally efficient:
     # https://numpy.org/doc/stable/reference/arrays.ndarray.html
@@ -104,7 +104,6 @@ def CreatePossibleRocketsInputsArray():
 
     return (variable_inputs_array, constant_inputs_array)
 
-
 def IsBoolean(unknown_variable):
     if isinstance(unknown_variable, bool):
         return(True)
@@ -158,5 +157,8 @@ def IsStringOrListOfStrings(unknown_variable):
     else:
         return False
 
+
+
+
 if __name__ == "__main__":
-    print(CreatePossibleRocketsInputsArray())
+    print(CreatePossibleRocketsInputsArrays()[1])

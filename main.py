@@ -19,8 +19,8 @@
 #  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)
 
 from vehicle_scripts import (
-    rocket_definition,
     engine,
+    rocket_inputs_array,
     # tanks,
     # structures,
     # trajectory
@@ -29,3 +29,12 @@ from vehicle_scripts import (
 import coding_utils.constants as c
 import numpy as np
 import pandas as pd
+
+
+
+variable_inputs_array, constant_inputs_array = rocket_inputs_array.CreatePossibleRocketsInputsArrays()
+
+
+for count, variable_input_combination in enumerate(variable_inputs_array):
+    print(f"{count}: {variable_input_combination}")
+

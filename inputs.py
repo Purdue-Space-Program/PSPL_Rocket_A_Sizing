@@ -1,8 +1,7 @@
 import coding_utils.constants as c
 import numpy as np
 
-step_size = 10
-
+step_size = 10 # number of values to use for each variable input
 
 # A dictionary used to define the possible definitions where each key is an input (constant or variable)
 # and each value is either the constant value or a range of values
@@ -44,8 +43,6 @@ constant_inputs = {
     # "GRAPHITE_CHAMBER_INNER_DIAMETER":        4.00  * c.IN2M, # [meters] this will be the diameter of the volume where combustion occurs
     # "GRAPHITE_CHAMBER_THICKNESS":             0.125 * c.IN2M, # [meters]
 }
-
-
 
 
 if __name__ == "__main__":
