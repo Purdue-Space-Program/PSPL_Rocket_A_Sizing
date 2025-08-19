@@ -43,7 +43,7 @@ def CreatePossibleRocketsInputsArrays():
         elif IsStringOrListOfStrings(value):
             # print("Its a string\n")
 
-            # if it is a variable input it is in a list
+            # if it is a list, then it is a variable input
             if isinstance(value, (list, tuple)):
                 max_length = max(len(s) for s in value)
             else:
@@ -94,8 +94,6 @@ def CreatePossibleRocketsInputsArrays():
     # this doesn't need to be a n-dimensional whatever cause it's going to be the same for every rocket (hence the constant lol)
     constant_inputs_array = np.array(tuple(inputs.constant_inputs.values()), dtype=np.dtype(constant_inputs_fields_dtype))
 
-
-
     # print(variable_inputs_array)
     # print(variable_inputs_array[0][0]["OF_RATIO"])
 
@@ -103,6 +101,7 @@ def CreatePossibleRocketsInputsArrays():
     # print(constant_inputs_array["PROPELLANT_TANK_OUTER_DIAMETER"])
 
     return (variable_inputs_array, constant_inputs_array)
+
 
 def IsBoolean(unknown_variable):
     if isinstance(unknown_variable, bool):
@@ -156,8 +155,6 @@ def IsStringOrListOfStrings(unknown_variable):
 
     else:
         return False
-
-
 
 
 if __name__ == "__main__":

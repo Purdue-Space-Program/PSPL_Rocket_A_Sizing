@@ -35,6 +35,11 @@ import pandas as pd
 variable_inputs_array, constant_inputs_array = rocket_inputs_array.CreatePossibleRocketsInputsArrays()
 
 
-for count, variable_input_combination in enumerate(variable_inputs_array):
-    print(f"{count}: {variable_input_combination}")
+# print(variable_inputs_array)
+
+# Iterate while keeping the structure
+it = np.nditer(variable_inputs_array, flags=['multi_index'], op_flags=['readonly'])
+for variable_input_combination in it: 
+    print(f"{it.multi_index}: {variable_input_combination}")
+    engine.
 

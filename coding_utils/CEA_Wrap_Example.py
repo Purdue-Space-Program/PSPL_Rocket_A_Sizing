@@ -1,4 +1,6 @@
 # Import the things we need to do our task. "F" and "O" are aliases for fuel and oxidizer
+import os
+os.environ["CEA_USE_LEGACY"] = "1"
 from CEA_Wrap import Fuel, Oxidizer, RocketProblem
 
 #############################################################################
@@ -9,7 +11,7 @@ from CEA_Wrap import Fuel, Oxidizer, RocketProblem
 h2 = Fuel("H2(L)", temp=20) # Liquid H2, Temp in Kelvin
 lox = Oxidizer("O2(L)", temp=90)
 # Rocket at 2000psi and supersonic area ratio of 5
-problem1 = RocketProblem(pressure=150, materials=[h2, lox], phi=1, sup=5)
+problem1 = RocketProblem(pressure=2000, materials=[h2, lox], phi=1, sup=5)
 results = problem1.run()
 
 # For a full listing of available members, see the documentation at https://github.com/civilwargeeky/CEA_Wrap

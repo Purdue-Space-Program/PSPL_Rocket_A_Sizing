@@ -27,7 +27,6 @@ variable_inputs = {
 }
 
 constant_inputs = {
-    "FUEL_TEMPERATURE":                         270, # [kelvin] a brisk evening in west lafayette, indiana
 
     "OXIDIZER_NAME":                           "Liquid Oxygen",
     "OXIDIZER_TEMPERATURE":                     80, # [kelvin] probably something else in reality but good enough for now: wikipedia.org/wiki/Liquid_oxygen
