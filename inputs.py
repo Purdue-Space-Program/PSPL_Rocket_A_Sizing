@@ -16,7 +16,7 @@ variable_inputs = {
     "OF_RATIO":                   np.linspace(2, 3, step_size), # ratio of oxygen to fuel by mass
 
     # "OXIDIZER_ON_TOP_FUEL_ON_BOTTOM": [True, False], # [boolean (true or false)] whether the oxidizer tank is above the fuel tank or not
-    # "FUEL_TANK_LENGTH":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size), # [meters] possible speedy metals pipe lengths: speedymetals.com/pc-4624-8371-4-12-od-x-125-wall-tube-6061-t6-aluminum.aspx
+    # "FUEL_TANK_LENGTH":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size), # [meters] possible speedy metals pipe lengths: speedymetals.com/changethelinkbro
     # "a":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size), # testing
     # "b":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size), # testing
     # "c":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size), # testing
@@ -31,8 +31,8 @@ constant_inputs = {
     "OXIDIZER_NAME":                           "Liquid Oxygen",
     "OXIDIZER_TEMPERATURE":                     80, # [kelvin] probably something else in reality but good enough for now: wikipedia.org/wiki/Liquid_oxygen
 
-    "PROPELLANT_TANK_OUTER_DIAMETER":           4.50  * c.IN2M, # [meters] from speedy metals pipe (link above)
-    # "PROPELLANT_TANK_INNER_DIAMETER":         4.25  * c.IN2M, # [meters] from speedy metals pipe (link above)
+    "PROPELLANT_TANK_OUTER_DIAMETER":           6 * c.IN2M, # [meters] from speedy metals pipe (link above)
+    # "PROPELLANT_TANK_INNER_DIAMETER":         5.75  * c.IN2M, # [meters] from speedy metals pipe (link above)
     # "PROPELLANT_TANK_THICKNESS":              0.125 * c.IN2M,   # [meters] from speedy metals pipe (link above)
 
     # "ALUMINUM_ENGINE_COVER_OUTER_DIAMETER":   4.5   * c.IN2M, # [meters] from speedy metals pipe (link above)

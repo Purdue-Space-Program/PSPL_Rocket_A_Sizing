@@ -1,98 +1,71 @@
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
 import coding_utils.constants as c
 import inputs
+
 import numpy as np
 from itertools import product
 import numbers
 
 np.set_printoptions(threshold=sys.maxsize)
 
-
-
 # Every combination (not sure if thats the right math term) of inputs will make a rocket.
 # Each of these rockets and its inputs will be stored as a dictionary in an n-dimensional array,
 # where n = # of variable inputs
 
 
-def CreatePossibleRocketsInputsArrays():
+def dictionary_to_ndarray(dictionary):
+    # There are only two scenarios that can be encountered, and it is important to know which one is occurring,
+    # An element in the dictionary has:
+    # 1. one value, which shall be referred to as "single value elements" or SVE's e.g. ROCKET_OD: [1.3]
+    # 2. multiple values, which shall be referred to as "multiple value elements" or MVE's e.g. FUEL_NAME: ["Ethanol", "RP1"]
+    
 
-    # Converting the dictionary to a structured numpy array is more computationally efficient:
-    # https://numpy.org/doc/stable/reference/arrays.ndarray.html
-    # https://numpy.org/doc/stable/user/basics.rec.html
+    # Goes through each element of the array to define which datatype (e.g. float or string) should be used in the numpy ndarray
+    fields_dtype = []
 
-    # Goes through each input to define which datatype (e.g. float or string) should be used in the numpy array
-    variable_inputs_fields_dtype = []
-    constant_inputs_fields_dtype = []
-
-    for key, value in inputs.variable_inputs.items():
-        # print(f"key: {key}, value: {value}")
-        # print(type(value))
-
+    # create a dtype list for each of the elements of the array
+    for key, value in dictionary.items():
+        
         if IsBoolean(value):
-            variable_inputs_fields_dtype.append((key, "?"))       # 1-byte bool
-            # print("Its a bool\n")
+            fields_dtype.append((key, "?"))       # 1-byte bool
 
         # could optimize this by making the field an integer if its an integer but i dont feel like it rn
         elif IsNumberOrListOfNumbers(value):
-            # print("It's a number\n")
-            variable_inputs_fields_dtype.append((key, np.float16))       # 16-bit float
+            fields_dtype.append((key, np.float16))       # 16-bit float
 
         elif IsStringOrListOfStrings(value):
-            # print("Its a string\n")
-
-            # if it is a list, then it is a variable input
-            if isinstance(value, (list, tuple)):
+            # if it is a list, find the longest string that will have to be stored
+            if IsAList(value):
                 max_length = max(len(s) for s in value)
             else:
                 max_length = len(value)
-            variable_inputs_fields_dtype.append((key, np.str_,max_length))  # String of length = len(value)
+            fields_dtype.append((key, np.str_,max_length))  # String of length = len(value)
 
         else:
             raise TypeError(f"Unsupported type for key: {key}\n")
-
-    for key, value in inputs.constant_inputs.items():
-        # print(f"key: {key}, value: {value}")
-        # print(type(value))
-
-        if IsBoolean(value):
-            constant_inputs_fields_dtype.append((key, "?"))       # 1-byte bool
-            # print("Its a bool\n")
-
-        # could optimize this by making the field an integer if its an integer but i dont feel like it rn
-        elif IsNumberOrListOfNumbers(value):
-            # print("It's a number\n")
-            constant_inputs_fields_dtype.append((key, np.float16))       # 16-bit float
-
-        elif IsStringOrListOfStrings(value):
-            # print("Its a string\n")
-
-            # if it is a variable input it is in a list
-            if isinstance(value, (list, tuple)):
-                max_length = max(len(s) for s in value)
-            else:
-                max_length = len(value)
-            constant_inputs_fields_dtype.append((key, np.str_,max_length))  # String of length = len(value)
-
-        else:
-            raise TypeError(f"Unsupported type for variable input: {key}\n")
+    
+    # its easier to deal with everything as a list so make every single element a list
+    for key, value in dictionary.items():
+        if not(IsAList(value)):
+            dictionary[key] = [value]
 
 
-    variable_inputs_possible_combinations = list(product(*inputs.variable_inputs.values())) # use cartesian product to generate all possible combinations of variable inputs
+    # use cartesian product to generate all possible combinations
+    possible_combinations = list(product(*dictionary.values())) 
     # Shape of this ^ needs to be n-dimensional with size m of each element (each element being a dictionary).
     # This makes it easy to index to find a rocket for a certain input combination
-    # n = number of variable inputs
-    # m = number of rockets needed to fully explore the range of each variable input (step size)
-    shape = [len(variable_input_range) for variable_input_range in inputs.variable_inputs.values()]
+    # n = number of elements
+    # m = number of rockets needed to fully explore the range of each "list element" (using step size)
+    shape = [FindNumSubElements(variable_input_range) for variable_input_range in dictionary.values()]
 
     # holy shit i cooked
-    variable_inputs_array = np.array(variable_inputs_possible_combinations, dtype=np.dtype(variable_inputs_fields_dtype))
-    variable_inputs_array = variable_inputs_array.reshape(shape)
+    ndarray = np.array(possible_combinations, dtype=np.dtype(fields_dtype))
+    ndarray = ndarray.reshape(shape)
 
-    # this doesn't need to be a n-dimensional whatever cause it's going to be the same for every rocket (hence the constant lol)
-    constant_inputs_array = np.array(tuple(inputs.constant_inputs.values()), dtype=np.dtype(constant_inputs_fields_dtype))
+    # # this doesn't need to be a n-dimensional whatever cause it's going to be the same for every rocket (hence the constant lol)
+    # constant_inputs_array = np.array(tuple(inputs.constant_inputs.values()), dtype=np.dtype(constant_inputs_fields_dtype))
 
     # print(variable_inputs_array)
     # print(variable_inputs_array[0][0]["OF_RATIO"])
@@ -100,7 +73,35 @@ def CreatePossibleRocketsInputsArrays():
     # print(constant_inputs_array)
     # print(constant_inputs_array["PROPELLANT_TANK_OUTER_DIAMETER"])
 
-    return (variable_inputs_array, constant_inputs_array)
+    return ndarray
+
+
+
+def IsAList(unknown_variable):
+
+    num_sub_elements = FindNumSubElements(unknown_variable)
+    
+    if num_sub_elements > 1:
+        return True
+    elif num_sub_elements == 1:
+        return False
+    else:
+        raise ValueError(f"what {unknown_variable}")
+
+def FindNumSubElements(unknown_variable):
+    num_sub_elements = 0
+    
+    if isinstance(unknown_variable, (str, int, float)):
+        num_sub_elements = 1  
+    
+    # check for case when sub_elements are in an ndarray
+    elif hasattr(unknown_variable, 'dtype'):
+        num_sub_elements = unknown_variable.size
+    
+    else:
+         num_sub_elements = len(unknown_variable)
+    
+    return(num_sub_elements)
 
 
 def IsBoolean(unknown_variable):
@@ -158,4 +159,4 @@ def IsStringOrListOfStrings(unknown_variable):
 
 
 if __name__ == "__main__":
-    print(CreatePossibleRocketsInputsArrays()[1])
+    print(dictionary_to_ndarray(inputs.variable_inputs))
