@@ -55,12 +55,29 @@ import constants as c
 
 # why the fuck is the CEA website down
 
-CEA_fuel_name = CEA.Fuel("H2", temp=c.T_AMBIENT)
-cea_oxidizer_name = CEA.Oxidizer("O2", temp=c.T_AMBIENT)
+# M vs MW (some bullshit)
+# CEA_fuel_name = CEA.Fuel("H2", temp=c.T_AMBIENT)
+# cea_oxidizer_name = CEA.Oxidizer("O2", temp=c.T_AMBIENT)
 
-for of_ratio in [100000000, 0.00001, 1]:
+# for of_ratio in [100000000, 0.00001, 1]:
+#     rocket = CEA.RocketProblem(
+#             pressure =       50,
+#             pip =            2,
+#             materials =      [CEA_fuel_name, cea_oxidizer_name],
+#             o_f =            of_ratio,
+#             pressure_units = "psi",
+#         )
+
+#     cea_results = rocket.run()
+#     print(cea_results.c_m)
+
+
+CEA_fuel_name = CEA.Fuel("H2(L)", temp=20)
+cea_oxidizer_name = CEA.Oxidizer("O2(L)", temp=90)
+
+for of_ratio in [1, 1.5, 2]:
     rocket = CEA.RocketProblem(
-            pressure =       50,
+            pressure =       200,
             pip =            2,
             materials =      [CEA_fuel_name, cea_oxidizer_name],
             o_f =            of_ratio,
@@ -68,4 +85,4 @@ for of_ratio in [100000000, 0.00001, 1]:
         )
 
     cea_results = rocket.run()
-    print(cea_results.p)
+    print(cea_results.isp)

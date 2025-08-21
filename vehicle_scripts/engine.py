@@ -12,6 +12,7 @@ def ThrustyBusty(FUEL_NAME, OXIDIZER_NAME, PROPELLANT_TANK_OUTER_DIAMETER, CONTR
     
     cea_results = RunCEA(CHAMBER_PRESSURE, FUEL_NAME, OXIDIZER_NAME, OF_RATIO)
     expected_isp = CalculateExpectedISP(cea_results.isp)
+
     expected_exhaust_velocity = expected_isp * c.GRAVITY
     
     chamber_radius, chamber_length, throat_radius = CalculateEngineDimensions(PROPELLANT_TANK_OUTER_DIAMETER, FUEL_NAME, OXIDIZER_NAME, CONTRACTION_RATIO)
@@ -54,7 +55,6 @@ def RunCEA(
     return(cea_results)
 
 def CalculateExpectedThrust(expected_isp, total_mass_flow_rate):
-    
     
     expected_jet_exhaust_velocity = expected_isp * c.GRAVITY
     expected_thrust = total_mass_flow_rate * expected_jet_exhaust_velocity
