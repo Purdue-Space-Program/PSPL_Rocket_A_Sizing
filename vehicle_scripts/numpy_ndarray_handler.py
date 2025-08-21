@@ -16,6 +16,19 @@ np.set_printoptions(threshold=sys.maxsize)
 
 
 def dictionary_to_ndarray(dictionary):
+    
+    # lowercase strings here because you can't in an ndarray
+    for key, value in dictionary.items():
+        if IsStringOrListOfStrings(value):
+            if FindNumSubElements(value) == 1:
+                dictionary[key] = value.lower()
+            else:
+                lowercased_string_list = []
+                for string in value:
+                    lowercased_string_list.append(string.lower())
+                dictionary[key] = lowercased_string_list
+                    
+    
     # There are only two scenarios that can be encountered, and it is important to know which one is occurring,
     # An element in the dictionary has:
     # 1. one value, which shall be referred to as "single value elements" or SVE's e.g. ROCKET_OD: [1.3]
@@ -36,6 +49,7 @@ def dictionary_to_ndarray(dictionary):
             fields_dtype.append((key, np.float16))       # 16-bit float
 
         elif IsStringOrListOfStrings(value):
+            np.char.lower
             # if it is a list, find the longest string that will have to be stored
             if IsAList(value):
                 max_length = max(len(s) for s in value)
@@ -159,4 +173,4 @@ def IsStringOrListOfStrings(unknown_variable):
 
 
 if __name__ == "__main__":
-    print(dictionary_to_ndarray(inputs.variable_inputs))
+    print(dictionary_to_ndarray(inputs.constant_inputs))

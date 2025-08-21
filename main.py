@@ -43,8 +43,13 @@ constant_inputs_array = numpy_ndarray_handler.dictionary_to_ndarray(inputs.const
 
 
 # Iterate while keeping the structure
-it = np.nditer(variable_inputs_array, flags=['multi_index'], op_flags=['readonly'])
+it = np.nditer(variable_inputs_array, flags=["multi_index"], op_flags=["readonly"])
 for variable_input_combination in it: 
     print(f"{it.multi_index}: {variable_input_combination}")
-    # engine.
-
+    print(engine.ThrustyBusty(variable_input_combination["FUEL_NAME"], 
+                        constant_inputs_array["OXIDIZER_NAME"],
+                        constant_inputs_array["PROPELLANT_TANK_OUTER_DIAMETER"],
+                        variable_input_combination["CONTRACTION_RATIO"],
+                        variable_input_combination["OF_RATIO"],
+                        variable_input_combination["CHAMBER_PRESSURE"],
+                        ) * c.N2LBF)
