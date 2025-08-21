@@ -41,127 +41,100 @@ import matplotlib.pyplot as plt
 variable_inputs_array = numpy_ndarray_handler.dictionary_to_ndarray(inputs.variable_inputs)
 constant_inputs_array = numpy_ndarray_handler.dictionary_to_ndarray(inputs.constant_inputs)
 
-# print(variable_inputs_array.shape)
-# # Iterate while keeping the structure
-# it = np.nditer(variable_inputs_array, flags=["multi_index"], op_flags=["readonly"])
-# for variable_input_combination in it: 
-#     # print(f"{it.multi_index}: {variable_input_combination}")
-    
-#     thrust_lbf = engine.ThrustyBusty(
-#                   constant_inputs_array["FUEL_NAME"], 
-#                   # variable_input_combination["FUEL_NAME"],
-                  
-#                   constant_inputs_array["OXIDIZER_NAME"],
-#                   constant_inputs_array["PROPELLANT_TANK_OUTER_DIAMETER"],
-                  
-#                   constant_inputs_array["CONTRACTION_RATIO"],
-#                   # variable_input_combination["CONTRACTION_RATIO"],
-                 
-#                   variable_input_combination["OF_RATIO"],
-#                   variable_input_combination["CHAMBER_PRESSURE"],
-#                  ) * c.N2LBF
-#     # print(thrust_lbf)
-    
-    
-    
-    
-thrust_map = []
-
-# Iterate while keeping the structure
-it = np.nditer(variable_inputs_array, flags=["multi_index"], op_flags=["readonly"])
-for variable_input_combination in it: 
-    thrust_lbf = engine.ThrustyBusty(
-                constant_inputs_array["FUEL_NAME"], 
-                # variable_input_combination["FUEL_NAME"],
-                
-                constant_inputs_array["OXIDIZER_NAME"],
-                constant_inputs_array["PROPELLANT_TANK_OUTER_DIAMETER"],
-                
-                # constant_inputs_array["CONTRACTION_RATIO"],
-                variable_input_combination["CONTRACTION_RATIO"],
-                
-                variable_input_combination["OF_RATIO"],
-                
-                # constant_inputs_array["CHAMBER_PRESSURE"].item(),
-                variable_input_combination["CHAMBER_PRESSURE"],
-                ) * c.N2LBF
-    thrust_map.append(thrust_lbf)
-    print(f"{it.multi_index}: {variable_input_combination} -> {thrust_lbf}")
-
-x = np.array(variable_inputs_array[0, :]["CHAMBER_PRESSURE"])
-y = np.array(variable_inputs_array[:, 0]["OF_RATIO"])
-z = np.array(thrust_map)
-
-Y, X = np.meshgrid(x, y) # I don't know why you have to swap X and Y but you do
-Z = z.reshape(len(x), len(y))
-
-# plt.pcolormesh(X, Y, Z, cmap='Spectral_r')
-plt.contourf(X, Y, Z, 100, cmap='Spectral_r')
-
-plt.colorbar(label='Thrust [lbf]')
-plt.xlabel('OF Ratio')
-plt.ylabel('Chamber Pressure [psi]')
-
-plt.show()
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-# chat gpt shit
-
-# Assume variable_inputs_array.shape = (n_pressures, n_of_ratios)
-# n_pressures = variable_inputs_array.shape[0]
-# n_of_ratios = variable_inputs_array.shape[1]
-
-# # Initialize a 2D array to hold thrust
-# thrust_map = np.zeros((n_pressures, n_of_ratios))
-
-# # Fill the thrust_map
-# for i in range(n_pressures):
-#     for j in range(n_of_ratios):
-#         combo = variable_inputs_array[i, j]
-#         thrust_map[i, j] = engine.ThrustyBusty(
-#             constant_inputs_array["FUEL_NAME"],
-#             constant_inputs_array["OXIDIZER_NAME"],
-#             constant_inputs_array["PROPELLANT_TANK_OUTER_DIAMETER"],
-#             constant_inputs_array["CONTRACTION_RATIO"],
-#             combo["OF_RATIO"],
-#             combo["CHAMBER_PRESSURE"]
-#         ) * c.N2LBF
-        
-        
-# # Assuming chamber pressures vary along axis 0 and OF_ratios along axis 1
-# chamber_pressures = np.array([variable_inputs_array[i,0]["CHAMBER_PRESSURE"] for i in range(n_pressures)])
-# of_ratios = np.array([variable_inputs_array[0,j]["OF_RATIO"] for j in range(n_of_ratios)])
 
 
-# plt.figure(figsize=(8,6))
-# plt.imshow(thrust_map, origin='lower', 
-#            aspect='auto', cmap='viridis')
+
+from sys import getsizeof
+from tqdm import tqdm
+
+print(f"variable_inputs_array: shape: {variable_inputs_array.shape}, bytes: {variable_inputs_array.nbytes}")
+
+AI_SLOP = True # god help me
+
+if AI_SLOP:
+
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    def compute_thrust(idx, variable_input_combination):
+        # Do imports inside the worker (not passed in)
+        from vehicle_scripts import engine
+        from coding_utils import constants as c
+        from inputs import constant_inputs as constant_inputs_dict
+
+        thrust_lbf = engine.ThrustyBusty(
+            constant_inputs_array["FUEL_NAME"], 
+            constant_inputs_array["OXIDIZER_NAME"],
+            constant_inputs_array["PROPELLANT_TANK_OUTER_DIAMETER"],
+            variable_input_combination["CONTRACTION_RATIO"],
+            variable_input_combination["OF_RATIO"],
+            variable_input_combination["CHAMBER_PRESSURE"],
+        ) * c.N2LBF
+        return idx, thrust_lbf
+
+
+
+    thrust_map = []
+
+    jobs = []
+    it = np.nditer(variable_inputs_array, flags=["multi_index"], op_flags=["readonly"])
+    for variable_input_combination in it: 
+        jobs.append((it.multi_index, variable_input_combination.copy()))
+
+    with ThreadPoolExecutor() as executor:
+        futures = [executor.submit(compute_thrust, idx, v) for idx, v in jobs]
+        for f in tqdm(as_completed(futures), total=len(futures), desc="Computing thrust"):
+            idx, thrust = f.result()
+            thrust_map.append((idx, thrust))
+            # print(f"{idx}: {thrust}")
+            # print(f"{idx}: {variable_inputs_array[idx]} -> {thrust}")
+
+
+else:
+    thrust_map = []
+
+    # Iterate while keeping the structure
+    it = np.nditer(variable_inputs_array, flags=["multi_index"], op_flags=["readonly"])
+    for variable_input_combination in it: 
+        # print(f"{it.multi_index}: {variable_input_combination}")
+        # thrust_lbf = engine.ThrustyBusty(
+        #             constant_inputs_array["FUEL_NAME"], 
+        #             # variable_input_combination["FUEL_NAME"],
+                    
+        #             constant_inputs_array["OXIDIZER_NAME"],
+        #             constant_inputs_array["PROPELLANT_TANK_OUTER_DIAMETER"],
+                    
+        #             # constant_inputs_array["CONTRACTION_RATIO"],
+        #             variable_input_combination["CONTRACTION_RATIO"],
+                    
+        #             variable_input_combination["OF_RATIO"],
+                    
+        #             # constant_inputs_array["CHAMBER_PRESSURE"].item(),
+        #             variable_input_combination["CHAMBER_PRESSURE"],
+        #             ) * c.N2LBF
+        thrust_lbf = 1
+        thrust_map.append(thrust_lbf)
+        print(f"{it.multi_index}: {variable_input_combination} -> {thrust_lbf}")
+
+
+print(f"thrust map: number of elements: {len(thrust_map)}, bytes: {getsizeof(thrust_map)}")
+
+
+# ___  _    ____ ___ ___ _ _  _ ____ 
+# |__] |    |  |  |   |  | |\ | | __ 
+# |    |___ |__|  |   |  | | \| |__] 
+                                   
+# x = np.array(variable_inputs_array[0, :]["CHAMBER_PRESSURE"])
+# y = np.array(variable_inputs_array[:, 0]["OF_RATIO"])
+# z = np.array(thrust_map)
+
+# Y, X = np.meshgrid(x, y) # I don't know why you have to swap X and Y but you do
+# Z = z.reshape(len(x), len(y))
+
+# # plt.pcolormesh(X, Y, Z, cmap='Spectral_r')
+# plt.contourf(X, Y, Z, 100, cmap='Spectral_r')
+
 # plt.colorbar(label='Thrust [lbf]')
-# plt.xlabel('O/F Ratio')
-# plt.ylabel('Chamber Pressure [Pa]')  # change units if needed
-# plt.title('Thrust vs O/F Ratio and Chamber Pressure')
+# plt.xlabel('OF Ratio')
+# plt.ylabel('Chamber Pressure [psi]')
+
 # plt.show()

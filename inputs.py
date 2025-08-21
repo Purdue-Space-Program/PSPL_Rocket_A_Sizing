@@ -1,7 +1,7 @@
 import coding_utils.constants as c
 import numpy as np
 
-step_size = 10 # number of values to use for each variable input
+step_size = 8 # number of values to use for each variable input
 
 # A dictionary used to define the possible definitions where each key is an input (constant or variable)
 # and each value is either the constant value or a range of values
@@ -19,13 +19,14 @@ variable_inputs = {
     
     # "OXIDIZER_ON_TOP_FUEL_ON_BOTTOM": [True, False], # [boolean (true or false)] whether the oxidizer tank is above the fuel tank or not
     "FUEL_TANK_LENGTH":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size), # [meters] possible speedy metals pipe lengths: speedymetals.com/changethelinkbro
-    # "a":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size), # testing
-    # "b":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size), # testing
-    # "c":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size), # testing
-    # "d":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size), # testing
-    # "e":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size), # testing
-    # "f":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size), # testing
-    # "g":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size), # testing
+    
+    # "a":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size), # stress testing
+    # "b":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size), # stress testing
+    # "c":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size), # stress testing
+    # "d":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size), # stress testing
+    # "e":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size), # stress testing
+    # "f":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size), # stress testing
+    # "g":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size), # stress testing
 }
 
 constant_inputs = {
