@@ -29,7 +29,7 @@ import inputs
 import coding_utils.constants as c
 import numpy as np
 import matplotlib.pyplot as plt
-
+step_size = inputs.step_size
 
 # Converting the dictionary to a structured numpy array is more computationally efficient:
 # https://numpy.org/doc/stable/reference/arrays.ndarray.html
@@ -61,60 +61,71 @@ if AI_SLOP:
         from coding_utils import constants as c
         from inputs import constant_inputs as constant_inputs_dict
 
-        thrust_lbf = engine.ThrustyBusty(
-            constant_inputs_array["FUEL_NAME"], 
-            constant_inputs_array["OXIDIZER_NAME"],
-            constant_inputs_array["PROPELLANT_TANK_OUTER_DIAMETER"],
-            variable_input_combination["CONTRACTION_RATIO"],
-            variable_input_combination["OF_RATIO"],
-            variable_input_combination["CHAMBER_PRESSURE"],
-        ) * c.N2LBF
-        return idx, thrust_lbf
+        thrust_newton, mass_flow_kg = engine.ThrustyBusty(
+                    constant_inputs_array["FUEL_NAME"], 
+                    # variable_input_combination["FUEL_NAME"],
+                    
+                    constant_inputs_array["OXIDIZER_NAME"],
+                    constant_inputs_array["PROPELLANT_TANK_OUTER_DIAMETER"],
+                    
+                    constant_inputs_array["CONTRACTION_RATIO"],
+                    # variable_input_combination["CONTRACTION_RATIO"],
+                    
+                    variable_input_combination["OF_RATIO"],
+                    
+                    # constant_inputs_array["CHAMBER_PRESSURE"].item(),
+                    variable_input_combination["CHAMBER_PRESSURE"],
+                    )
+        
+        return idx, thrust_newton * c.N2LBF, mass_flow_kg
 
 
-
-    thrust_map = []
 
     jobs = []
     it = np.nditer(variable_inputs_array, flags=["multi_index"], op_flags=["readonly"])
     for variable_input_combination in it: 
         jobs.append((it.multi_index, variable_input_combination.copy()))
 
+    thrust_map = np.zeros(variable_inputs_array.size)
+    mass_flow_map = np.zeros(variable_inputs_array.size)
+
     with ThreadPoolExecutor() as executor:
         futures = [executor.submit(compute_thrust, idx, v) for idx, v in jobs]
         for f in tqdm(as_completed(futures), total=len(futures), desc="Computing thrust"):
-            idx, thrust = f.result()
-            thrust_map.append((idx, thrust))
+            idx, thrust, mass_flow = f.result()
+            thrust_map[(idx[0])*step_size + idx[1]] = thrust
+            mass_flow_map[(idx[0])*step_size + idx[1]] = mass_flow
             # print(f"{idx}: {thrust}")
             # print(f"{idx}: {variable_inputs_array[idx]} -> {thrust}")
 
 
 else:
     thrust_map = []
+    mass_flow_map = []
 
     # Iterate while keeping the structure
     it = np.nditer(variable_inputs_array, flags=["multi_index"], op_flags=["readonly"])
+    
+    # for variable_input_combination in tqdm(it, total=len(it), desc="Computing..."):
     for variable_input_combination in it: 
-        # print(f"{it.multi_index}: {variable_input_combination}")
-        # thrust_lbf = engine.ThrustyBusty(
-        #             constant_inputs_array["FUEL_NAME"], 
-        #             # variable_input_combination["FUEL_NAME"],
+        thrust_newton, mass_flow_kg = engine.ThrustyBusty(
+                    constant_inputs_array["FUEL_NAME"], 
+                    # variable_input_combination["FUEL_NAME"],
                     
-        #             constant_inputs_array["OXIDIZER_NAME"],
-        #             constant_inputs_array["PROPELLANT_TANK_OUTER_DIAMETER"],
+                    constant_inputs_array["OXIDIZER_NAME"],
+                    constant_inputs_array["PROPELLANT_TANK_OUTER_DIAMETER"],
                     
-        #             # constant_inputs_array["CONTRACTION_RATIO"],
-        #             variable_input_combination["CONTRACTION_RATIO"],
+                    constant_inputs_array["CONTRACTION_RATIO"],
+                    # variable_input_combination["CONTRACTION_RATIO"],
                     
-        #             variable_input_combination["OF_RATIO"],
+                    variable_input_combination["OF_RATIO"],
                     
-        #             # constant_inputs_array["CHAMBER_PRESSURE"].item(),
-        #             variable_input_combination["CHAMBER_PRESSURE"],
-        #             ) * c.N2LBF
-        thrust_lbf = 1
-        thrust_map.append(thrust_lbf)
-        print(f"{it.multi_index}: {variable_input_combination} -> {thrust_lbf}")
-
+                    # constant_inputs_array["CHAMBER_PRESSURE"].item(),
+                    variable_input_combination["CHAMBER_PRESSURE"],
+                    )
+        thrust_map.append(thrust_newton * c.N2LBF)
+        mass_flow_map.append(mass_flow_kg)
+        print(f"{it.multi_index}: {variable_input_combination} -> {thrust_newton}")
 
 print(f"thrust map: number of elements: {len(thrust_map)}, bytes: {getsizeof(thrust_map)}")
 
@@ -123,18 +134,18 @@ print(f"thrust map: number of elements: {len(thrust_map)}, bytes: {getsizeof(thr
 # |__] |    |  |  |   |  | |\ | | __ 
 # |    |___ |__|  |   |  | | \| |__] 
                                    
-# x = np.array(variable_inputs_array[0, :]["CHAMBER_PRESSURE"])
-# y = np.array(variable_inputs_array[:, 0]["OF_RATIO"])
-# z = np.array(thrust_map)
+x = np.array(variable_inputs_array[0, :]["CHAMBER_PRESSURE"])
+y = np.array(variable_inputs_array[:, 0]["OF_RATIO"])
+z = np.array(mass_flow_map)
 
-# Y, X = np.meshgrid(x, y) # I don't know why you have to swap X and Y but you do
-# Z = z.reshape(len(x), len(y))
+Y, X = np.meshgrid(x, y) # I don't know why you have to swap X and Y but you do
+Z = z.reshape(len(x), len(y))
 
-# # plt.pcolormesh(X, Y, Z, cmap='Spectral_r')
+plt.pcolormesh(X, Y, Z, cmap='Spectral_r')
 # plt.contourf(X, Y, Z, 100, cmap='Spectral_r')
 
-# plt.colorbar(label='Thrust [lbf]')
-# plt.xlabel('OF Ratio')
-# plt.ylabel('Chamber Pressure [psi]')
+plt.colorbar(label='Mass Flow Rate [kg/s] or Thrust [lbf]')
+plt.xlabel('OF Ratio')
+plt.ylabel('Chamber Pressure [psi]')
 
-# plt.show()
+plt.show()

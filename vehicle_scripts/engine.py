@@ -10,6 +10,13 @@ import numpy as np
 
 
 def ThrustyBusty(FUEL_NAME, OXIDIZER_NAME, PROPELLANT_TANK_OUTER_DIAMETER, CONTRACTION_RATIO, OF_RATIO, CHAMBER_PRESSURE):
+    # fuck me
+    FUEL_NAME = scalarize(FUEL_NAME)
+    OXIDIZER_NAME = scalarize(OXIDIZER_NAME)
+    PROPELLANT_TANK_OUTER_DIAMETER = scalarize(PROPELLANT_TANK_OUTER_DIAMETER)
+    CONTRACTION_RATIO = scalarize(CONTRACTION_RATIO)
+    OF_RATIO = scalarize(OF_RATIO)
+    CHAMBER_PRESSURE = scalarize(CHAMBER_PRESSURE)
     
     cea_results = RunCEA(CHAMBER_PRESSURE, FUEL_NAME, OXIDIZER_NAME, OF_RATIO)
     expected_isp = CalculateExpectedISP(cea_results.isp)
@@ -17,12 +24,23 @@ def ThrustyBusty(FUEL_NAME, OXIDIZER_NAME, PROPELLANT_TANK_OUTER_DIAMETER, CONTR
     expected_exhaust_velocity = expected_isp * c.GRAVITY
     
     chamber_radius, chamber_length, throat_radius = CalculateEngineDimensions(PROPELLANT_TANK_OUTER_DIAMETER, FUEL_NAME, OXIDIZER_NAME, CONTRACTION_RATIO)
-    total_mass_flow_rate = CalculateMassFlowRate(throat_radius, CHAMBER_PRESSURE, cea_results.c_mw, cea_results.c_gamma, cea_results.c_t)
+    expected_total_mass_flow_rate = CalculateMassFlowRate(throat_radius, CHAMBER_PRESSURE*c.PSI2PA, cea_results.c_mw, cea_results.c_gamma, cea_results.c_t)
 
-    expected_thrust = CalculateExpectedThrust(expected_isp, total_mass_flow_rate)
+    expected_thrust = CalculateExpectedThrust(expected_isp, expected_total_mass_flow_rate)
 
     # return(expected_thrust, expected_isp, total_mass_flow_rate, chamber_radius, chamber_length, throat_radius)
-    return(expected_thrust.item())
+    return(expected_thrust, expected_total_mass_flow_rate)
+
+
+def scalarize(x):
+    """Convert numpy scalars/0D arrays to Python scalars, leave others untouched."""
+    if isinstance(x, (np.generic,)):   # e.g. np.float64, np.int64
+        return x.item()
+    if isinstance(x, np.ndarray) and x.size == 1:  # 0-D array
+        return x.item()
+    return x  # already a Python scalar, string, or something else
+
+
 
 
 def RunCEA(
@@ -70,22 +88,24 @@ def CalculateExpectedISP(ideal_isp):
     
     return(expected_isp)
 
-
-
 # fixed :)
 def CalculateMassFlowRate(throat_radius, chamber_pressure, chamber_molar_mass, chamber_gamma, T_c): # eq (1-19) on page 7 of sp-125 https://ntrs.nasa.gov/citations/19710019929
     y = chamber_gamma # for readability
     
-    R = 8.314 / chamber_molar_mass # R is the specific gas constant here
+    R = 8.314 / (chamber_molar_mass/1000) # R is the specific gas constant here
+    # R /= 1000
     
-    radicand = (y/(R*T_c)) * (( 2/(y+1) ) ** ((y+1) / (y-1)))
+    radicand = (y/(R*T_c)) * ((2/(y+1) ) ** ((y+1) / (y-1)))
     
     throat_area = RadiusToArea(throat_radius)
-    mass_flow_rate = throat_area * chamber_pressure * (radicand**0.5)
-    return mass_flow_rate
+    expected_total_mass_flow_rate = throat_area * chamber_pressure * (radicand**0.5)
+    
+    expected_c_star_efficiency = 0.9 # value used for CMS
+    expected_total_mass_flow_rate *= expected_c_star_efficiency
+    return expected_total_mass_flow_rate
 
 def CalculateEngineDimensions(PROPELLANT_TANK_OUTER_DIAMETER, fuel_name, oxidizer_name, contraction_ratio):
-    chamber_radius = (PROPELLANT_TANK_OUTER_DIAMETER/2) - 0.5 # lowkey a guess
+    chamber_radius = (PROPELLANT_TANK_OUTER_DIAMETER/2) - (0.5 * c.IN2M) # lowkey a guess
     chamber_area = RadiusToArea(chamber_radius)
     
     throat_area = chamber_area/contraction_ratio
@@ -119,7 +139,6 @@ def FindLstar(fuel_name, oxidizer_name):
         raise ValueError("No L* Found")
         
     return L_star
-
 
 
 
