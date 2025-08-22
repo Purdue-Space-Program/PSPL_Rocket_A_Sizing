@@ -29,7 +29,7 @@ def ThrustyBusty(FUEL_NAME, OXIDIZER_NAME, PROPELLANT_TANK_OUTER_DIAMETER, CONTR
     expected_thrust = CalculateExpectedThrust(expected_isp, expected_total_mass_flow_rate)
 
     # return(expected_thrust, expected_isp, total_mass_flow_rate, chamber_radius, chamber_length, throat_radius)
-    return(expected_thrust, expected_total_mass_flow_rate)
+    return(expected_thrust, expected_total_mass_flow_rate, expected_isp)
 
 
 def scalarize(x):

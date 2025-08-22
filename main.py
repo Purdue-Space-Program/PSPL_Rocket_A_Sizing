@@ -61,7 +61,7 @@ if AI_SLOP:
         from coding_utils import constants as c
         from inputs import constant_inputs as constant_inputs_dict
 
-        thrust_newton, mass_flow_kg = engine.ThrustyBusty(
+        thrust_newton, mass_flow_kg, isp = engine.ThrustyBusty(
                     constant_inputs_array["FUEL_NAME"], 
                     # variable_input_combination["FUEL_NAME"],
                     
@@ -77,7 +77,7 @@ if AI_SLOP:
                     variable_input_combination["CHAMBER_PRESSURE"],
                     )
         
-        return idx, thrust_newton * c.N2LBF, mass_flow_kg
+        return idx, thrust_newton * c.N2LBF, mass_flow_kg, isp
 
 
 
@@ -88,13 +88,15 @@ if AI_SLOP:
 
     thrust_map = np.zeros(variable_inputs_array.size)
     mass_flow_map = np.zeros(variable_inputs_array.size)
+    isp_map = np.zeros(variable_inputs_array.size)
 
     with ThreadPoolExecutor() as executor:
         futures = [executor.submit(compute_thrust, idx, v) for idx, v in jobs]
         for f in tqdm(as_completed(futures), total=len(futures), desc="Computing thrust"):
-            idx, thrust, mass_flow = f.result()
+            idx, thrust, mass_flow, isp = f.result()
             thrust_map[(idx[0])*step_size + idx[1]] = thrust
             mass_flow_map[(idx[0])*step_size + idx[1]] = mass_flow
+            isp_map[(idx[0])*step_size + idx[1]] = isp
             # print(f"{idx}: {thrust}")
             # print(f"{idx}: {variable_inputs_array[idx]} -> {thrust}")
 
@@ -102,13 +104,14 @@ if AI_SLOP:
 else:
     thrust_map = []
     mass_flow_map = []
+    isp_map = []
 
     # Iterate while keeping the structure
     it = np.nditer(variable_inputs_array, flags=["multi_index"], op_flags=["readonly"])
     
     # for variable_input_combination in tqdm(it, total=len(it), desc="Computing..."):
     for variable_input_combination in it: 
-        thrust_newton, mass_flow_kg = engine.ThrustyBusty(
+        thrust_newton, mass_flow_kg, isp = engine.ThrustyBusty(
                     constant_inputs_array["FUEL_NAME"], 
                     # variable_input_combination["FUEL_NAME"],
                     
@@ -125,6 +128,7 @@ else:
                     )
         thrust_map.append(thrust_newton * c.N2LBF)
         mass_flow_map.append(mass_flow_kg)
+        isp_map.append(isp)
         print(f"{it.multi_index}: {variable_input_combination} -> {thrust_newton}")
 
 print(f"thrust map: number of elements: {len(thrust_map)}, bytes: {getsizeof(thrust_map)}")
@@ -136,15 +140,17 @@ print(f"thrust map: number of elements: {len(thrust_map)}, bytes: {getsizeof(thr
                                    
 x = np.array(variable_inputs_array[0, :]["CHAMBER_PRESSURE"])
 y = np.array(variable_inputs_array[:, 0]["OF_RATIO"])
-z = np.array(mass_flow_map)
+z = np.array(isp_map)
 
 Y, X = np.meshgrid(x, y) # I don't know why you have to swap X and Y but you do
 Z = z.reshape(len(x), len(y))
 
+plt.contour(X, Y, Z)
 plt.pcolormesh(X, Y, Z, cmap='Spectral_r')
 # plt.contourf(X, Y, Z, 100, cmap='Spectral_r')
 
-plt.colorbar(label='Mass Flow Rate [kg/s] or Thrust [lbf]')
+plt.colorbar(label='isp [s]')
+# plt.colorbar(label='Mass Flow Rate [kg/s] or Thrust [lbf]')
 plt.xlabel('OF Ratio')
 plt.ylabel('Chamber Pressure [psi]')
 
