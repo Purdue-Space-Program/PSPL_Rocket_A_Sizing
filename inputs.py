@@ -1,21 +1,20 @@
 import coding_utils.constants as c
 import numpy as np
 
-step_size = 35 # number of values to use for each variable input
+step_size = 50 # number of values to use for each variable input
 
 # A dictionary used to define the possible definitions where each key is an input (constant or variable)
 # and each value is either the constant value or a range of values
 
 # rocket_definition_inputs_scope = {
 
-# MAXIMUM OF 40 STEPS (variable_inputs_using_step_size * step_size) OR YOUR COMPUTER WILL CRASH !!!!!!!!
 variable_inputs = {
     # "FUEL_NAME":                  ["Ethanol", "Kerosene"],
 
     # "CONTRACTION_RATIO":          np.linspace(3, 6, step_size), # [dimensionless] area ratio of chamber to throat (3 to 6 recommended by textbook)
-    "OF_RATIO":                   np.linspace(0.01, 3, step_size), # [dimensionless] ratio of oxygen to fuel by mass
+    "OF_RATIO":                   np.linspace(0.1, 5, step_size), # [dimensionless] ratio of oxygen to fuel by mass
 
-    "CHAMBER_PRESSURE":           np.linspace(100, 600, step_size), # [psi] pressure in the chamber during combustion
+    "CHAMBER_PRESSURE":           np.linspace(40, 1000, step_size), # [psi] pressure in the chamber during combustion
     
     # "OXIDIZER_ON_TOP_FUEL_ON_BOTTOM": [True, False], # [boolean (true or false)] whether the oxidizer tank is above the fuel tank or not
     # "FUEL_TANK_LENGTH":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size), # [meters] possible speedy metals pipe lengths: speedymetals.com/changethelinkbro
@@ -34,6 +33,7 @@ constant_inputs = {
     
     "CONTRACTION_RATIO":                        4, # [dimensionless] area ratio of chamber to throat (3 to 6 recommended by textbook)
     "FUEL_NAME":                                "Ethanol",
+    # "FUEL_NAME":                                "Kerosene",
     
     "OXIDIZER_NAME":                            "Liquid Oxygen",
 

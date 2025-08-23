@@ -99,18 +99,44 @@ if AI_SLOP:
             isp_map[(idx[0])*step_size + idx[1]] = isp
             # print(f"{idx}: {thrust}")
             # print(f"{idx}: {variable_inputs_array[idx]} -> {thrust}")
+            
+            # # goofy
+            # x = np.array(variable_inputs_array[0, :]["CHAMBER_PRESSURE"])
+            # y = np.array(variable_inputs_array[:, 0]["OF_RATIO"])
+            # z = np.array(isp_map)
+
+            # Y, X = np.meshgrid(x, y) # I don't know why you have to swap X and Y but you do
+            # Z = z.reshape(len(x), len(y))
+            # plt.pcolormesh(X, Y, Z, cmap='Spectral_r')
+            
+            # try:
+            #     mesh.set_array(Z.ravel())
+            #     mesh.set_clim(np.min(Z), np.max(Z))
+            # except NameError:
+            #     plt.ion()
+            #     fig, ax = plt.subplots()
+            #     mesh = ax.pcolormesh(X, Y, Z, cmap='Spectral_r')
+            #     plt.xlabel('OF Ratio', fontsize=14)
+            #     plt.ylabel('Chamber Pressure [psi]', fontsize=14)
+            #     plt.title(f"ISP of {constant_inputs_array['FUEL_NAME'].item().title()} For Different Chamber Pressures and OF Ratios", fontsize=20)
+            #     plt.colorbar(mesh, label='isp [s]')
+
+            # plt.draw()
+            # plt.pause(0.01)
 
 
 else:
     thrust_map = []
     mass_flow_map = []
-    isp_map = []
+    # isp_map = []
+    isp_map = np.zeros(variable_inputs_array.size)
+
 
     # Iterate while keeping the structure
     it = np.nditer(variable_inputs_array, flags=["multi_index"], op_flags=["readonly"])
     
     # for variable_input_combination in tqdm(it, total=len(it), desc="Computing..."):
-    for variable_input_combination in it: 
+    for count, variable_input_combination in enumerate(it): 
         thrust_newton, mass_flow_kg, isp = engine.ThrustyBusty(
                     constant_inputs_array["FUEL_NAME"], 
                     # variable_input_combination["FUEL_NAME"],
@@ -128,8 +154,32 @@ else:
                     )
         thrust_map.append(thrust_newton * c.N2LBF)
         mass_flow_map.append(mass_flow_kg)
-        isp_map.append(isp)
+        # isp_map.append(isp)
+        isp_map[count] = isp
+        
         print(f"{it.multi_index}: {variable_input_combination} -> {thrust_newton}")
+        
+        # # goofy
+        # x = np.array(variable_inputs_array[0, :]["CHAMBER_PRESSURE"])
+        # y = np.array(variable_inputs_array[:, 0]["OF_RATIO"])
+        # z = np.array(isp_map)
+
+        # Y, X = np.meshgrid(x, y) # I don't know why you have to swap X and Y but you do
+        # Z = z.reshape(len(x), len(y))
+        # plt.pcolormesh(X, Y, Z, cmap='Spectral_r')
+        # if count == 0:
+        #     plt.ion()
+        #     fig, ax = plt.subplots()
+        #     mesh = ax.pcolormesh(X, Y, Z, cmap='Spectral_r')
+        #     plt.xlabel('OF Ratio', fontsize=14)
+        #     plt.ylabel('Chamber Pressure [psi]', fontsize=14)
+        #     plt.title(f"ISP of {constant_inputs_array['FUEL_NAME'].item().title()} For Different Chamber Pressures and OF Ratios", fontsize=20)
+        #     plt.colorbar(mesh, label='isp [s]')
+        # else:
+        #     mesh.set_array(Z.ravel())
+        #     mesh.set_clim(np.min(Z), np.max(Z))
+        # plt.draw()
+        # plt.pause(0.05)
 
 print(f"thrust map: number of elements: {len(thrust_map)}, bytes: {getsizeof(thrust_map)}")
 
@@ -145,13 +195,19 @@ z = np.array(isp_map)
 Y, X = np.meshgrid(x, y) # I don't know why you have to swap X and Y but you do
 Z = z.reshape(len(x), len(y))
 
-plt.contour(X, Y, Z)
+num_lines = 8
+power = 1/4
+contour_lines = max(isp_map) * 0.995 / (num_lines**power) * np.linspace(1, num_lines, num_lines)**power
+print(contour_lines)
+
+plt.contour(X, Y, Z, contour_lines)
 plt.pcolormesh(X, Y, Z, cmap='Spectral_r')
 # plt.contourf(X, Y, Z, 100, cmap='Spectral_r')
 
 plt.colorbar(label='isp [s]')
 # plt.colorbar(label='Mass Flow Rate [kg/s] or Thrust [lbf]')
-plt.xlabel('OF Ratio')
-plt.ylabel('Chamber Pressure [psi]')
 
+plt.xlabel('OF Ratio', fontsize=14)
+plt.ylabel('Chamber Pressure [psi]', fontsize=14)
+plt.title(f"ISP of {constant_inputs_array["FUEL_NAME"].item().title()} For Different Chamber Pressures and OF Ratios", fontsize=20)
 plt.show()

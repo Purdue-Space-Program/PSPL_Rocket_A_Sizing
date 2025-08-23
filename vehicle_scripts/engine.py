@@ -10,7 +10,6 @@ import numpy as np
 
 
 def ThrustyBusty(FUEL_NAME, OXIDIZER_NAME, PROPELLANT_TANK_OUTER_DIAMETER, CONTRACTION_RATIO, OF_RATIO, CHAMBER_PRESSURE):
-    # fuck me
     FUEL_NAME = scalarize(FUEL_NAME)
     OXIDIZER_NAME = scalarize(OXIDIZER_NAME)
     PROPELLANT_TANK_OUTER_DIAMETER = scalarize(PROPELLANT_TANK_OUTER_DIAMETER)
@@ -33,7 +32,7 @@ def ThrustyBusty(FUEL_NAME, OXIDIZER_NAME, PROPELLANT_TANK_OUTER_DIAMETER, CONTR
 
 
 def scalarize(x):
-    """Convert numpy scalars/0D arrays to Python scalars, leave others untouched."""
+    # Convert single values in numpy arrays to a single value
     if isinstance(x, (np.generic,)):   # e.g. np.float64, np.int64
         return x.item()
     if isinstance(x, np.ndarray) and x.size == 1:  # 0-D array
