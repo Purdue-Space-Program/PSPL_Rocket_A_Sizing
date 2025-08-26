@@ -1,7 +1,7 @@
 # Fluids/Combustion
 CEA_Wrap == 2.0.0
+CoolProp
 # genericf2py; sys.platform == 'darwin' # only needed if on mac (darwin means MacOS for some reason lol) # cant get rocketcea to work on mac :(
-# CoolProp
 
 # Math/Data
 numpy
