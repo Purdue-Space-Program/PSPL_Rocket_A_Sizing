@@ -18,18 +18,25 @@
 # (_ o _)(_ o _)(_ o _)(_ o _)(_ o _)(_ o _)(_ o _)(_ o _)(_ o _)(_ o _)(_ o _)(_ o _)(_ o _)(_ o _)
 #  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)
 
+import inputs
+
 from vehicle_scripts import (
     engine,
     numpy_ndarray_handler,
-    # tanks,
+    tanks,
     # structures,
     # trajectory
 )
-import inputs
+from coding_utils import (
+    constants as c,
+    plotting as p,
+)
+
 import coding_utils.constants as c
 import numpy as np
 import matplotlib.pyplot as plt
-step_size = inputs.step_size
+from sys import getsizeof
+from tqdm import tqdm
 
 # Converting the dictionary to a structured numpy array is more computationally efficient:
 # https://numpy.org/doc/stable/reference/arrays.ndarray.html
@@ -42,12 +49,12 @@ variable_inputs_array = numpy_ndarray_handler.dictionary_to_ndarray(inputs.varia
 constant_inputs_array = numpy_ndarray_handler.dictionary_to_ndarray(inputs.constant_inputs)
 
 
-
-
-from sys import getsizeof
-from tqdm import tqdm
-
 print(f"variable_inputs_array: shape: {variable_inputs_array.shape}, bytes: {variable_inputs_array.nbytes}")
+
+# tanks.GoFluids()
+
+
+
 
 AI_SLOP = True # god help me
 
@@ -94,9 +101,9 @@ if AI_SLOP:
         futures = [executor.submit(compute_thrust, idx, v) for idx, v in jobs]
         for f in tqdm(as_completed(futures), total=len(futures), desc="Computing thrust"):
             idx, thrust, mass_flow, isp = f.result()
-            thrust_map[(idx[0])*step_size + idx[1]] = thrust
-            mass_flow_map[(idx[0])*step_size + idx[1]] = mass_flow
-            isp_map[(idx[0])*step_size + idx[1]] = isp
+            thrust_map[(idx[0])*inputs.step_size + idx[1]] = thrust
+            mass_flow_map[(idx[0])*inputs.step_size + idx[1]] = mass_flow
+            isp_map[(idx[0])*inputs.step_size + idx[1]] = isp
             # print(f"{idx}: {thrust}")
             # print(f"{idx}: {variable_inputs_array[idx]} -> {thrust}")
             
@@ -160,6 +167,7 @@ else:
         print(f"{it.multi_index}: {variable_input_combination} -> {thrust_newton}")
         
         # # goofy
+        
         # x = np.array(variable_inputs_array[0, :]["CHAMBER_PRESSURE"])
         # y = np.array(variable_inputs_array[:, 0]["OF_RATIO"])
         # z = np.array(isp_map)
@@ -187,27 +195,6 @@ print(f"thrust map: number of elements: {len(thrust_map)}, bytes: {getsizeof(thr
 # ___  _    ____ ___ ___ _ _  _ ____ 
 # |__] |    |  |  |   |  | |\ | | __ 
 # |    |___ |__|  |   |  | | \| |__] 
-                                   
-x = np.array(variable_inputs_array[0, :]["CHAMBER_PRESSURE"])
-y = np.array(variable_inputs_array[:, 0]["OF_RATIO"])
-z = np.array(isp_map)
 
-Y, X = np.meshgrid(x, y) # I don't know why you have to swap X and Y but you do
-Z = z.reshape(len(x), len(y))
-
-num_lines = 8
-power = 1/4
-contour_lines = max(isp_map) * 0.995 / (num_lines**power) * np.linspace(1, num_lines, num_lines)**power
-print(contour_lines)
-
-plt.contour(X, Y, Z, contour_lines)
-plt.pcolormesh(X, Y, Z, cmap='Spectral_r')
-# plt.contourf(X, Y, Z, 100, cmap='Spectral_r')
-
-plt.colorbar(label='isp [s]')
-# plt.colorbar(label='Mass Flow Rate [kg/s] or Thrust [lbf]')
-
-plt.xlabel('OF Ratio', fontsize=14)
-plt.ylabel('Chamber Pressure [psi]', fontsize=14)
-plt.title(f"ISP of {constant_inputs_array["FUEL_NAME"].item().title()} For Different Chamber Pressures and OF Ratios", fontsize=20)
-plt.show()
+p.PlotColorMap(variable_inputs_array, constant_inputs_array, isp_map, "isp [s]")
+"Mass Flow Rate [kg/s] or Thrust [lbf]"
