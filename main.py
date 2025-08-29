@@ -53,9 +53,6 @@ print(f"variable_inputs_array: shape: {variable_inputs_array.shape}, bytes: {var
 
 # tanks.GoFluids()
 
-
-
-
 AI_SLOP = True # god help me
 
 if AI_SLOP:
@@ -119,7 +116,6 @@ else:
     # isp_map = []
     isp_map = np.zeros(variable_inputs_array.size)
 
-
     # Iterate while keeping the structure
     it = np.nditer(variable_inputs_array, flags=["multi_index"], op_flags=["readonly"])
     
@@ -147,9 +143,8 @@ else:
         
         print(f"{it.multi_index}: {variable_input_combination} -> {thrust_newton}")
         
-
-        X, Y, Z = p.SetupArrays(variable_inputs_array, isp_map)
-        p.UpdateContinuousColorMap(variable_inputs_array, isp_map, X, Y, Z, constant_inputs_array, color_variable_label="this dumbass did not change the label")
+        # X, Y, Z = p.SetupArrays(variable_inputs_array, isp_map)
+        # p.UpdateContinuousColorMap(X, Y, Z, constant_inputs_array)
 
 print(f"thrust map: number of elements: {len(thrust_map)}, bytes: {getsizeof(thrust_map)}")
 
@@ -160,6 +155,5 @@ print(f"thrust map: number of elements: {len(thrust_map)}, bytes: {getsizeof(thr
 
 X, Y, Z = p.SetupArrays(variable_inputs_array, isp_map)
 p.PlotColorMap(X, Y, Z, constant_inputs_array, isp_map, "isp [s]")
-
 
 "Mass Flow Rate [kg/s] or Thrust [lbf]"

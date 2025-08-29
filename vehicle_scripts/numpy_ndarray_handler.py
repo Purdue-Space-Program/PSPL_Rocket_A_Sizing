@@ -58,7 +58,7 @@ def dictionary_to_ndarray(dictionary):
             fields_dtype.append((key, np.str_,max_length))  # String of length = len(value)
 
         else:
-            raise TypeError(f"Unsupported type for key: {key}\n")
+            raise TypeError(f"Unsupported type for key: {key}")
     
     # its easier to deal with everything as a list so make every single element a list
     for key, value in dictionary.items():

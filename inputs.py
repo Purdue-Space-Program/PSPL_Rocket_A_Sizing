@@ -1,7 +1,7 @@
 import coding_utils.constants as c
 import numpy as np
 
-step_size = 10 # number of values to use for each variable input
+step_size = 30 # number of values to use for each variable input
 
 # A dictionary used to define the possible definitions where each key is an input (constant or variable)
 # and each value is either the constant value or a range of values
@@ -38,8 +38,8 @@ constant_inputs = {
     "OXIDIZER_NAME":                            "Liquid Oxygen",
 
     "PROPELLANT_TANK_OUTER_DIAMETER":           6 * c.IN2M, # [meters] from speedy metals pipe (link above)
+    "PROPELLANT_TANK_THICKNESS":              0.125 * c.IN2M,   # [meters] from speedy metals pipe (link above)
     # "PROPELLANT_TANK_INNER_DIAMETER":         5.75  * c.IN2M, # [meters] from speedy metals pipe (link above)
-    # "PROPELLANT_TANK_THICKNESS":              0.125 * c.IN2M,   # [meters] from speedy metals pipe (link above)
 
     # "ALUMINUM_ENGINE_COVER_OUTER_DIAMETER":   4.5   * c.IN2M, # [meters] from speedy metals pipe (link above)
     # "ALUMINUM_ENGINE_COVER_INNER_DIAMETER":   4.25  * c.IN2M, # [meters] from speedy metals pipe (link above)
@@ -48,6 +48,9 @@ constant_inputs = {
     # "GRAPHITE_CHAMBER_INNER_DIAMETER":        4.00  * c.IN2M, # [meters] this will be the diameter of the volume where combustion occurs
     # "GRAPHITE_CHAMBER_THICKNESS":             0.125 * c.IN2M, # [meters]
 }
+
+constant_inputs["PROPELLANT_TANK_INNER_DIAMETER"] = constant_inputs["PROPELLANT_TANK_OUTER_DIAMETER"] - (2 * constant_inputs["PROPELLANT_TANK_THICKNESS"])
+
 
 
 if __name__ == "__main__":
