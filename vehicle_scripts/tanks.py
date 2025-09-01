@@ -4,7 +4,14 @@ import numpy as np
 
 
 
-def GoFluids(PROPELLANT_TANK_INNER_DIAMETER, FUEL_TANK_LENGTH, CHAMBER_PRESSURE, tank_pressure, OXIDIZER_NAME, FUEL_NAME, OF_RATIO, total_mass_flow_rate):
+def GoFluids(PROPELLANT_TANK_INNER_DIAMETER, 
+             FUEL_TANK_LENGTH, 
+             CHAMBER_PRESSURE,  
+             OXIDIZER_NAME, 
+             FUEL_NAME, 
+             OF_RATIO, 
+             total_mass_flow_rate):
+    
     tank_pressure = CalculateTankPressure(CHAMBER_PRESSURE)
     fuel_density, oxidizer_density = FindPropellantDensity(tank_pressure, FUEL_NAME, OXIDIZER_NAME)
     

@@ -15,8 +15,35 @@ np.set_printoptions(threshold=sys.maxsize)
 # where n = # of variable inputs
 
 
-def dictionary_to_ndarray(dictionary):
+
+
+
+
+
+def GetFrom_ndarray(key, constant_inputs_array, variable_input_combination):
+    if key in constant_inputs_array.dtype.names:
+        value = constant_inputs_array[key]
+    elif key in variable_input_combination.dtype.names:
+        value = variable_input_combination[key]
+    else:
+        raise KeyError(f"{key} not found in either array")
     
+    value = scalarize(value)
+    return value
+    
+    
+
+
+def scalarize(x):
+    # Convert single values in numpy arrays to a single value
+    if isinstance(x, (np.generic,)):   # e.g. np.float64, np.int64
+        return x.item()
+    if isinstance(x, np.ndarray) and x.size == 1:  # 0-D array
+        return x.item()
+    return x  # already a Python scalar, string, or something else
+
+
+def dictionary_to_ndarray(dictionary):
     # lowercase strings here because you can't in an ndarray
     for key, value in dictionary.items():
         if IsStringOrListOfStrings(value):
@@ -58,7 +85,7 @@ def dictionary_to_ndarray(dictionary):
             fields_dtype.append((key, np.str_,max_length))  # String of length = len(value)
 
         else:
-            raise TypeError(f"Unsupported type for key: {key}")
+            raise TypeError(f"Unsupported type for key: {key}\n")
     
     # its easier to deal with everything as a list so make every single element a list
     for key, value in dictionary.items():

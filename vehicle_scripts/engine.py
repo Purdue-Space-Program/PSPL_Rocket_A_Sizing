@@ -10,13 +10,7 @@ import numpy as np
 
 
 def ThrustyBusty(FUEL_NAME, OXIDIZER_NAME, PROPELLANT_TANK_OUTER_DIAMETER, CONTRACTION_RATIO, OF_RATIO, CHAMBER_PRESSURE):
-    FUEL_NAME = scalarize(FUEL_NAME)
-    OXIDIZER_NAME = scalarize(OXIDIZER_NAME)
-    PROPELLANT_TANK_OUTER_DIAMETER = scalarize(PROPELLANT_TANK_OUTER_DIAMETER)
-    CONTRACTION_RATIO = scalarize(CONTRACTION_RATIO)
-    OF_RATIO = scalarize(OF_RATIO)
-    CHAMBER_PRESSURE = scalarize(CHAMBER_PRESSURE)
-    
+
     cea_results = RunCEA(CHAMBER_PRESSURE, FUEL_NAME, OXIDIZER_NAME, OF_RATIO)
     expected_isp = CalculateExpectedISP(cea_results.isp)
 
@@ -31,13 +25,7 @@ def ThrustyBusty(FUEL_NAME, OXIDIZER_NAME, PROPELLANT_TANK_OUTER_DIAMETER, CONTR
     return(expected_thrust, expected_total_mass_flow_rate, expected_isp)
 
 
-def scalarize(x):
-    # Convert single values in numpy arrays to a single value
-    if isinstance(x, (np.generic,)):   # e.g. np.float64, np.int64
-        return x.item()
-    if isinstance(x, np.ndarray) and x.size == 1:  # 0-D array
-        return x.item()
-    return x  # already a Python scalar, string, or something else
+
 
 
 
