@@ -74,7 +74,7 @@ def ThreadedRun(run_rocket_function, constant_inputs_array, variable_inputs_arra
             # isp_map.append(isp)
             isp_map[count] = isp
             
-            print(f"{it.multi_index}: {variable_input_combination} -> {thrust_newton}")
+            print(f"{it.multi_index}: {variable_input_combination} -> {thrust_newton * c.N2LBF}")
             
             # X, Y, Z = p.SetupArrays(variable_inputs_array, isp_map)
             # p.UpdateContinuousColorMap(X, Y, Z, constant_inputs_array)

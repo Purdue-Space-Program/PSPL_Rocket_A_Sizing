@@ -70,7 +70,6 @@ def run_rocket_function(idx, variable_input_combination):
     #             numpy_ndarray_handler.GetFrom_ndarray("PROPELLANT_TANK_INNER_DIAMETER", constant_inputs_array, variable_input_combination),
     #             numpy_ndarray_handler.GetFrom_ndarray("FUEL_TANK_LENGTH", constant_inputs_array, variable_input_combination),
     #             numpy_ndarray_handler.GetFrom_ndarray("CHAMBER_PRESSURE", constant_inputs_array, variable_input_combination),
-    #             numpy_ndarray_handler.GetFrom_ndarray("CHAMBER_PRESSURE", constant_inputs_array, variable_input_combination),
     #             numpy_ndarray_handler.GetFrom_ndarray("OXIDIZER_NAME", constant_inputs_array, variable_input_combination),
     #             numpy_ndarray_handler.GetFrom_ndarray("FUEL_NAME", constant_inputs_array, variable_input_combination),
     #             numpy_ndarray_handler.GetFrom_ndarray("OF_RATIO", constant_inputs_array, variable_input_combination),
@@ -96,10 +95,7 @@ def run_rocket_function(idx, variable_input_combination):
     return idx, thrust_newton * c.N2LBF, mass_flow_kg, isp
 
 
-
 isp_map = threaded_run.ThreadedRun(run_rocket_function, constant_inputs_array, variable_inputs_array, True)
-
-
 
 
 # ___  _    ____ ___ ___ _ _  _ ____ 

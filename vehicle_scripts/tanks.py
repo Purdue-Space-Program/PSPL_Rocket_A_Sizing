@@ -13,7 +13,9 @@ def GoFluids(PROPELLANT_TANK_INNER_DIAMETER,
              total_mass_flow_rate):
     
     tank_pressure = CalculateTankPressure(CHAMBER_PRESSURE)
-    fuel_density, oxidizer_density = FindPropellantDensity(tank_pressure, FUEL_NAME, OXIDIZER_NAME)
+    
+    fuel_density = FindPropellantDensity(FUEL_NAME, tank_pressure)
+    oxidizer_density = FindPropellantDensity(OXIDIZER_NAME, tank_pressure)
     
     fuel_total_tank_volume = TankDimensionsToTotalTankVolume(PROPELLANT_TANK_INNER_DIAMETER, FUEL_TANK_LENGTH)
     
@@ -61,17 +63,14 @@ def TotalTankVolumeToTankDimensions(tank_inner_diameter, total_tank_volume):
     
     return tank_length
 
-def FindPropellantDensity(FUEL_NAME, OXIDIZER_NAME, tank_pressure):    
-    if FUEL_NAME == "ethanol":
-        fuel_density = PropsSI('H', 'P', tank_pressure, 'T', c.T_AMBIENT, "Ethanol")
-    elif FUEL_NAME == "kerosene":
-        fuel_density = PropsSI('H', 'P', tank_pressure, 'T', c.T_AMBIENT, "Kerosene")
-    else:
-        raise ValueError("No Density found")
-
-    if OXIDIZER_NAME == "liquid oxygen":
-        oxidizer_density = PropsSI('H', 'P', tank_pressure, 'T', 90, "Oxygen") # 90 K is temperature of oxidizer upon injection into combustion (same as copperhead's sizing)
+def FindPropellantDensity(propellant_name, tank_pressure):    
+    if propellant_name == "ethanol":
+        propellant_density = PropsSI('D', 'P', tank_pressure, 'T', c.T_AMBIENT, "Ethanol")
+    elif propellant_name == "kerosene":
+        propellant_density = PropsSI('D', 'P', tank_pressure, 'T', c.T_AMBIENT, "Kerosene")
+    elif propellant_name == "liquid oxygen":
+        propellant_density = PropsSI('D', 'P', tank_pressure, 'T', 90, "Oxygen") # 90 K is temperature of oxidizer upon injection into combustion (same as copperhead's sizing)
     else:
         raise ValueError("No Density Found")
         
-    return (fuel_density, oxidizer_density)
+    return (propellant_density)

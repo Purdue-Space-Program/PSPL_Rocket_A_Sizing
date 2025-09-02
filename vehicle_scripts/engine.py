@@ -17,10 +17,11 @@ def ThrustyBusty(FUEL_NAME, OXIDIZER_NAME, PROPELLANT_TANK_OUTER_DIAMETER, CONTR
     expected_exhaust_velocity = expected_isp * c.GRAVITY
     
     chamber_radius, chamber_length, throat_radius = CalculateEngineDimensions(PROPELLANT_TANK_OUTER_DIAMETER, FUEL_NAME, OXIDIZER_NAME, CONTRACTION_RATIO)
-    expected_total_mass_flow_rate = CalculateMassFlowRate(throat_radius, CHAMBER_PRESSURE*c.PSI2PA, cea_results.c_mw, cea_results.c_gamma, cea_results.c_t)
+    expected_total_mass_flow_rate = CalculateMassFlowRate(throat_radius, CHAMBER_PRESSURE * c.PSI2PA, cea_results.c_mw, cea_results.c_gamma, cea_results.c_t)
 
     expected_thrust = CalculateExpectedThrust(expected_isp, expected_total_mass_flow_rate)
 
+    # print(expected_total_mass_flow_rate, expected_exhaust_velocity)
     # return(expected_thrust, expected_isp, total_mass_flow_rate, chamber_radius, chamber_length, throat_radius)
     return(expected_thrust, expected_total_mass_flow_rate, expected_isp)
 
@@ -82,7 +83,7 @@ def CalculateMassFlowRate(throat_radius, chamber_pressure, chamber_molar_mass, c
     R = 8.314 / (chamber_molar_mass/1000) # R is the specific gas constant here
     # R /= 1000
     
-    radicand = (y/(R*T_c)) * ((2/(y+1) ) ** ((y+1) / (y-1)))
+    radicand = (y/(R*T_c)) * ( (2/(y+1)) ** (((y+1) / (y-1))) )
     
     throat_area = RadiusToArea(throat_radius)
     expected_total_mass_flow_rate = throat_area * chamber_pressure * (radicand**0.5)

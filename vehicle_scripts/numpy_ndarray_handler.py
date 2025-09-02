@@ -73,7 +73,7 @@ def dictionary_to_ndarray(dictionary):
 
         # could optimize this by making the field an integer if its an integer but i dont feel like it rn
         elif IsNumberOrListOfNumbers(value):
-            fields_dtype.append((key, np.float16))       # 16-bit float
+            fields_dtype.append((key, np.float32))       # 16-bit float
 
         elif IsStringOrListOfStrings(value):
             np.char.lower
