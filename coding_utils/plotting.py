@@ -1,11 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import coding_utils.constants as c
+
 
 def PlotColorMap(X, Y, Z, constant_inputs_array, color_variable_map, color_variable_label="this dumbass did not change the label"):
     num_lines = 8
     power = 1/4
     contour_lines = max(color_variable_map) * 0.995 / (num_lines**power) * np.linspace(1, num_lines, num_lines)**power
     plt.contour(X, Y, Z, contour_lines)
+    # plt.contour(X, Y, Z)
     
     plt.pcolormesh(X, Y, Z, cmap='Spectral_r')
     # plt.contourf(X, Y, Z, 100, cmap='Spectral_r')
@@ -19,7 +22,7 @@ def PlotColorMap(X, Y, Z, constant_inputs_array, color_variable_map, color_varia
 
 
 def SetupArrays(variable_inputs_array, color_variable_map):
-    x = np.array(variable_inputs_array[0, :]["CHAMBER_PRESSURE"])
+    x = np.array(variable_inputs_array[0, :]["CHAMBER_PRESSURE"]) * c.PA2PSI
     y = np.array(variable_inputs_array[:, 0]["OF_RATIO"])
     z = np.array(color_variable_map)
 

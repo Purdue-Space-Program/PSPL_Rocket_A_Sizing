@@ -7,7 +7,7 @@ import pandas as pd
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import coding_utils.constants as c
 
-atmosphereDF = pd.read_csv("atmosphere.csv")
+# atmosphereDF = pd.read_csv("atmosphere.csv")
 
 
 def calculate_trajectory(
@@ -144,6 +144,7 @@ def calculate_trajectory(
         plt.ylabel("Height [m]")
         plt.xlabel("Time (s)")
         plt.grid()
+        print("try")
         plt.show()
 
     return [

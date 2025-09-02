@@ -25,8 +25,8 @@ from vehicle_scripts import (
     engine,
     numpy_ndarray_handler,
     tanks,
+    trajectory
     # structures,
-    # trajectory
 )
 from coding_utils import (
     constants as c,
@@ -38,6 +38,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sys import getsizeof
 from tqdm import tqdm
+import pandas as pd
+
 
 # Converting the dictionary to a structured numpy array is more computationally efficient:
 # https://numpy.org/doc/stable/reference/arrays.ndarray.html
@@ -48,6 +50,8 @@ from tqdm import tqdm
 
 variable_inputs_array = numpy_ndarray_handler.dictionary_to_ndarray(inputs.variable_inputs)
 constant_inputs_array = numpy_ndarray_handler.dictionary_to_ndarray(inputs.constant_inputs)
+
+ATMOSPHERE_DATA = pd.read_csv("atmosphere.csv")
 
 
 def run_rocket_function(idx, variable_input_combination):
@@ -66,7 +70,8 @@ def run_rocket_function(idx, variable_input_combination):
                 )
 
 
-    # asdjiasdadosaasdfdsfasdfasdfasdf = tanks.GoFluids(
+    wet_mass, engine_burn_time, oxidizer_tank_length = (65.68614394589567, 26.827793728785526, 2.813360706651813)
+    # wet_mass, engine_burn_time, oxidizer_tank_length = tanks.GoFluids(
     #             numpy_ndarray_handler.GetFrom_ndarray("PROPELLANT_TANK_INNER_DIAMETER", constant_inputs_array, variable_input_combination),
     #             numpy_ndarray_handler.GetFrom_ndarray("FUEL_TANK_LENGTH", constant_inputs_array, variable_input_combination),
     #             numpy_ndarray_handler.GetFrom_ndarray("CHAMBER_PRESSURE", constant_inputs_array, variable_input_combination),
@@ -75,34 +80,34 @@ def run_rocket_function(idx, variable_input_combination):
     #             numpy_ndarray_handler.GetFrom_ndarray("OF_RATIO", constant_inputs_array, variable_input_combination),
     #             mass_flow_kg,
     #             )
+    # print(wet_mass, engine_burn_time, oxidizer_tank_length)
     
-    # calculate_trajectory(
-    #     wetMass,
-    #     mDotTotal,
-    #     jetThrust,
-    #     tankOD,
-    #     finNumber,
-    #     finHeight,
-    #     exitArea,
-    #     exitPressure,
-    #     burnTime,
-    #     totalLength,
-    #     atmosphereDF,
-    #     plots,
-    # ):
+    trajectory.calculate_trajectory(
+        wet_mass,
+        mass_flow_kg,
+        thrust_newton,
+        numpy_ndarray_handler.GetFrom_ndarray("PROPELLANT_TANK_OUTER_DIAMETER", constant_inputs_array, variable_input_combination),
+        (numpy_ndarray_handler.GetFrom_ndarray("PROPELLANT_TANK_OUTER_DIAMETER", constant_inputs_array, variable_input_combination)) - (0.5 * c.IN2M), # lowkey a guess
+        10 * c.PSI2PA,
+        engine_burn_time,
+        2 * (oxidizer_tank_length + numpy_ndarray_handler.GetFrom_ndarray("FUEL_TANK_LENGTH", constant_inputs_array, variable_input_combination)), # fix this dumbass
+        ATMOSPHERE_DATA,
+        1,
+    )
 
     
-    return idx, thrust_newton * c.N2LBF, mass_flow_kg, isp
+    return (idx, thrust_newton, mass_flow_kg, isp)
 
 
-isp_map = threaded_run.ThreadedRun(run_rocket_function, constant_inputs_array, variable_inputs_array, True)
+newton_thrust_map, isp_map, mass_flow_map = threaded_run.ThreadedRun(run_rocket_function, constant_inputs_array, variable_inputs_array, False)
 
 
 # ___  _    ____ ___ ___ _ _  _ ____ 
 # |__] |    |  |  |   |  | |\ | | __ 
 # |    |___ |__|  |   |  | | \| |__] 
 
-X, Y, Z = p.SetupArrays(variable_inputs_array, isp_map)
-p.PlotColorMap(X, Y, Z, constant_inputs_array, isp_map, "isp [s]")
+color_variable_map = isp_map
+X, Y, Z = p.SetupArrays(variable_inputs_array, color_variable_map)
+p.PlotColorMap(X, Y, Z, constant_inputs_array, color_variable_map, "isp [s]")
 
-"Mass Flow Rate [kg/s] or Thrust [lbf]"
+"isp [s] or Mass Flow Rate [kg/s] or Thrust [lbf]"

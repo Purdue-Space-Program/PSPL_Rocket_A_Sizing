@@ -17,7 +17,7 @@ def ThrustyBusty(FUEL_NAME, OXIDIZER_NAME, PROPELLANT_TANK_OUTER_DIAMETER, CONTR
     expected_exhaust_velocity = expected_isp * c.GRAVITY
     
     chamber_radius, chamber_length, throat_radius = CalculateEngineDimensions(PROPELLANT_TANK_OUTER_DIAMETER, FUEL_NAME, OXIDIZER_NAME, CONTRACTION_RATIO)
-    expected_total_mass_flow_rate = CalculateMassFlowRate(throat_radius, CHAMBER_PRESSURE * c.PSI2PA, cea_results.c_mw, cea_results.c_gamma, cea_results.c_t)
+    expected_total_mass_flow_rate = CalculateMassFlowRate(throat_radius, CHAMBER_PRESSURE, cea_results.c_mw, cea_results.c_gamma, cea_results.c_t)
 
     expected_thrust = CalculateExpectedThrust(expected_isp, expected_total_mass_flow_rate)
 
@@ -44,15 +44,15 @@ def RunCEA(
         CEA_fuel_name = CEA.Fuel("Jet-A(L)", temp=c.T_AMBIENT)
 
     if oxidizer_name == "liquid oxygen":
-        cea_oxidizer_name = CEA.Oxidizer("O2(L)", temp=90) # 90 K is temperature of oxidizer upon injection into combustion (same as copperhead's sizing)
+        CEA_oxidizer_name = CEA.Oxidizer("O2(L)", temp=90) # 90 K is temperature of oxidizer upon injection into combustion (same as copperhead's sizing)
 
 
-    pressure_ratio = chamber_pressure / 10 # assume exit pressure is a constantly at the pressure of air a bit above sea level
+    pressure_ratio = chamber_pressure / (10 * c.PSI2PA) # assume exit pressure is a constantly at the pressure of air a bit above sea level
 
     rocket = CEA.RocketProblem(
-        pressure =       chamber_pressure,
+        pressure =       chamber_pressure * c.PA2PSI,
         pip =            pressure_ratio, # pip is "Pressure ratio of chamber pressure to exit pressure." github.com/civilwargeeky/CEA_Wrap/blob/main/README.md#rocket-problem-constructor-additional-parameters
-        materials =      [CEA_fuel_name, cea_oxidizer_name],
+        materials =      [CEA_fuel_name, CEA_oxidizer_name],
         o_f =            OF_Ratio,
         pressure_units = "psi",
     )
@@ -131,4 +131,4 @@ def FindLstar(fuel_name, oxidizer_name):
 
 
 if __name__ == "__main__":
-    print(RunCEA(500, "ethanol", "liquid oxygen", 1.1).isp) # should be 255.433231397
+    print(RunCEA(500 * c.PSI2PA, "ethanol", "liquid oxygen", 1.1).isp) # should be 255.433231397

@@ -1,4 +1,4 @@
-from CoolProp.CoolProp import PropsSI
+# from CoolProp.CoolProp import PropsSI
 import coding_utils.constants as c
 import numpy as np
 
@@ -18,8 +18,8 @@ def GoFluids(PROPELLANT_TANK_INNER_DIAMETER,
     oxidizer_density = FindPropellantDensity(OXIDIZER_NAME, tank_pressure)
     
     fuel_total_tank_volume = TankDimensionsToTotalTankVolume(PROPELLANT_TANK_INNER_DIAMETER, FUEL_TANK_LENGTH)
-    
-    # 0% of the tank volume is intentionally left empty  
+
+    # 0% of the tank volume is intentionally left empty for an initial ullage volume
     fuel_total_propellant_volume = fuel_total_tank_volume * 1
     
     # 10% of the that propellant is assumed to be unused due to residuals 
@@ -35,14 +35,17 @@ def GoFluids(PROPELLANT_TANK_INNER_DIAMETER,
     # 10% of the that propellant is assumed to be unused due to residuals 
     oxidizer_total_propellant_volume = oxidizer_usable_propellant_volume / 0.9
     
-    # 10% of the tank volume is intentionally left empty  
+    # 10% of the tank volume is intentionally left empty for an initial ullage volume 
     oxidizer_total_tank_volume = oxidizer_total_propellant_volume /  0.9
 
     oxidizer_tank_length = TotalTankVolumeToTankDimensions(PROPELLANT_TANK_INNER_DIAMETER, oxidizer_total_tank_volume)
 
-    engine_burn_time = (fuel_usable_propellant_mass + oxidizer_usable_propellant_mass) / total_mass_flow_rate
+    # useful shit
+    wet_mass = fuel_usable_propellant_mass + oxidizer_usable_propellant_mass
+    # print(wet_mass)
+    engine_burn_time = wet_mass / total_mass_flow_rate
 
-    return(fuel_usable_propellant_mass, oxidizer_tank_length, oxidizer_usable_propellant_mass)
+    return(wet_mass, engine_burn_time, oxidizer_tank_length)
 
 
 def CalculateTankPressure(CHAMBER_PRESSURE):
@@ -72,5 +75,5 @@ def FindPropellantDensity(propellant_name, tank_pressure):
         propellant_density = PropsSI('D', 'P', tank_pressure, 'T', 90, "Oxygen") # 90 K is temperature of oxidizer upon injection into combustion (same as copperhead's sizing)
     else:
         raise ValueError("No Density Found")
-        
+
     return (propellant_density)
