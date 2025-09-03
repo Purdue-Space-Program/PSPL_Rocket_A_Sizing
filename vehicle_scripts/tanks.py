@@ -16,6 +16,8 @@ def GoFluids(PROPELLANT_TANK_INNER_DIAMETER,
     
     fuel_density = FindPropellantDensity(FUEL_NAME, tank_pressure)
     oxidizer_density = FindPropellantDensity(OXIDIZER_NAME, tank_pressure)
+    print(f"fuel_density: {fuel_density}")
+    print(f"oxidizer_density: {oxidizer_density}")
     
     fuel_total_tank_volume = TankDimensionsToTotalTankVolume(PROPELLANT_TANK_INNER_DIAMETER, FUEL_TANK_LENGTH)
 
@@ -41,11 +43,11 @@ def GoFluids(PROPELLANT_TANK_INNER_DIAMETER,
     oxidizer_tank_length = TotalTankVolumeToTankDimensions(PROPELLANT_TANK_INNER_DIAMETER, oxidizer_total_tank_volume)
 
     # useful shit
-    wet_mass = fuel_usable_propellant_mass + oxidizer_usable_propellant_mass
-    # print(wet_mass)
-    engine_burn_time = wet_mass / total_mass_flow_rate
+    total_usable_propellant_mass = fuel_usable_propellant_mass + oxidizer_usable_propellant_mass
+    engine_burn_time = total_usable_propellant_mass / total_mass_flow_rate
+    print(f"engine_burn_time: {engine_burn_time},  total_usable_propellant_mass: {total_usable_propellant_mass}, total_mass_flow_rate: {total_mass_flow_rate}")
 
-    return(wet_mass, engine_burn_time, oxidizer_tank_length)
+    return(total_usable_propellant_mass, engine_burn_time, oxidizer_tank_length)
 
 
 def CalculateTankPressure(CHAMBER_PRESSURE):
@@ -53,7 +55,7 @@ def CalculateTankPressure(CHAMBER_PRESSURE):
     
     # CHAMBER_PRESSURE / tank_pressure = 0.6
     tank_pressure = CHAMBER_PRESSURE / 0.6
-    
+
     return tank_pressure
 
 def TankDimensionsToTotalTankVolume(tank_inner_diameter, tank_length):

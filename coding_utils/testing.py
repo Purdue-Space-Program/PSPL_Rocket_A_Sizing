@@ -72,17 +72,17 @@ import constants as c
 #     print(cea_results.c_m)
 
 
-CEA_fuel_name = CEA.Fuel("H2(L)", temp=20)
-cea_oxidizer_name = CEA.Oxidizer("O2(L)", temp=90)
+# CEA_fuel_name = CEA.Fuel("H2(L)", temp=20)
+# cea_oxidizer_name = CEA.Oxidizer("O2(L)", temp=90)
 
-for of_ratio in [1, 1.5, 2]:
-    rocket = CEA.RocketProblem(
-            pressure =       200,
-            pip =            2,
-            materials =      [CEA_fuel_name, cea_oxidizer_name],
-            o_f =            of_ratio,
-            pressure_units = "psi",
-        )
+# for of_ratio in [1, 1.5, 2]:
+#     rocket = CEA.RocketProblem(
+#             pressure =       200,
+#             pip =            2,
+#             materials =      [CEA_fuel_name, cea_oxidizer_name],
+#             o_f =            of_ratio,
+#             pressure_units = "psi",
+#         )
 
-    cea_results = rocket.run()
-    print(cea_results.isp)
+#     cea_results = rocket.run()
+#     print(cea_results.isp)

@@ -7,6 +7,13 @@ import pandas as pd
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import coding_utils.constants as c
 
+
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=FutureWarning)
+
+
+
 # atmosphereDF = pd.read_csv("atmosphere.csv")
 
 
@@ -84,6 +91,8 @@ def calculate_trajectory(
     velocityArray = []
     accelArray = []
     timeArray = []
+    # print(f"velocity: {velocity}")
+    # print(f"velocity >= 0: {velocity >= 0}")
 
     totalImpulse = 0  # Initialize total impulse
 
@@ -101,12 +110,18 @@ def calculate_trajectory(
             pressure = atmosphereDF.iloc[index][1]
             rho = atmosphereDF.iloc[index][2]
 
+        # print(f"mass: {mass}, expected mass: {wetMass - mDotTotal*time}, time: {time}")
+        
         if time < burnTime:
             mass = mass - mDotTotal * dt  # [kg] mass of the rocket
             thrust = (
                 jetThrust + (exitPressure - pressure) * exitArea
             )  # [N] force of thrust, accounting for pressure thrust
+            # print(f"jetThrust: {jetThrust}, exitPressure: {exitPressure}, pressure: {pressure}, exitArea: {exitArea}")
+            # print(f"ACTUAL thrust: {jetThrust + (exitPressure - pressure) * exitArea}")
             totalImpulse += thrust * dt  # Accumulate impulse
+            if mass < 0:
+                raise ValueError("youre a dumbass")
         else:
             thrust = 0  # [N] total thrust of the rocket
 
@@ -115,6 +130,7 @@ def calculate_trajectory(
         )  # [N] force of drag
         gravity_force = c.GRAVITY * mass  # [N] force of gravity
 
+        # print(f"thrust: {thrust}, drag: {drag}, gravity_force: {gravity_force}")
         accel = (thrust - drag - gravity_force) / mass  # acceleration equation of motion
         accelArray.append(accel)
 
@@ -126,16 +142,18 @@ def calculate_trajectory(
 
         time = time + dt  # time step
         timeArray.append(time)
+        # print(f"velocity: {velocity}")
+        # print(f"velocity >= 0: {velocity >= 0}")
 
     # Find the closest altitude to the RAIL_HEIGHT
     exitVelo, exitAccel = 0, 0
     for i in range(len(altitudeArray)):
-        if altitudeArray[i] >= c.RAIL_HEIGHT:
+        if altitudeArray[i] >= c.RAIL_HEIGHT + c.FAR_ALTITUDE:
             exitVelo = velocityArray[i]
             exitAccel = accelArray[i]
             break
 
-    altitude = altitude * 0.651
+    altitude = altitude * 0.651 # what the fuck is this for
 
     if plots == 1:
         plt.figure(1)
@@ -144,7 +162,6 @@ def calculate_trajectory(
         plt.ylabel("Height [m]")
         plt.xlabel("Time (s)")
         plt.grid()
-        print("try")
         plt.show()
 
     return [
