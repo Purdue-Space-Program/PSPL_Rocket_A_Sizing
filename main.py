@@ -87,8 +87,8 @@ def run_rocket_function(idx, variable_input_combination):
     # print(total_usable_propellant_mass, engine_burn_time, oxidizer_tank_length)
     # print(f"prop mass: {total_usable_propellant_mass} burn time: {engine_burn_time}")
     
-    total_rocket_mass = total_usable_propellant_mass * 4.29 # assume total mass is 2.5 times the wet mass (estimated ratio for copperhead was 2.154)
-    altitude, max_accel, rail_exit_velocity, rail_exit_accel, total_impulse = trajectory.calculate_trajectory(
+    total_rocket_mass = total_usable_propellant_mass * 3.7 # assume total mass is 3 times the wet mass (estimated ratio for copperhead was 2.154)
+    estimated_apogee, max_accel, rail_exit_velocity, rail_exit_accel, total_impulse = trajectory.calculate_trajectory(
                             total_rocket_mass, 
                             mass_flow_kg,
                             thrust_newton,
@@ -103,7 +103,7 @@ def run_rocket_function(idx, variable_input_combination):
     print(f"rail_exit_velocity: {rail_exit_velocity}")
     print(f"max_accel: {max_accel}")
     print(f"initial mass: {total_rocket_mass * c.KG2LB} lb")
-    print(f"initial TWR: {thrust_newton/(total_usable_propellant_mass * 2.5*c.GRAVITY)}, altitude: {altitude}")
+    print(f"initial TWR: {thrust_newton/(total_usable_propellant_mass * 2.5*c.GRAVITY)}, estimated_apogee: {estimated_apogee * c.M2FT} ft")
     
     return (idx, thrust_newton, mass_flow_kg, isp)
 

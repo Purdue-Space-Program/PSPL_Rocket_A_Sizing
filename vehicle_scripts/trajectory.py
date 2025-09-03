@@ -140,8 +140,8 @@ def calculate_trajectory(
         altitude = altitude + velocity * dt  # position integration
         altitudeArray.append(altitude)
 
-        time = time + dt  # time step
         timeArray.append(time)
+        time = time + dt  # time step
         # print(f"velocity: {velocity}")
         # print(f"velocity >= 0: {velocity >= 0}")
 
@@ -153,19 +153,29 @@ def calculate_trajectory(
             exitAccel = accelArray[i]
             break
 
-    altitude = altitude * 0.651 # what the fuck is this for
+    estimated_apogee = altitude * 0.651 # what the fuck is this for
 
     if plots == 1:
         plt.figure(1)
         plt.title("Height v. Time")
-        plt.plot(timeArray, altitudeArray)
-        plt.ylabel("Height [m]")
+        plt.plot(timeArray, np.array(altitudeArray, dtype=float) * c.M2FT)
+        plt.ylabel("Height [ft]")
         plt.xlabel("Time (s)")
         plt.grid()
-        plt.show()
+        
+        # plot estimated apogee
+        plt.axhline(y=estimated_apogee*c.M2FT, color='r', linestyle='--', label="Estimated Apogee")
+        
+        # compare with OpenRocket trajectory
+        OR_df = pd.read_csv('open_rocket_altitude_data.csv', comment='#')
+        OR_time = OR_df.iloc[:, 0]
+        OR_altitude = OR_df.iloc[:, 1]
+        plt.plot(OR_time, OR_altitude + (c.FAR_ALTITUDE * c.M2FT))
 
+        plt.show()
+    
     return [
-        float(altitude),
+        float(estimated_apogee),
         float(max(accelArray)),
         float(exitVelo),
         float(exitAccel),
