@@ -5,6 +5,11 @@ os.environ["CEA_USE_LEGACY"] = "1" # https://github.com/civilwargeeky/CEA_Wrap/i
 import CEA_Wrap as CEA
 import constants as c
 
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+
+
 ############# uhhhhhhh
 # x = np.array([[(1,2), (1,2)], [(1,2), (1,2)]])
 # print(x)
@@ -86,3 +91,40 @@ import constants as c
 
 #     cea_results = rocket.run()
 #     print(cea_results.isp)
+
+
+
+
+# Open RPA graph
+import coding_utils.plotting as p
+import pandas as pd
+import inputs
+
+RPA_df = pd.read_csv(
+    "fuck_money.txt",
+    delim_whitespace=True,   # values separated by spaces
+    comment='#',             # ignore header/comment lines
+    header=None              # no header row in data
+)
+
+RPA_df.columns = [
+    "OF_RATIO", "CHAMBER_PRESSURE", "Nozzle_inl", "Nozzle_exi", "rho", "Tc",
+    "M", "gamma", "k", "c_star", "Is_opt", "Is_vac",
+    "Cf_opt", "Cf_vac", "c_factor"
+]
+
+OF = RPA_df['OF_RATIO'].to_numpy()
+Pc = RPA_df['CHAMBER_PRESSURE'].to_numpy()
+
+# 4. Get unique values for axes
+OF_unique = np.unique(OF)
+Pc_unique = np.unique(Pc)
+
+x = Pc_unique
+y = OF_unique
+z = RPA_df['Tc'].to_numpy()
+
+Y, X = np.meshgrid(x,y) # I don't know why you have to swap X and Y but you do
+Z = z.reshape(len(x), len(y))
+
+p.PlotColorMap(X, Y, Z, RPA_df['Tc'])

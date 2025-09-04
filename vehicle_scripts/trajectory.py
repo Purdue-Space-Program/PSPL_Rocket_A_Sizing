@@ -13,6 +13,8 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 
+ATMOSPHERE_DATA = pd.read_csv("atmosphere.csv")
+
 
 # atmosphereDF = pd.read_csv("atmosphere.csv")
 
@@ -28,7 +30,6 @@ def calculate_trajectory(
     exitPressure,
     burnTime,
     totalLength,
-    atmosphereDF,
     plots,
 ):
     """
@@ -84,7 +85,7 @@ def calculate_trajectory(
     altitude = c.FAR_ALTITUDE  # [m] initial altitude of the rocket
     velocity = 0  # [m/s] initial velocity of the rocket
     time = 0  # [s] initial time of the rocket
-    dt = 0.05  # [s] time step of the rocket
+    dt = 0.075  # [s] time step of the rocket
 
     # Array Initialization:
     altitudeArray = []
@@ -101,14 +102,14 @@ def calculate_trajectory(
         index = int(altitude // 10)  # Divide altitude by 10 to find index
 
         if index < 0:
-            pressure = atmosphereDF.iloc[0][1]
-            rho = atmosphereDF.iloc[0][2]  # Return first row if below range
-        elif index >= len(atmosphereDF):
-            pressure = atmosphereDF.iloc[-1][1]
-            rho = atmosphereDF.iloc[-1][2]  # Return last row if above range
+            pressure = ATMOSPHERE_DATA.iloc[0][1]
+            rho = ATMOSPHERE_DATA.iloc[0][2]  # Return first row if below range
+        elif index >= len(ATMOSPHERE_DATA):
+            pressure = ATMOSPHERE_DATA.iloc[-1][1]
+            rho = ATMOSPHERE_DATA.iloc[-1][2]  # Return last row if above range
         else:
-            pressure = atmosphereDF.iloc[index][1]
-            rho = atmosphereDF.iloc[index][2]
+            pressure = ATMOSPHERE_DATA.iloc[index][1]
+            rho = ATMOSPHERE_DATA.iloc[index][2]
 
         # print(f"mass: {mass}, expected mass: {wetMass - mDotTotal*time}, time: {time}")
         
@@ -155,7 +156,7 @@ def calculate_trajectory(
 
     estimated_apogee = altitude * 0.651 # what the fuck is this for
 
-    if plots == 1:
+    if plots == True:
         plt.figure(1)
         plt.title("Height v. Time")
         plt.plot(timeArray, np.array(altitudeArray, dtype=float) * c.M2FT)
@@ -164,13 +165,13 @@ def calculate_trajectory(
         plt.grid()
         
         # plot estimated apogee
-        plt.axhline(y=estimated_apogee*c.M2FT, color='r', linestyle='--', label="Estimated Apogee")
+        plt.axhline(y=estimated_apogee * c.M2FT, color='r', linestyle='--', label="Estimated Apogee")
         
-        # compare with OpenRocket trajectory
-        OR_df = pd.read_csv('open_rocket_altitude_data.csv', comment='#')
-        OR_time = OR_df.iloc[:, 0]
-        OR_altitude = OR_df.iloc[:, 1]
-        plt.plot(OR_time, OR_altitude + (c.FAR_ALTITUDE * c.M2FT))
+        # # compare with OpenRocket trajectory
+        # OR_df = pd.read_csv('open_rocket_altitude_data.csv', comment='#')
+        # OR_time = OR_df.iloc[:, 0]
+        # OR_altitude = OR_df.iloc[:, 1]
+        # plt.plot(OR_time, OR_altitude + (c.FAR_ALTITUDE * c.M2FT))
 
         plt.show()
     

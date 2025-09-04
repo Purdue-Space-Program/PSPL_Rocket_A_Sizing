@@ -51,8 +51,6 @@ import pandas as pd
 variable_inputs_array = numpy_ndarray_handler.dictionary_to_ndarray(inputs.variable_inputs)
 constant_inputs_array = numpy_ndarray_handler.dictionary_to_ndarray(inputs.constant_inputs)
 
-ATMOSPHERE_DATA = pd.read_csv("atmosphere.csv")
-
 
 def run_rocket_function(idx, variable_input_combination):
     # Do imports inside the worker (not passed in)
@@ -60,8 +58,8 @@ def run_rocket_function(idx, variable_input_combination):
     from coding_utils import constants as c
     from inputs import constant_inputs as constant_inputs_dict
 
-    print(f"chamber_pressure: {numpy_ndarray_handler.GetFrom_ndarray("CHAMBER_PRESSURE", constant_inputs_array, variable_input_combination) * c.PA2PSI}")
-    print(f"OF Ratio: {numpy_ndarray_handler.GetFrom_ndarray("OF_RATIO", constant_inputs_array, variable_input_combination)}")
+    # print(f"chamber_pressure: {numpy_ndarray_handler.GetFrom_ndarray("CHAMBER_PRESSURE", constant_inputs_array, variable_input_combination) * c.PA2PSI}")
+    # print(f"OF Ratio: {numpy_ndarray_handler.GetFrom_ndarray("OF_RATIO", constant_inputs_array, variable_input_combination)}")
 
 
     thrust_newton, mass_flow_kg, isp = engine.ThrustyBusty(
@@ -87,7 +85,7 @@ def run_rocket_function(idx, variable_input_combination):
     # print(total_usable_propellant_mass, engine_burn_time, oxidizer_tank_length)
     # print(f"prop mass: {total_usable_propellant_mass} burn time: {engine_burn_time}")
     
-    total_rocket_mass = total_usable_propellant_mass * 3.7 # assume total mass is 3 times the wet mass (estimated ratio for copperhead was 2.154)
+    total_rocket_mass = total_usable_propellant_mass * 4 # assume total mass is ...... times the wet mass (estimated ratio for copperhead was 2.154)
     estimated_apogee, max_accel, rail_exit_velocity, rail_exit_accel, total_impulse = trajectory.calculate_trajectory(
                             total_rocket_mass, 
                             mass_flow_kg,
@@ -97,26 +95,28 @@ def run_rocket_function(idx, variable_input_combination):
                             10 * c.PSI2PA,
                             engine_burn_time,
                             2 * (oxidizer_tank_length + numpy_ndarray_handler.GetFrom_ndarray("FUEL_TANK_LENGTH", constant_inputs_array, variable_input_combination)), # fix this dumbass
-                            ATMOSPHERE_DATA,
-                            1,
+                            False,
                         )
-    print(f"rail_exit_velocity: {rail_exit_velocity}")
-    print(f"max_accel: {max_accel}")
-    print(f"initial mass: {total_rocket_mass * c.KG2LB} lb")
-    print(f"initial TWR: {thrust_newton/(total_usable_propellant_mass * 2.5*c.GRAVITY)}, estimated_apogee: {estimated_apogee * c.M2FT} ft")
     
-    return (idx, thrust_newton, mass_flow_kg, isp)
+    initial_TWR = thrust_newton/(total_rocket_mass * c.GRAVITY)
+    
+    # print(f"rail_exit_velocity: {rail_exit_velocity}")
+    # print(f"max_accel: {max_accel}")
+    # print(f"initial mass: {total_rocket_mass * c.KG2LB} lb")
+    # print(f"initial TWR: {thrust_newton/(total_rocket_mass * c.GRAVITY)}, estimated_apogee: {estimated_apogee * c.M2FT} ft")
+    
+    return (idx, thrust_newton, mass_flow_kg, isp, estimated_apogee)
 
 
-newton_thrust_map, isp_map, mass_flow_map = threaded_run.ThreadedRun(run_rocket_function, constant_inputs_array, variable_inputs_array, False)
+newton_thrust_map, isp_map, mass_flow_map, estimated_apogee_map = threaded_run.ThreadedRun(run_rocket_function, constant_inputs_array, variable_inputs_array, True)
 
 
 # ___  _    ____ ___ ___ _ _  _ ____ 
 # |__] |    |  |  |   |  | |\ | | __ 
 # |    |___ |__|  |   |  | | \| |__] 
 
-color_variable_map = isp_map
+color_variable_map = isp_map * c.M2FT
 X, Y, Z = p.SetupArrays(variable_inputs_array, color_variable_map)
-p.PlotColorMap(X, Y, Z, constant_inputs_array, color_variable_map, "isp [s]")
+p.PlotColorMap(X, Y, Z, color_variable_map, "estimated apogee [ft]")
 
-"isp [s] or Mass Flow Rate [kg/s] or Thrust [lbf]"
+"isp [s] or Mass Flow Rate [kg/s] or Thrust [lbf] or estimated apogee [ft]"
