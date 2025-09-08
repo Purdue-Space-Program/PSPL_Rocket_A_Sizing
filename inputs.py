@@ -1,7 +1,7 @@
 import coding_utils.constants as c
 import numpy as np
 
-step_size = 20 # number of values to use for each variable input
+step_size = 30 # number of values to use for each variable input
 USE_FAKE_TANKS_DATA = False
 
 # A dictionary used to define the possible definitions where each key is an input (constant or variable)
@@ -13,12 +13,14 @@ variable_inputs = {
     # "FUEL_NAME":                  ["Ethanol", "Kerosene"],
 
     # "CONTRACTION_RATIO":          np.linspace(3, 6, step_size), # [dimensionless] area ratio of chamber to throat (3 to 6 recommended by textbook)
-    "OF_RATIO":                   np.linspace(0.5, 3, step_size), # [dimensionless] ratio of oxygen to fuel by mass
+    # "OF_RATIO":                   np.linspace(0.1, 3, step_size), # [dimensionless] ratio of oxygen to fuel by mass
 
-    "CHAMBER_PRESSURE":           np.linspace(80, 200, step_size) * c.PSI2PA, # [pa] pressure in the chamber during combustion
+    # "CHAMBER_PRESSURE":           np.linspace(80, 200, step_size) * c.PSI2PA, # [pa] pressure in the chamber during combustion
     
     # "OXIDIZER_ON_TOP_FUEL_ON_BOTTOM": [True, False], # [boolean (true or false)] whether the oxidizer tank is above the fuel tank or not
-    # "FUEL_TANK_LENGTH":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size), # [meters] possible speedy metals pipe lengths: https://www.speedymetals.com/pc-4648-8371-6-od-x-0125-wall-tube-6061-t6-aluminum.aspx
+    "FUEL_TANK_LENGTH":   np.linspace(6 * c.IN2M, 3 * c.FT2M, step_size), # [meters] possible speedy metals pipe lengths: https://www.speedymetals.com/pc-4648-8371-6-od-x-0125-wall-tube-6061-t6-aluminum.aspx
+    "CONTRACTION_RATIO":                        np.linspace(2, 8, step_size), # [dimensionless] area ratio of chamber to throat (3 to 6 recommended by textbook)
+    # "WET_MASS_TO_USABLE_PROPELLANT_MASS_RATIO": np.linspace(1.2, 5, step_size) # assume total mass is a ratio of the wet mass (estimated ratio for copperhead was 2.154)
     
     # "a":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size), # stress testing
     # "b":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size), # stress testing
@@ -30,12 +32,13 @@ variable_inputs = {
 }
 
 constant_inputs = {
-    # "CHAMBER_PRESSURE":                         100, # [psi] pressure in the chamber during combustion
-    # "OF_RATIO":                                 0.5, # [dimensionless] ratio of oxygen to fuel by mass
+    "CHAMBER_PRESSURE":                         100 * c.PSI2PA, # [psi] pressure in the chamber during combustion
+    "OF_RATIO":                                 0.5, # [dimensionless] ratio of oxygen to fuel by mass
     
-    "FUEL_TANK_LENGTH":                           2 * 12 * c.IN2M, # [meters] possible speedy metals pipe lengths: https://www.speedymetals.com/pc-4648-8371-6-od-x-0125-wall-tube-6061-t6-aluminum.aspx
+    "WET_MASS_TO_USABLE_PROPELLANT_MASS_RATIO": 3, # assume total mass is a ratio of the wet mass (estimated ratio for copperhead was 2.154)
+    # "FUEL_TANK_LENGTH":                           2 * 12 * c.IN2M, # [meters] possible speedy metals pipe lengths: https://www.speedymetals.com/pc-4648-8371-6-od-x-0125-wall-tube-6061-t6-aluminum.aspx
     
-    "CONTRACTION_RATIO":                        3, # [dimensionless] area ratio of chamber to throat (3 to 6 recommended by textbook)
+    # "CONTRACTION_RATIO":                        3, # [dimensionless] area ratio of chamber to throat (3 to 6 recommended by textbook)
     # "FUEL_NAME":                                "Ethanol",
     # "FUEL_NAME":                                "IPA",
     "FUEL_NAME":                                "Ethanol",

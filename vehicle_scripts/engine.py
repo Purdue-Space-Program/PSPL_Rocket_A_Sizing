@@ -47,7 +47,7 @@ def RunCEA(
         CEA_oxidizer_name = CEA.Oxidizer("O2(L)", temp=90) # 90 K is temperature of oxidizer upon injection into combustion (same as copperhead's sizing)
 
 
-    pressure_ratio = chamber_pressure / (10 * c.PSI2PA) # assume exit pressure is a constantly at the pressure of air a bit above sea level
+    pressure_ratio = chamber_pressure / (15 * c.PSI2PA) # assume exit pressure is a constantly at the pressure of air a bit above sea level
 
     rocket = CEA.RocketProblem(
         pressure =       chamber_pressure * c.PA2PSI,

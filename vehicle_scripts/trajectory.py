@@ -85,7 +85,7 @@ def calculate_trajectory(
     altitude = c.FAR_ALTITUDE  # [m] initial altitude of the rocket
     velocity = 0  # [m/s] initial velocity of the rocket
     time = 0  # [s] initial time of the rocket
-    dt = 0.04  # [s] time step of the rocket
+    dt = 0.01  # [s] time step of the rocket
 
     # Array Initialization:
     altitudeArray = []

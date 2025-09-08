@@ -44,9 +44,24 @@ def PlotColorMap(X, Y, Z, x_axis_name, y_axis_name, output_name, output_array, a
         
     if x_axis_name == "OF_RATIO":
         ax.set_xlabel('OF Ratio', fontsize=8)
+    elif x_axis_name == "FUEL_TANK_LENGTH":
+        X = X * c.M2IN
+        ax.set_xlabel('Fuel Tank Length [in]', fontsize=8)
+    elif x_axis_name == "WET_MASS_TO_USABLE_PROPELLANT_MASS_RATIO":
+        ax.set_xlabel('Wet Mass to Usable Propellant Mass Ratio', fontsize=8)
+    elif x_axis_name == "CONTRACTION_RATIO":
+        ax.set_xlabel('Chamber to Throat Contraction Ratio', fontsize=8)
+    
     if y_axis_name == "CHAMBER_PRESSURE":
         Y = Y * c.PA2PSI
         ax.set_ylabel('Chamber Pressure [psi]', fontsize=8)
+    elif y_axis_name == "FUEL_TANK_LENGTH":
+        Y = Y * c.M2IN
+        ax.set_ylabel('Fuel Tank Length [in]', fontsize=8)
+    elif y_axis_name == "WET_MASS_TO_USABLE_PROPELLANT_MASS_RATIO":
+        ax.set_ylabel('Wet Mass to Usable Propellant Mass Ratio', fontsize=8)
+    elif y_axis_name == "CONTRACTION_RATIO":
+        ax.set_ylabel('Chamber to Throat Contraction Ratio', fontsize=8)
         
     if output_name == "JET_THRUST":
         Z = Z * c.N2LBF
@@ -71,9 +86,12 @@ def PlotColorMap(X, Y, Z, x_axis_name, y_axis_name, output_name, output_array, a
     elif output_name == "TAKEOFF_TWR":
         colorbar_label="Takeoff TWR"
         ax.contour(X, Y, Z)
-    elif output_name == "INITIAL_TOTAL_ROCKET_MASS":
+    elif output_name == "RAIL_EXIT_TWR":
+        colorbar_label="Rail Exit TWR"
+        ax.contour(X, Y, Z)
+    elif output_name == "WET_MASS":
         Z = Z * c.KG2LB
-        colorbar_label="Initial Rocket Mass [lbm]"
+        colorbar_label="Wet Rocket Mass [lbm]"
         ax.contour(X, Y, Z)
     else:
         raise ValueError("output name not recognized for plotting")
@@ -82,7 +100,8 @@ def PlotColorMap(X, Y, Z, x_axis_name, y_axis_name, output_name, output_array, a
     
     mesh = ax.pcolormesh(X, Y, Z, cmap='Spectral_r')
     # mesh = ax.contourf(X, Y, Z, 100, cmap='Spectral_r')
-    ax.set_title(f"{output_name.title()} of {inputs.constant_inputs['FUEL_NAME'][0].title()} For Different {x_axis_name.title()}s and {y_axis_name.title()}s", fontsize=13)
+    # ax.set_title(f"{output_name.title()} of {inputs.constant_inputs['FUEL_NAME'][0].title()} For Different {x_axis_name.title()}s and {y_axis_name.title()}s", fontsize=8)
+    ax.set_title(f"{output_name.title()} of {inputs.constant_inputs['FUEL_NAME'][0].title()}", fontsize=12)
     plt.colorbar(mesh, label=colorbar_label)
 
 # if you want to continuously update a colormap plot as each value is calculated
@@ -95,10 +114,51 @@ def UpdateContinuousColorMap(X, Y, Z, color_variable_label="this dumbass did not
         plt.ion()
         fig, ax = plt.subplots()
         mesh = ax.pcolormesh(X, Y, Z, cmap='Spectral_r')
-        plt.xlabel('OF Ratio', fontsize=14)
-        plt.ylabel('Chamber Pressure [psi]', fontsize=14)
+        plt.xlabel('OF Ratio', fontsize=12)
+        plt.ylabel('Chamber Pressure [psi]', fontsize=12)
         # plt.title(f"ISP of {inputs.constant_inputs['FUEL_NAME'].item().title()} For Different {x_axis} and OF Ratios", fontsize=20)
         plt.colorbar(mesh, label=color_variable_label)
         
     plt.draw()
     plt.pause(0.5)
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+def HolyFuck():
+    pass
