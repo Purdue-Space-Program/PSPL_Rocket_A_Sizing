@@ -52,10 +52,12 @@ variable_inputs_array = numpy_ndarray_handler.dictionary_to_ndarray(inputs.varia
 constant_inputs_array = numpy_ndarray_handler.dictionary_to_ndarray(inputs.constant_inputs)
 
 output_names = [
-    "JET_THRUST",     # [N] engine jet thrust
-    "ISP",            # [isp]
-    "MASS_FLOW_RATE", # [kg/s]
-    "APOGEE",         # [m]
+    # "JET_THRUST",              # [N] engine jet thrust
+    "ISP",                     # [s]
+    # "MASS_FLOW_RATE",          # [kg/s]
+    "APOGEE",                    # [m]
+    "TAKEOFF_TWR",               # [n/a]
+    "INITIAL_TOTAL_ROCKET_MASS", # [kg]
 ]
 
 def run_rocket_function(idx, variable_input_combination):
@@ -83,11 +85,12 @@ def run_rocket_function(idx, variable_input_combination):
                     mass_flow_rate,
                     )
 
+    initial_total_rocket_mass = total_usable_propellant_mass * 4 # assume total mass is a ratio of the wet mass (estimated ratio for copperhead was 2.154)
+    
     # avoid calculating trajectory if the value is not going to be used
-    if "APOGEE" in output_names:
-        total_rocket_mass = total_usable_propellant_mass * 5 # assume total mass is a ratio of the wet mass (estimated ratio for copperhead was 2.154)
+    if any(output in output_names for output in ["APOGEE", "MAX_ACCELERATION", "RAIL_EXIT_VELOCITY", "RAIL_EXIT_ACCELERATION", "TAKEOFF_TWR"]):
         estimated_apogee, max_accel, rail_exit_velocity, rail_exit_accel, total_impulse = trajectory.calculate_trajectory(
-                                total_rocket_mass, 
+                                initial_total_rocket_mass, 
                                 mass_flow_rate,
                                 jet_thrust,
                                 numpy_ndarray_handler.GetFrom_ndarray("PROPELLANT_TANK_OUTER_DIAMETER", constant_inputs_array, variable_input_combination),
@@ -97,7 +100,8 @@ def run_rocket_function(idx, variable_input_combination):
                                 2 * (oxidizer_tank_length + numpy_ndarray_handler.GetFrom_ndarray("FUEL_TANK_LENGTH", constant_inputs_array, variable_input_combination)), # fix this dumbass
                                 False,
                             )
-        initial_TWR = jet_thrust/(total_rocket_mass * c.GRAVITY)
+        takeoff_TWR = jet_thrust/(initial_total_rocket_mass * c.GRAVITY)
+        rail_exit_TWR = (rail_exit_accel/c.GRAVITY) + 1
 
     
     # for output_name in output_names:
@@ -117,7 +121,13 @@ def run_rocket_function(idx, variable_input_combination):
         "JET_THRUST": jet_thrust,
         "ISP": isp,
         "MASS_FLOW_RATE": mass_flow_rate,
+        "INITIAL_TOTAL_ROCKET_MASS": initial_total_rocket_mass,
+        
         "APOGEE": estimated_apogee if "APOGEE" in output_names else np.nan,
+        "TAKEOFF_TWR": takeoff_TWR,
+        "MAX_ACCELERATION": max_accel,
+        "RAIL_EXIT_VELOCITY": rail_exit_velocity,
+        "RAIL_EXIT_ACCELERATION": rail_exit_accel,
     }
 
 

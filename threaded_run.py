@@ -19,12 +19,7 @@ def ThreadedRun(run_rocket_function, variable_inputs_array, output_names, USE_AI
     output_array = np.zeros(variable_inputs_array.size, dtype=np.dtype(fields_dtype))
     output_array = output_array.reshape(variable_inputs_array.shape)
     
-    # thrust_map = np.zeros(variable_inputs_array.size)
-    # mass_flow_map = np.zeros(variable_inputs_array.size)
-    # isp_map = np.zeros(variable_inputs_array.size)
-    
-    # estimated_apogee_map = np.zeros(variable_inputs_array.size)
-    
+
     if USE_AI_SLOP:
 
         jobs = []
@@ -37,22 +32,8 @@ def ThreadedRun(run_rocket_function, variable_inputs_array, output_names, USE_AI
             futures = [executor.submit(run_rocket_function, idx, v) for idx, v in jobs]
             for f in tqdm(as_completed(futures), total=len(futures), desc="Computing rocket performance"):
                 idx, output_list = f.result()
-                
-                # for output_name in output_names:
+              
                 output_array[idx] = output_list
-
-                # thrust_map[] = thrust_newton
-                # mass_flow_map[(idx[0])*inputs.step_size + idx[1]] = mass_flow
-                # isp_map[(idx[0])*inputs.step_size + idx[1]] = isp
-                
-                # estimated_apogee_map[(idx[0])*inputs.step_size + idx[1]] = estimated_apogee
-                
-                # print(f"{idx}: {variable_inputs_array[idx]} -> {thrust_newton * c.N2LBF}")
-                
-                # # goofy
-                # X, Y, Z = p.SetupArrays(variable_inputs_array, isp_map)            
-                # p.UpdateContinuousColorMap(X, Y, Z, constant_inputs_array, color_variable_label="this dumbass did not change the label")
-
 
     else:
 

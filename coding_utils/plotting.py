@@ -6,14 +6,15 @@ import inputs
 def PlotColorMaps(x_axis_name, y_axis_name, variable_inputs_array, output_names, output_array):
     num_outputs = len(output_names)
     
+    # Create a 2x2 grid
+    square_grid_length = int(np.ceil(np.sqrt(num_outputs) - 0.0001)) # minus small number to avoid floating point rounding bs
+    fig, axes = plt.subplots(square_grid_length, square_grid_length, figsize=(12, 10))  
+    
     if num_outputs == 1:
         axes = [axes]  # make it iterable
-        
-    # Create a 2x2 grid
-    fig, axes = plt.subplots(2, 2, figsize=(12, 10))  
-
-    # Flatten axes to iterate
-    axes = axes.flatten()
+    else:   
+        # Flatten axes to iterate
+        axes = axes.flatten()
 
     for ax, output_name in zip(axes, output_names):
         X, Y, Z = SetupArrays(variable_inputs_array, x_axis_name, y_axis_name, output_name, output_array)
@@ -58,20 +59,29 @@ def PlotColorMap(X, Y, Z, x_axis_name, y_axis_name, output_name, output_array, a
         num_lines = 8
         power = 1/4
         contour_lines = np.max(output_array[output_name]) * 0.995 / (num_lines**power) * np.linspace(1, num_lines, num_lines)**power
-
         ax.contour(X, Y, Z, contour_lines)
         colorbar_label="isp [s]"
     elif output_name == "APOGEE":
         Z = Z * c.M2FT
         ax.contour(X, Y, Z)
-        altitude_limit = plt.contour(X, Y, Z, levels=[10000], colors='red', linewidths=2)
+        print(output_name)
+        altitude_limit = ax.contour(X, Y, Z, levels=[10000], colors='red', linewidths=2)
         ax.clabel(altitude_limit, fmt='%d')
         colorbar_label="Estimated Apogee [ft]"
+    elif output_name == "TAKEOFF_TWR":
+        colorbar_label="Takeoff TWR"
+        ax.contour(X, Y, Z)
+    elif output_name == "INITIAL_TOTAL_ROCKET_MASS":
+        Z = Z * c.KG2LB
+        colorbar_label="Initial Rocket Mass [lbm]"
+        ax.contour(X, Y, Z)
+    else:
+        raise ValueError("output name not recognized for plotting")
     
     
     
     mesh = ax.pcolormesh(X, Y, Z, cmap='Spectral_r')
-    # plt.contourf(X, Y, Z, 100, cmap='Spectral_r')
+    # mesh = ax.contourf(X, Y, Z, 100, cmap='Spectral_r')
     ax.set_title(f"{output_name.title()} of {inputs.constant_inputs['FUEL_NAME'][0].title()} For Different {x_axis_name.title()}s and {y_axis_name.title()}s", fontsize=13)
     plt.colorbar(mesh, label=colorbar_label)
 

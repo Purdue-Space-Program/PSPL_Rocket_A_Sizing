@@ -1,7 +1,8 @@
 from inputs import USE_FAKE_TANKS_DATA
 
-if USE_FAKE_TANKS_DATA == False:
+if USE_FAKE_TANKS_DATA == True:
     from CoolProp.CoolProp import PropsSI
+from CoolProp.CoolProp import PropsSI
 
 import coding_utils.constants as c
 import numpy as np
