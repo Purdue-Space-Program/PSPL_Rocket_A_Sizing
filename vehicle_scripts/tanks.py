@@ -1,4 +1,8 @@
-# from CoolProp.CoolProp import PropsSI
+from inputs import USE_FAKE_TANKS_DATA
+
+if USE_FAKE_TANKS_DATA == False:
+    from CoolProp.CoolProp import PropsSI
+
 import coding_utils.constants as c
 import numpy as np
 
@@ -72,7 +76,7 @@ def FindPropellantDensity(propellant_name, tank_pressure):
     if propellant_name == "ethanol":
         propellant_density = PropsSI('D', 'P', tank_pressure, 'T', c.T_AMBIENT, "Ethanol")
     elif propellant_name == "kerosene":
-        propellant_density = PropsSI('D', 'P', tank_pressure, 'T', c.T_AMBIENT, "Kerosene")
+        propellant_density = PropsSI('D', 'P', tank_pressure, 'T', c.T_AMBIENT, "n-Dodecane")
     elif propellant_name == "liquid oxygen":
         propellant_density = PropsSI('D', 'P', tank_pressure, 'T', 90, "Oxygen") # 90 K is temperature of oxidizer upon injection into combustion (same as copperhead's sizing)
     else:

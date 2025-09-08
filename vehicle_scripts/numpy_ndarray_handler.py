@@ -23,6 +23,8 @@ np.set_printoptions(threshold=sys.maxsize)
 def GetFrom_ndarray(key, constant_inputs_array, variable_input_combination):
     if key in constant_inputs_array.dtype.names:
         value = constant_inputs_array[key]
+        if key in variable_input_combination.dtype.names:
+            raise KeyError(f"dumbass!!!!!!!!!!!!!!!!!!!!!!!!")
     elif key in variable_input_combination.dtype.names:
         value = variable_input_combination[key]
     else:
@@ -73,7 +75,7 @@ def dictionary_to_ndarray(dictionary):
 
         # could optimize this by making the field an integer if its an integer but i dont feel like it rn
         elif IsNumberOrListOfNumbers(value):
-            fields_dtype.append((key, np.float32))       # 16-bit float
+            fields_dtype.append((key, np.float32))       # 32-bit float
 
         elif IsStringOrListOfStrings(value):
             np.char.lower
@@ -98,15 +100,13 @@ def dictionary_to_ndarray(dictionary):
     # Shape of this ^ needs to be n-dimensional with size m of each element (each element being a dictionary).
     # This makes it easy to index to find a rocket for a certain input combination
     # n = number of elements
-    # m = number of rockets needed to fully explore the range of each "list element" (using step size)
+    # m = number of values for each rocket combination
+    
     shape = [FindNumSubElements(variable_input_range) for variable_input_range in dictionary.values()]
 
     # holy shit i cooked
     ndarray = np.array(possible_combinations, dtype=np.dtype(fields_dtype))
     ndarray = ndarray.reshape(shape)
-
-    # # this doesn't need to be a n-dimensional whatever cause it's going to be the same for every rocket (hence the constant lol)
-    # constant_inputs_array = np.array(tuple(inputs.constant_inputs.values()), dtype=np.dtype(constant_inputs_fields_dtype))
 
     # print(variable_inputs_array)
     # print(variable_inputs_array[0][0]["OF_RATIO"])

@@ -2,11 +2,6 @@ import numpy as np
 from tqdm import tqdm
 import inputs
 
-
-
-from vehicle_scripts import engine
-
-
 import numpy
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -14,13 +9,21 @@ from vehicle_scripts import numpy_ndarray_handler
 from coding_utils import constants as c
 from inputs import constant_inputs as constant_inputs_dict
 
-def ThreadedRun(run_rocket_function, constant_inputs_array, variable_inputs_array, USE_AI_SLOP):
+def ThreadedRun(run_rocket_function, variable_inputs_array, output_names, USE_AI_SLOP):
 
-    thrust_map = np.zeros(variable_inputs_array.size)
-    mass_flow_map = np.zeros(variable_inputs_array.size)
-    isp_map = np.zeros(variable_inputs_array.size)
+    fields_dtype = [] # datatype for output array
+
+    for output_name in output_names:
+        fields_dtype.append((output_name, np.float32))
     
-    estimated_apogee_map = np.zeros(variable_inputs_array.size)
+    output_array = np.zeros(variable_inputs_array.size, dtype=np.dtype(fields_dtype))
+    output_array = output_array.reshape(variable_inputs_array.shape)
+    
+    # thrust_map = np.zeros(variable_inputs_array.size)
+    # mass_flow_map = np.zeros(variable_inputs_array.size)
+    # isp_map = np.zeros(variable_inputs_array.size)
+    
+    # estimated_apogee_map = np.zeros(variable_inputs_array.size)
     
     if USE_AI_SLOP:
 
@@ -33,12 +36,16 @@ def ThreadedRun(run_rocket_function, constant_inputs_array, variable_inputs_arra
         with ThreadPoolExecutor() as executor:
             futures = [executor.submit(run_rocket_function, idx, v) for idx, v in jobs]
             for f in tqdm(as_completed(futures), total=len(futures), desc="Computing rocket performance"):
-                idx, thrust_newton, mass_flow, isp, estimated_apogee = f.result()
-                thrust_map[(idx[0])*inputs.step_size + idx[1]] = thrust_newton
-                mass_flow_map[(idx[0])*inputs.step_size + idx[1]] = mass_flow
-                isp_map[(idx[0])*inputs.step_size + idx[1]] = isp
+                idx, output_list = f.result()
                 
-                estimated_apogee_map[(idx[0])*inputs.step_size + idx[1]] = estimated_apogee
+                # for output_name in output_names:
+                output_array[idx] = output_list
+
+                # thrust_map[] = thrust_newton
+                # mass_flow_map[(idx[0])*inputs.step_size + idx[1]] = mass_flow
+                # isp_map[(idx[0])*inputs.step_size + idx[1]] = isp
+                
+                # estimated_apogee_map[(idx[0])*inputs.step_size + idx[1]] = estimated_apogee
                 
                 # print(f"{idx}: {variable_inputs_array[idx]} -> {thrust_newton * c.N2LBF}")
                 
@@ -68,4 +75,4 @@ def ThreadedRun(run_rocket_function, constant_inputs_array, variable_inputs_arra
             # X, Y, Z = p.SetupArrays(variable_inputs_array, isp_map)
             # p.UpdateContinuousColorMap(X, Y, Z, constant_inputs_array)
 
-    return (thrust_map, isp_map, mass_flow_map, estimated_apogee_map)
+    return (output_array)

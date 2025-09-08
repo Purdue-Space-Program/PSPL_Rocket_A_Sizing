@@ -78,14 +78,14 @@ def calculate_trajectory(
     referenceArea = (np.pi * (tankOD) ** 2 / 4) # + finNumber * finHeight * c.FIN_THICKNESS # [m^2] reference area of the rocket
     mass = wetMass  # [kg] initial mass of the rocket
 
-    cD = 0.4
+    cD = 0.6
     ascentDragCoeff = cD * (totalLength / 6.35) * (tankOD / 0.203)
 
     # Initial Conditions
     altitude = c.FAR_ALTITUDE  # [m] initial altitude of the rocket
     velocity = 0  # [m/s] initial velocity of the rocket
     time = 0  # [s] initial time of the rocket
-    dt = 0.075  # [s] time step of the rocket
+    dt = 0.04  # [s] time step of the rocket
 
     # Array Initialization:
     altitudeArray = []

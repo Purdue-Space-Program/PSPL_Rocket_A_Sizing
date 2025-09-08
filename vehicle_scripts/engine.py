@@ -19,11 +19,11 @@ def ThrustyBusty(FUEL_NAME, OXIDIZER_NAME, PROPELLANT_TANK_OUTER_DIAMETER, CONTR
     chamber_radius, chamber_length, throat_radius = CalculateEngineDimensions(PROPELLANT_TANK_OUTER_DIAMETER, FUEL_NAME, OXIDIZER_NAME, CONTRACTION_RATIO)
     expected_total_mass_flow_rate = CalculateMassFlowRate(throat_radius, CHAMBER_PRESSURE, cea_results.c_mw, cea_results.c_gamma, cea_results.c_t)
 
-    expected_thrust = CalculateExpectedThrust(expected_isp, expected_total_mass_flow_rate)
+    expected_jet_thrust = CalculateExpectedThrust(expected_isp, expected_total_mass_flow_rate)
 
     # print(expected_total_mass_flow_rate, expected_exhaust_velocity)
     # return(expected_thrust, expected_isp, total_mass_flow_rate, chamber_radius, chamber_length, throat_radius)
-    return(expected_thrust, expected_total_mass_flow_rate, expected_isp)
+    return(expected_jet_thrust, expected_isp, expected_total_mass_flow_rate)
 
 
 
@@ -64,9 +64,9 @@ def RunCEA(
 def CalculateExpectedThrust(expected_isp, total_mass_flow_rate):
     
     expected_jet_exhaust_velocity = expected_isp * c.GRAVITY
-    expected_thrust = total_mass_flow_rate * expected_jet_exhaust_velocity
+    expected_jet_thrust = total_mass_flow_rate * expected_jet_exhaust_velocity
     
-    return(expected_thrust)
+    return(expected_jet_thrust)
 
 def CalculateExpectedISP(ideal_isp):
     expected_c_star_efficiency = 0.9 # value used for CMS
