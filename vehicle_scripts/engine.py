@@ -42,6 +42,10 @@ def RunCEA(
         CEA_fuel_name = CEA.Fuel("C2H5OH(L)", temp=c.T_AMBIENT)
     elif fuel_name == "kerosene":
         CEA_fuel_name = CEA.Fuel("Jet-A(L)", temp=c.T_AMBIENT)
+    elif fuel_name == "ipa":
+        CEA_fuel_name = CEA.Fuel("C3H8O,2propanol", temp=c.T_AMBIENT)
+    else:
+        raise ValueError(f"{fuel_name} not supported")
 
     if oxidizer_name == "liquid oxygen":
         CEA_oxidizer_name = CEA.Oxidizer("O2(L)", temp=90) # 90 K is temperature of oxidizer upon injection into combustion (same as copperhead's sizing)
@@ -118,9 +122,11 @@ def CalculateChamberLength(throat_area, chamber_area, fuel_name, oxidizer_name):
 def FindLstar(fuel_name, oxidizer_name):
     if (oxidizer_name == "liquid oxygen"):
         if (fuel_name == "ethanol"):
-            L_star = 45 * c.IN2M # source: from my asshole
+            L_star = 45 * c.IN2M # source:  my asshole
         elif (fuel_name == "kerosene"):
             L_star = 45 * c.IN2M # table 4-1 on page 87 of nasa sp-125 https://ntrs.nasa.gov/citations/19710019929
+        elif (fuel_name == "ipa"):
+            L_star = 10000000000 * c.IN2M # 
         else:
             raise ValueError("No L* Found")
     else:

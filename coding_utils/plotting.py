@@ -1,7 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import coding_utils.constants as c
+
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import inputs
+
 
 def PlotColorMaps(x_axis_name, y_axis_name, variable_inputs_array, output_names, output_array):
     num_outputs = len(output_names)
@@ -93,6 +98,9 @@ def PlotColorMap(X, Y, Z, x_axis_name, y_axis_name, output_name, output_array, a
         Z = Z * c.KG2LB
         colorbar_label="Wet Rocket Mass [lbm]"
         ax.contour(X, Y, Z)
+    elif output_name == "BURN_TIME":
+        colorbar_label="Burn Time [s]"
+        ax.contour(X, Y, Z)
     else:
         raise ValueError("output name not recognized for plotting")
     
@@ -157,8 +165,30 @@ def UpdateContinuousColorMap(X, Y, Z, color_variable_label="this dumbass did not
     
     
     
+def SetupHolyFuckArrays(variable_inputs_array, x_axis_name, y_axis_name, output_name, output_array):
+    x = np.array(variable_inputs_array[0, :][y_axis_name]) # what the fuck !
+    y = np.array(variable_inputs_array[:, 0][x_axis_name]) # what the fuck !
+    z = np.array(output_array[output_name])
+    
+    Y, X = np.meshgrid(x, y) # I don't know why you have to swap X and Y but you do
+    Z = z.reshape(len(x), len(y))
+    
+    return (X, Y, Z)
+
     
     
+def HolyFuck(X, Y, Z):
+    from matplotlib import cm
+    from mpl_toolkits.mplot3d import axes3d
     
-def HolyFuck():
-    pass
+    
+
+    ax = plt.figure().add_subplot(projection='3d')
+    X, Y, Z = axes3d.get_test_data(0.05)
+
+    ax.contour(X, Y, Z, cmap=cm.coolwarm)  # Plot contour curves
+
+    plt.show()
+    
+if __name__ == "__main__":
+    HolyFuck(1,1,1)
