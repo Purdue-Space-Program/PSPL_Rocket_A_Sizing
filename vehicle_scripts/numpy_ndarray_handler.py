@@ -24,7 +24,7 @@ def GetFrom_ndarray(key, constant_inputs_array, variable_input_combination):
     if key in constant_inputs_array.dtype.names:
         value = constant_inputs_array[key]
         if key in variable_input_combination.dtype.names:
-            raise KeyError(f"dumbass!!!!!!!!!!!!!!!!!!!!!!!!")
+            raise KeyError(f"dumbass!!!!!!!!!!!!!!!!!!!!!!!! same value in variable and constant array")
     elif key in variable_input_combination.dtype.names:
         value = variable_input_combination[key]
     else:

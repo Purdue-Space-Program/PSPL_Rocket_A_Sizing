@@ -52,33 +52,50 @@ variable_inputs_array = numpy_ndarray_handler.dictionary_to_ndarray(inputs.varia
 constant_inputs_array = numpy_ndarray_handler.dictionary_to_ndarray(inputs.constant_inputs)
 
 output_names = [
-    # "JET_THRUST",                             # [lbf] engine jet thrust
+    # "MASS_FLOW_RATE",                         # [kg/s]
     # "ISP",                                      # [s]
-    "MASS_FLOW_RATE",                         # [kg/s]
+    "JET_THRUST",                             # [lbf] engine jet thrust
+    # "OXIDIZER_TANK_LENGTH",                          # [ft]
     # "WET_MASS",                                 # [lbm]
+    # "CHAMBER_TEMPERATURE",                       # [k]
     
+    "TAKEOFF_TWR",                              # [n/a]
+    "BURN_TIME",                 # [s]
     "APOGEE",                                   # [ft]
-    # "TAKEOFF_TWR",                              # [n/a]
+    "MAX_ACCELERATION",                         # [G's]
+    "RAIL_EXIT_VELOCITY",                          # [ft/s]
     "RAIL_EXIT_TWR",                            # [n/a]
-    "BURN_TIME"                 # [s]
-]
+    "TOTAL_LENGTH",                              # [ft]
+] # USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA 
+  # USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA 
+  # USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA 
+  # USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA 
+  # USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA 
+  # USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA 
+
+def AccelerationToTWR(acceleration):
+    TWR = (acceleration/c.GRAVITY) + 1
+    return TWR
+
+# CEA_Array = engine.CreateMassiveCEAArray(constant_inputs_array, variable_inputs_array)
 
 def run_rocket_function(idx, variable_input_combination):
 
-    jet_thrust, isp, mass_flow_rate = engine.ThrustyBusty(
+    jet_thrust, isp, mass_flow_rate, chamber_temperature = engine.ThrustyBusty(
                 numpy_ndarray_handler.GetFrom_ndarray("FUEL_NAME", constant_inputs_array, variable_input_combination),
                 numpy_ndarray_handler.GetFrom_ndarray("OXIDIZER_NAME", constant_inputs_array, variable_input_combination),
                 numpy_ndarray_handler.GetFrom_ndarray("PROPELLANT_TANK_OUTER_DIAMETER", constant_inputs_array, variable_input_combination),
                 numpy_ndarray_handler.GetFrom_ndarray("CONTRACTION_RATIO", constant_inputs_array, variable_input_combination),
                 numpy_ndarray_handler.GetFrom_ndarray("OF_RATIO", constant_inputs_array, variable_input_combination),
                 numpy_ndarray_handler.GetFrom_ndarray("CHAMBER_PRESSURE", constant_inputs_array, variable_input_combination),
+                # CEA_Array[idx],
                 )
 
 
     if inputs.USE_FAKE_TANKS_DATA == True:
         total_usable_propellant_mass, engine_burn_time, oxidizer_tank_length = (14.577917569187084, 8.77083825323153, 0.46935451405705586)
     else:
-        total_usable_propellant_mass, engine_burn_time, oxidizer_tank_length = tanks.GoFluids(
+        total_usable_propellant_mass, engine_burn_time, oxidizer_tank_length, tanks_too_big = tanks.GoFluids(
                     numpy_ndarray_handler.GetFrom_ndarray("PROPELLANT_TANK_INNER_DIAMETER", constant_inputs_array, variable_input_combination),
                     numpy_ndarray_handler.GetFrom_ndarray("FUEL_TANK_LENGTH", constant_inputs_array, variable_input_combination),
                     numpy_ndarray_handler.GetFrom_ndarray("CHAMBER_PRESSURE", constant_inputs_array, variable_input_combination),
@@ -89,6 +106,10 @@ def run_rocket_function(idx, variable_input_combination):
                     )
 
     wet_mass = total_usable_propellant_mass * numpy_ndarray_handler.GetFrom_ndarray("WET_MASS_TO_USABLE_PROPELLANT_MASS_RATIO", constant_inputs_array, variable_input_combination)
+    total_length = 5 * (oxidizer_tank_length + numpy_ndarray_handler.GetFrom_ndarray("FUEL_TANK_LENGTH", constant_inputs_array, variable_input_combination)) # fix this dumbass
+    
+    # if tanks_too_big:
+    #     jet_thrust = np.nan    
     
     # avoid calculating trajectory if the value is not going to be used
     if any(output in output_names for output in ["APOGEE", "MAX_ACCELERATION", "RAIL_EXIT_VELOCITY", "RAIL_EXIT_ACCELERATION", "TAKEOFF_TWR", "RAIL_EXIT_TWR"]):
@@ -97,16 +118,25 @@ def run_rocket_function(idx, variable_input_combination):
                                 mass_flow_rate,
                                 jet_thrust,
                                 numpy_ndarray_handler.GetFrom_ndarray("PROPELLANT_TANK_OUTER_DIAMETER", constant_inputs_array, variable_input_combination),
+                                3,
+                                0.15,
                                 engine.RadiusToArea((numpy_ndarray_handler.GetFrom_ndarray("PROPELLANT_TANK_OUTER_DIAMETER", constant_inputs_array, variable_input_combination)/2) - (0.5 * c.IN2M)), # lowkey a guess
                                 10 * c.PSI2PA,
-                                engine_burn_time,
-                                5 * (oxidizer_tank_length + numpy_ndarray_handler.GetFrom_ndarray("FUEL_TANK_LENGTH", constant_inputs_array, variable_input_combination)), # fix this dumbass
-                                False,
+                                engine_burn_time, 
+                                total_length,
+                                True,
                             )
+        print(max_accel)
         takeoff_TWR = jet_thrust/(wet_mass * c.GRAVITY)
-        rail_exit_TWR = (rail_exit_accel/c.GRAVITY) + 1
+        rail_exit_TWR = AccelerationToTWR(rail_exit_accel)
 
-    
+    # if tanks_too_big:
+    #     rail_exit_velocity = np.nan
+    #     rail_exit_TWR = np.nan
+    #     takeoff_TWR = np.nan
+    #     max_accel = np.nan
+
+
     # for output_name in output_names:
     #     if output_name == "JET_THRUST":
     #         output_list.append(jet_thrust)
@@ -125,14 +155,17 @@ def run_rocket_function(idx, variable_input_combination):
         "ISP": isp,
         "MASS_FLOW_RATE": mass_flow_rate,
         "WET_MASS": wet_mass,
+        "OXIDIZER_TANK_LENGTH": oxidizer_tank_length,
+        "TOTAL_LENGTH" : total_length,
                 
         "APOGEE": estimated_apogee if "APOGEE" in output_names else np.nan,
-        "TAKEOFF_TWR": takeoff_TWR,
-        "MAX_ACCELERATION": max_accel,
-        "RAIL_EXIT_VELOCITY": rail_exit_velocity,
-        "RAIL_EXIT_ACCELERATION": rail_exit_accel,
-        "RAIL_EXIT_TWR": rail_exit_TWR,
-        "BURN_TIME" : engine_burn_time,
+        "TAKEOFF_TWR": takeoff_TWR if "TAKEOFF_TWR" in output_names else np.nan,
+        "MAX_ACCELERATION": max_accel if "MAX_ACCELERATION" in output_names else np.nan,
+        "RAIL_EXIT_VELOCITY": rail_exit_velocity if "RAIL_EXIT_VELOCITY" in output_names else np.nan,
+        "RAIL_EXIT_ACCELERATION": rail_exit_accel if "RAIL_EXIT_ACCELERATION" in output_names else np.nan,
+        "RAIL_EXIT_TWR": rail_exit_TWR if "RAIL_EXIT_TWR" in output_names else np.nan,
+        "BURN_TIME" : engine_burn_time if "BURN_TIME" in output_names else np.nan,
+        "CHAMBER_TEMPERATURE": chamber_temperature if "CHAMBER_TEMPERATURE" in output_names else np.nan,
     }
 
 
@@ -141,28 +174,39 @@ def run_rocket_function(idx, variable_input_combination):
         if output_name in mapping:
             dtype.append((output_name, np.float32))
 
+    # HERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!
     # Allocate structured array with one record
     output_list = np.zeros(1, dtype=dtype)
 
     # Fill values
     for name, _ in dtype:
         output_list[name] = mapping[name]
-        
+    
+    # # Compare to Copperhead
+    # CR = numpy_ndarray_handler.GetFrom_ndarray("CONTRACTION_RATIO", constant_inputs_array, variable_input_combination)
+    # FTL = numpy_ndarray_handler.GetFrom_ndarray("FUEL_TANK_LENGTH", constant_inputs_array, variable_input_combination)
+    # if (CR > 4.9) & (CR < 5.1) & (FTL > 3.9 * c.FT2M) & (FTL < 4.1 * c.FT2M):
+    #     print(f"Contraction Ratio: {CR}, Fuel Tank Length: {FTL * c.M2FT}, Estimated Apogee: {estimated_apogee * c.M2FT}, Takeoff TWR: {takeoff_TWR}")
+
     return (idx, output_list)
 
 
-output_array = threaded_run.ThreadedRun(run_rocket_function, variable_inputs_array, output_names, True)
+output_array = threaded_run.ThreadedRun(run_rocket_function, variable_inputs_array, output_names, False)
 
 
 if inputs.USE_FAKE_TANKS_DATA == True:
     print("THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE ")
 
+print(constant_inputs_array)
 
+# AXES = ["OF_RATIO", "CHAMBER_PRESSURE"]
 AXES = ["CONTRACTION_RATIO", "FUEL_TANK_LENGTH"]
+# AXES = ["OF_RATIO", "FUEL_TANK_LENGTH"]
 if len(AXES) == 2:
+    # make axes automated (idc to do that rn)
     p.PlotColorMaps(AXES[0], AXES[1], variable_inputs_array, output_names, output_array)
-elif len(AXES) == 3:
-    X, Y, Z = p.SetupHolyFuckArrays(variable_inputs_array, AXES[0], AXES[1], AXES[2], output_names, output_array)
-    p.HolyFuck(AXES[0], AXES[1], AXES[2], variable_inputs_array, output_names, output_array)
+# elif len(AXES) == 3:
+#     X, Y, Z = p.SetupHolyFuckArrays(variable_inputs_array, AXES[0], AXES[1], AXES[2], output_names, output_array)
+#     p.HolyFuck(AXES[0], AXES[1], AXES[2], variable_inputs_array, output_names, output_array)
 else:
     raise ValueError(f"{len(AXES)} is an unsupported number of axis")

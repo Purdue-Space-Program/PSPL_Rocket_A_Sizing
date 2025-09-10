@@ -30,7 +30,7 @@ def ThreadedRun(run_rocket_function, variable_inputs_array, output_names, USE_AI
 
         with ThreadPoolExecutor() as executor:
             futures = [executor.submit(run_rocket_function, idx, v) for idx, v in jobs]
-            for f in tqdm(as_completed(futures), total=len(futures), desc="Computing rocket performance"):
+            for f in tqdm(as_completed(futures), total=len(futures), desc="Threaded Run"):
                 idx, output_list = f.result()
               
                 output_array[idx] = output_list
@@ -40,18 +40,11 @@ def ThreadedRun(run_rocket_function, variable_inputs_array, output_names, USE_AI
         # Iterate while keeping the structure
         it = np.nditer(variable_inputs_array, flags=["multi_index"], op_flags=["readonly"])
         
-        # for variable_input_combination in tqdm(it, total=len(it), desc="Computing..."):
-        for count, variable_input_combination in enumerate(it):
+        for count, variable_input_combination in tqdm(enumerate(it), total=inputs.step_size**2, desc="Not Threaded Run"):            
+            idx = (count // inputs.step_size), (count % inputs.step_size)
             
-            idx = 1
-            idx, thrust_newton, mass_flow_kg, isp, estimated_apogee = run_rocket_function(idx, variable_input_combination,)
-            
-            thrust_map[count] = (thrust_newton * c.N2LBF)
-            mass_flow_map[count] = mass_flow_kg
-            isp_map[count] = isp
-            estimated_apogee_map[count] = estimated_apogee
-            
-            print(f"{it.multi_index}: {variable_input_combination} -> {thrust_newton * c.N2LBF}")
+            idx, output_list = run_rocket_function(idx, variable_input_combination)
+            output_array[idx] = output_list
             
             # X, Y, Z = p.SetupArrays(variable_inputs_array, isp_map)
             # p.UpdateContinuousColorMap(X, Y, Z, constant_inputs_array)

@@ -115,6 +115,7 @@ BURNOUT_PRESSURE_RATIO = (
 
 K_PRESSURIZATION = 0.64  # [1] Ratio of ideal tank volume to actual tank volume, calculated based on average from past rocket designs
 HE_GAS_CONSTANT = 2077.1  # [J/kgK] Helium gas constant
+N2_GAS_CONSTANT = 296.80  # [J/kgK] Nitrogen gas constant
 
 FILL_PRESSURE = 60  # [psi] Tank pressure during fill, based on CMS fill ops
 
@@ -148,10 +149,15 @@ DENSITY_E98 = 794
 
 MAX_POWER = 12000  # max pump power [W]
 
-# FAR Constants
 
+
+# Indiana Constants 🧑‍🌾
+INDIANA_ALTITUDE = 216 # [m] altitude at ACRE https://ag.purdue.edu/indiana-state-climate/purdue-mesonet/site-metadata/
+TRAILER_RAIL_HEIGHT = 20 * FT2M # [m] height of launch trailer rail https://arc.aiaa.org/doi/epdf/10.2514/6.2009-4842 (what a fucking find)
+
+# FAR Constants
 FAR_ALTITUDE = 615.09  # [m] altitude of FAR launch site
-RAIL_HEIGHT = 18.29  # [m] height of the rail
+FAR_RAIL_HEIGHT = 18.29  # [m] height of the rail
 
 # Components
 
@@ -162,9 +168,7 @@ LIPO_CELL_VOLTAGE = 22.2  # [V] nominal voltage of a LiPo cell
 LIPO_CELL_DISCHARGE_CURRENT = 80  # [A] maximum discharge current of a LiPo cell
 
 # Misc
-
 GRAVITY = 9.81  # [m/s^2] acceleration due to gravity
 
 # Fins
-
 FIN_THICKNESS = 0.16 * IN2M  # not sure if this is valid, should discuss further [m]

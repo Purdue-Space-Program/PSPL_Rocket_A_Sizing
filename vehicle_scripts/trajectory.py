@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import coding_utils.constants as c
 
@@ -11,21 +12,19 @@ import coding_utils.constants as c
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
+from numba import njit
 
 
 ATMOSPHERE_DATA = pd.read_csv("atmosphere.csv")
-
-
-# atmosphereDF = pd.read_csv("atmosphere.csv")
-
+ATMOSPHERE_DATA = np.array(ATMOSPHERE_DATA)
 
 def calculate_trajectory(
     wetMass,
     mDotTotal,
     jetThrust,
     tankOD,
-    # finNumber,
-    # finHeight,
+    finNumber,
+    finHeight,
     exitArea,
     exitPressure,
     burnTime,
@@ -75,23 +74,24 @@ def calculate_trajectory(
     """
 
     # Rocket Properties
-    referenceArea = (np.pi * (tankOD) ** 2 / 4) # + finNumber * finHeight * c.FIN_THICKNESS # [m^2] reference area of the rocket
+    referenceArea = (np.pi * (tankOD) ** 2 / 4) + finNumber * finHeight * c.FIN_THICKNESS # [m^2] reference area of the rocket
     mass = wetMass  # [kg] initial mass of the rocket
 
-    cD = 0.6
+    cD = 0.5
     ascentDragCoeff = cD * (totalLength / 6.35) * (tankOD / 0.203)
 
     # Initial Conditions
-    altitude = c.FAR_ALTITUDE  # [m] initial altitude of the rocket
+    altitude = c.INDIANA_ALTITUDE  # [m] initial altitude of the rocket
     velocity = 0  # [m/s] initial velocity of the rocket
     time = 0  # [s] initial time of the rocket
     dt = 0.01  # [s] time step of the rocket
 
     # Array Initialization:
-    altitudeArray = []
-    velocityArray = []
-    accelArray = []
-    timeArray = []
+    altitudeArray = np.array(altitude)
+    velocityArray = np.array(velocity)
+    # accelArray = np.array(((jetThrust - (c.GRAVITY*wetMass))/wetMass) * 0.1)
+    accelArray = np.array(0)
+    timeArray = np.array(time)
     # print(f"velocity: {velocity}")
     # print(f"velocity >= 0: {velocity >= 0}")
 
@@ -102,14 +102,14 @@ def calculate_trajectory(
         index = int(altitude // 10)  # Divide altitude by 10 to find index
 
         if index < 0:
-            pressure = ATMOSPHERE_DATA.iloc[0][1]
-            rho = ATMOSPHERE_DATA.iloc[0][2]  # Return first row if below range
+            pressure = ATMOSPHERE_DATA[(0, 1)]
+            rho = ATMOSPHERE_DATA[(0, 2)]  # Return first row if below range
         elif index >= len(ATMOSPHERE_DATA):
-            pressure = ATMOSPHERE_DATA.iloc[-1][1]
-            rho = ATMOSPHERE_DATA.iloc[-1][2]  # Return last row if above range
+            pressure = ATMOSPHERE_DATA[(-1, 1)]
+            rho = ATMOSPHERE_DATA[(-1, 2)]  # Return last row if above range
         else:
-            pressure = ATMOSPHERE_DATA.iloc[index][1]
-            rho = ATMOSPHERE_DATA.iloc[index][2]
+            pressure = ATMOSPHERE_DATA[(index, 1)]
+            rho = ATMOSPHERE_DATA[(index, 2)]
 
         # print(f"mass: {mass}, expected mass: {wetMass - mDotTotal*time}, time: {time}")
         
@@ -122,7 +122,7 @@ def calculate_trajectory(
             # print(f"ACTUAL thrust: {jetThrust + (exitPressure - pressure) * exitArea}")
             totalImpulse += thrust * dt  # Accumulate impulse
             if mass < 0:
-                raise ValueError("youre a dumbass")
+                raise ValueError("youre a dumbass, CHECK IF TANK DATA IS FAKE OR NOT!!!!!!!!!!!!!")
         else:
             thrust = 0  # [N] total thrust of the rocket
 
@@ -133,52 +133,62 @@ def calculate_trajectory(
 
         # print(f"thrust: {thrust}, drag: {drag}, gravity_force: {gravity_force}")
         accel = (thrust - drag - gravity_force) / mass  # acceleration equation of motion
-        accelArray.append(accel)
+        accelArray = np.append(accelArray, accel)
 
         velocity += accel * dt  # velocity integration
-        velocityArray.append(velocity)
+        velocityArray = np.append(velocityArray, velocity)
 
         altitude = altitude + velocity * dt  # position integration
-        altitudeArray.append(altitude)
+        altitudeArray = np.append(altitudeArray, altitude)
 
-        timeArray.append(time)
+        timeArray = np.append(timeArray, time)
         time = time + dt  # time step
         # print(f"velocity: {velocity}")
         # print(f"velocity >= 0: {velocity >= 0}")
 
-    # Find the closest altitude to the RAIL_HEIGHT
+    # Find the closest altitude to the TRAILER_RAIL_HEIGHT
     exitVelo, exitAccel = 0, 0
-    for i in range(len(altitudeArray)):
-        if altitudeArray[i] >= c.RAIL_HEIGHT + c.FAR_ALTITUDE:
-            exitVelo = velocityArray[i]
-            exitAccel = accelArray[i]
-            break
+    
+    # avoid TWR < 1 rockets
+    if altitudeArray.size > 1:
+        for i, _ in enumerate(altitudeArray):
+            if altitudeArray[i] >= c.TRAILER_RAIL_HEIGHT + c.INDIANA_ALTITUDE:
+                exitVelo = velocityArray[i]
+                exitAccel = accelArray[i]
+                break
 
     estimated_apogee = altitude * 0.651 # what the fuck is this for
 
     if plots == True:
         plt.figure(1)
-        plt.title("Height v. Time")
-        plt.plot(timeArray, np.array(altitudeArray, dtype=float) * c.M2FT)
-        plt.ylabel("Height [ft]")
-        plt.xlabel("Time (s)")
-        plt.grid()
+        # plt.plot(timeArray, np.array(altitudeArray, dtype=float) * c.M2FT)
+        # plt.title("Height v. Time")
+        # plt.ylabel("Height [ft]")
+        # plt.xlabel("Time [s]")
         
         # plot estimated apogee
-        plt.axhline(y=estimated_apogee * c.M2FT, color='r', linestyle='--', label="Estimated Apogee")
+        # plt.axhline(y=estimated_apogee * c.M2FT, color='r', linestyle='--', label="Estimated Apogee")
+        
+        plt.plot(timeArray, np.array(accelArray, dtype=float))
+        plt.title("Acceleration v. Time")
+        plt.ylabel("Acceleration [m/s^2]")
+        plt.xlabel("Time [s]")
         
         # # compare with OpenRocket trajectory
         # OR_df = pd.read_csv('open_rocket_altitude_data.csv', comment='#')
         # OR_time = OR_df.iloc[:, 0]
         # OR_altitude = OR_df.iloc[:, 1]
-        # plt.plot(OR_time, OR_altitude + (c.FAR_ALTITUDE * c.M2FT))
+        # plt.plot(OR_time, OR_altitude + (c.INDIANA_ALTITUDE * c.M2FT))
 
+        # print(accelArray[np.argmax(np.abs(accelArray))])
+        plt.grid()
         plt.show()
     
-    return [
+
+    return (
         float(estimated_apogee),
-        float(max(accelArray)),
+        accelArray[np.argmax(np.abs(accelArray))],
         float(exitVelo),
         float(exitAccel),
         float(totalImpulse),
-    ]
+    )
