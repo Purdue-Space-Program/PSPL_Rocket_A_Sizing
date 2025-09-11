@@ -55,20 +55,14 @@ def GoFluids(PROPELLANT_TANK_INNER_DIAMETER,
     # print(f"engine_burn_time: {engine_burn_time},  total_usable_propellant_mass: {total_usable_propellant_mass}, total_mass_flow_rate: {total_mass_flow_rate}")
 
 
+    best_case_tanks_too_big, worst_case_tanks_too_big = CalculateIfTanksTooBig(tank_pressure, oxidizer_total_tank_volume, fuel_total_tank_volume)
+   
+    return(total_usable_propellant_mass, engine_burn_time, oxidizer_tank_length, best_case_tanks_too_big, worst_case_tanks_too_big)
 
-    # COPV shit stolen from hugo
-    
-    # worst case from: https://docs.google.com/spreadsheets/d/1r7DucPdWUhxp2y30QmzvK9DFTFOnPvq5XJ1A3TCKh4o/edit?usp=sharing
-    copv_pressure = 4300 * c.PSI2PA
-    copv_volume = 3 * c.L2M3
-    
-    COPV_TEMP_1 = c.T_AMBIENT + 15  # [K] Assumed initial COPV pressurant temperature
 
-    worst_case_CFC_LOx =  10 #
-    best_case_CFC_LOx = 1.75 # sizing for LOx-Helium collapse
+def CalculateIfTanksTooBig(tank_pressure, oxidizer_total_tank_volume, fuel_total_tank_volume):
+     # COPV shit stolen from hugo
     
-    CFC_FUEL = 1 # [1] Fuel tank cumulative collapse factor
-
     # pressurant = "helium"
     pressurant = "nitrogen"
     
@@ -76,54 +70,80 @@ def GoFluids(PROPELLANT_TANK_INNER_DIAMETER,
         gas_constant = c.HE_GAS_CONSTANT
     elif pressurant == "nitrogen":
         gas_constant = c.N2_GAS_CONSTANT
+
+    # worst case from: https://docs.google.com/spreadsheets/d/1r7DucPdWUhxp2y30QmzvK9DFTFOnPvq5XJ1A3TCKh4o/edit?usp=sharing
+    COPV_pressure = 4300 * c.PSI2PA
+    COPV_volume = 3 * c.L2M3
+
+    COPV_TEMP_1 = c.T_AMBIENT + 15  # [K] Assumed initial COPV pressurant temperature
+
+    density_before_collapse = PropsSI("D", "P", COPV_pressure, "T", c.T_AMBIENT + 15, "nitrogen")
+    density_after_collapse = PropsSI("D", "P", tank_pressure, "Q", 0, "nitrogen")
+
+    worst_case_CFC_LOx = density_after_collapse/density_before_collapse # assuming all pressurant becomes a saturated vapor
+    # print(worst_case_CFC_LOx)
+    best_case_CFC_LOx = 1.75 # copperhead sizing for LOx-Helium collapse
+    # best_case_CFC_LOx = 1 # copperhead sizing for LOx-Helium collapse
+    
+    CFC_FUEL = 1 # [1] Fuel tank cumulative collapse factor
+
     
     pressurantCv = PropsSI("CVMASS", "P", 1 * c.ATM2PA, "T", c.T_AMBIENT, pressurant)  # [J/kgK] Constant-volume specific heat of pressurant at STP (assumed constant)
 
-    copvPressure1 = copv_pressure  # [Pa] COPV initial pressure
-    copvPressure2 = (
-        c.BURNOUT_PRESSURE_RATIO * tank_pressure
-    )  # [Pa] COPV burnout pressure
+    copvPressure1 = COPV_pressure  # [Pa] COPV initial pressure
+    copvPressure2 = (c.BURNOUT_PRESSURE_RATIO * tank_pressure)  # [Pa] COPV burnout pressure
 
-    copvEntropy1 = PropsSI(
-        "S", "P", copvPressure1, "T", COPV_TEMP_1, pressurant
-    )  # [J/kgK] COPV initial specific entropy
+    copvEntropy1 = PropsSI("S", "P", copvPressure1, "T", COPV_TEMP_1, pressurant)  # [J/kgK] COPV initial specific entropy
     copvEntropy2 = copvEntropy1  # [J/kgK] COPV burnout specific entropy (assumed isentropic expansion)
 
-    copvDensity1 = PropsSI(
-        "D", "P", copvPressure1, "T", COPV_TEMP_1, pressurant
-    )  # [kg/m^3] COPV initial density
-    copvDensity2 = PropsSI(
-        "D", "P", copvPressure2, "S", copvEntropy2, pressurant
-    )  # [kg/m^3] COPV burnout density
+    copvDensity1 = PropsSI("D", "P", copvPressure1, "T", COPV_TEMP_1, pressurant)  # [kg/m^3] COPV initial density
+    copvDensity2 = PropsSI("D", "P", copvPressure2, "S", copvEntropy2, pressurant)  # [kg/m^3] COPV burnout density
 
-    copvEnergy1 = PropsSI(
-        "U", "P", copvPressure1, "T", COPV_TEMP_1, pressurant
-    )  # [J/kg] COPV initial specific energy
-    copvEnergy2 = PropsSI(
-        "U", "P", copvPressure2, "S", copvEntropy2, pressurant
-    )  # [J/kg] COPV burnout specific energy
+    copvEnergy1 = PropsSI("U", "P", copvPressure1, "T", COPV_TEMP_1, pressurant)  # [J/kg] COPV initial specific energy
+    copvEnergy2 = PropsSI("U", "P", copvPressure2, "S", copvEntropy2, pressurant)  # [J/kg] COPV burnout specific energy
 
 
     tank_volume_ratio =  oxidizer_total_tank_volume / fuel_total_tank_volume
+    total_tanks_volume = fuel_total_tank_volume + oxidizer_total_tank_volume
 
 
-    max_fuel_tank_volume = (
-        ((copvDensity1 * copv_volume * copvEnergy1) - (copvDensity2 * copv_volume * copvEnergy2))
+    best_case_max_both_tank_volume = (
+        ((copvDensity1 * COPV_volume * copvEnergy1) - (copvDensity2 * COPV_volume * copvEnergy2))
     / 
         (
-        (CFC_OX * tank_pressure * tank_volume_ratio * pressurantCv / gas_constant)
-        + (CFC_OX * tank_pressure * tank_volume_ratio)
+        (best_case_CFC_LOx * tank_pressure * tank_volume_ratio * pressurantCv / gas_constant)
+        + (best_case_CFC_LOx * tank_pressure * tank_volume_ratio)
         + (CFC_FUEL * tank_pressure * pressurantCv / gas_constant)
         + (CFC_FUEL * tank_pressure)
         )
     )
     
-    if fuel_total_tank_volume > max_fuel_tank_volume:
-        tanks_too_big = True
+    worst_case_max_both_tank_volume = (
+        ((copvDensity1 * COPV_volume * copvEnergy1) - (copvDensity2 * COPV_volume * copvEnergy2))
+    / 
+        (
+        (worst_case_CFC_LOx * tank_pressure * tank_volume_ratio * pressurantCv / gas_constant)
+        + (worst_case_CFC_LOx * tank_pressure * tank_volume_ratio)
+        + (CFC_FUEL * tank_pressure * pressurantCv / gas_constant)
+        + (CFC_FUEL * tank_pressure)
+        )
+    )
+    
+    worst_case_tanks_too_big = np.nan
+    if total_tanks_volume > best_case_max_both_tank_volume:
+        best_case_tanks_too_big = True
+        worst_case_tanks_too_big = True
+    elif (total_tanks_volume < best_case_max_both_tank_volume) and (total_tanks_volume > worst_case_max_both_tank_volume):
+        best_case_tanks_too_big = False
+        worst_case_tanks_too_big = True
+    elif (total_tanks_volume < worst_case_max_both_tank_volume): 
+        best_case_tanks_too_big = False
+        worst_case_tanks_too_big = False
     else:
-        tanks_too_big = False
+        raise ValueError("what")
+    
+    return (best_case_tanks_too_big, worst_case_tanks_too_big)
 
-    return(total_usable_propellant_mass, engine_burn_time, oxidizer_tank_length, tanks_too_big)
 
 
 def CalculateTankPressure(CHAMBER_PRESSURE):

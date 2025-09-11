@@ -46,8 +46,15 @@ import pandas as pd
 # https://numpy.org/doc/stable/user/basics.rec.html
 # good visual: https://www.w3resource.com/numpy/ndarray/index.php
 
-# The variable_inputs_array will be separate from the constant_inputs_array to save memory size and hopefully increase speed
 
+show_all_results = False
+show_copv_limiting_factor = False
+
+
+
+
+
+# The variable_inputs_array will be separate from the constant_inputs_array to save memory size and hopefully increase speed
 variable_inputs_array = numpy_ndarray_handler.dictionary_to_ndarray(inputs.variable_inputs)
 constant_inputs_array = numpy_ndarray_handler.dictionary_to_ndarray(inputs.constant_inputs)
 
@@ -94,7 +101,7 @@ def run_rocket_function(idx, variable_input_combination):
                 # CEA_Array[idx],
                 )
 
-    total_usable_propellant_mass, engine_burn_time, oxidizer_tank_length, tanks_too_big = tanks.GoFluids(
+    total_usable_propellant_mass, engine_burn_time, oxidizer_tank_length, best_case_tanks_too_big, worst_case_tanks_too_big = tanks.GoFluids(
                 numpy_ndarray_handler.GetFrom_ndarray("PROPELLANT_TANK_INNER_DIAMETER", constant_inputs_array, variable_input_combination),
                 numpy_ndarray_handler.GetFrom_ndarray("FUEL_TANK_LENGTH", constant_inputs_array, variable_input_combination),
                 numpy_ndarray_handler.GetFrom_ndarray("CHAMBER_PRESSURE", constant_inputs_array, variable_input_combination),
@@ -109,16 +116,27 @@ def run_rocket_function(idx, variable_input_combination):
     
     total_length = 7 * (oxidizer_tank_length + numpy_ndarray_handler.GetFrom_ndarray("FUEL_TANK_LENGTH", constant_inputs_array, variable_input_combination)) # fix this dumbass
     
-    # tanks_too_big = False # override to show all results
-    if tanks_too_big:
-        jet_thrust = 0
-        # jet_thrust = np.nan
-        isp = np.nan
-        engine_burn_time = np.nan
-        mass_flow_rate = np.nan
+    if show_all_results:
+        best_case_tanks_too_big = False # override to show all results
+        worst_case_tanks_too_big = False # override to show all results
+    
+    if show_copv_limiting_factor:
+        if show_all_results:
+            raise RuntimeError("DUMBASS. DONT HAVE SHOW ALL RESULTS AND SHOW COPV LIMITING FACTOR AT THE SAME TIME")
         
+        if best_case_tanks_too_big:
+            jet_thrust = 0
+        elif worst_case_tanks_too_big and (best_case_tanks_too_big == False):
+            jet_thrust = 0.2
+        elif worst_case_tanks_too_big == False:
+            jet_thrust = 1
     else:
-        jet_thrust = 1
+        if worst_case_tanks_too_big:
+            jet_thrust = np.nan
+            isp = np.nan
+            engine_burn_time = np.nan
+            mass_flow_rate = np.nan
+    
         # avoid calculating trajectory if the value is not going to be used
         if any(output in output_names for output in ["APOGEE", "MAX_ACCELERATION", "RAIL_EXIT_VELOCITY", "RAIL_EXIT_ACCELERATION", "TAKEOFF_TWR", "RAIL_EXIT_TWR", "MAX_ACCELERATION"]):
             estimated_apogee, max_accel, max_velocity, rail_exit_velocity, rail_exit_accel, total_impulse = trajectory.calculate_trajectory(
@@ -138,11 +156,11 @@ def run_rocket_function(idx, variable_input_combination):
             rail_exit_TWR = AccelerationToTWR(rail_exit_accel)
             
 
-    # if tanks_too_big:
-    #     rail_exit_velocity = np.nan
-    #     rail_exit_TWR = np.nan
-    #     takeoff_TWR = np.nan
-    #     max_accel = np.nan
+    if worst_case_tanks_too_big:
+        rail_exit_velocity = np.nan
+        rail_exit_TWR = np.nan
+        takeoff_TWR = np.nan
+        max_accel = np.nan
 
 
     # for output_name in output_names:
@@ -233,7 +251,6 @@ def run_rocket_function(idx, variable_input_combination):
     
     
     
-    
     return (idx, output_list)
 
 
@@ -247,7 +264,7 @@ AXES = ["OF_RATIO", "CHAMBER_PRESSURE"]
 # AXES = ["OF_RATIO", "FUEL_TANK_LENGTH"]
 if len(AXES) == 2:
     # make axes automated (idc to do that rn)
-    p.PlotColorMaps(AXES[0], AXES[1], variable_inputs_array, output_names, output_array)
+    p.PlotColorMaps(AXES[0], AXES[1], variable_inputs_array, output_names, output_array, show_copv_limiting_factor)
 # elif len(AXES) == 3:
 #     X, Y, Z = p.SetupHolyFuckArrays(variable_inputs_array, AXES[0], AXES[1], AXES[2], output_names, output_array)
 #     p.HolyFuck(AXES[0], AXES[1], AXES[2], variable_inputs_array, output_names, output_array)

@@ -130,14 +130,28 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 # p.PlotColorMap(X, Y, Z, RPA_df['Tc'])
 
 
-
+# coolprop vapor testing
 from CoolProp.CoolProp import PropsSI
 import CoolProp.CoolProp as CP
 
-pressurantCv = PropsSI("D", "P", c.ATM2PA, "T", 100 + 273, "water")
-phase = CP.PhaseSI('T', 100 + 273 + c.T_AMBIENT, 'P', c.ATM2PA, "water")
-print(phase)
-print(pressurantCv)
+# density = PropsSI("D", 'P', 101325, 'T', 100 + 273, "water")
+# print(density)
+# phase = CP.PhaseSI(    'P', 101325, 'T', 99 + 273, "water")
+# print(phase)
 
-pressurantCv = PropsSI("D", "P", c.ATM2PA, "Q", 0, "water")
-print(pressurantCv)
+# density = PropsSI("D", "P", c.ATM2PA, "Q", 0, "water")
+# print(density)
+
+# phase = CP.PhaseSI('P', c.ATM2PA, 'D', density, "water")
+# print(phase)
+
+
+COPV_pressure = 4500 * c.PSI2PA
+tank_pressure = 50 * c.PSI2PA
+
+density_before_collapse = PropsSI("D", "P", COPV_pressure, "T", c.T_AMBIENT + 15, "nitrogen")
+density_after_collapse = PropsSI("D", "P", tank_pressure, "Q", 0, "nitrogen")
+
+worst_case_collapse_factor = density_after_collapse/density_before_collapse
+
+print(f"collapse: {worst_case_collapse_factor}")

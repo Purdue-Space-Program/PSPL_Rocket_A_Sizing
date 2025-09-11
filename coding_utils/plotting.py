@@ -8,7 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import inputs
 
 
-def PlotColorMaps(x_axis_name, y_axis_name, variable_inputs_array, output_names, output_array):
+def PlotColorMaps(x_axis_name, y_axis_name, variable_inputs_array, output_names, output_array, show_copv_limiting_factor):
     num_outputs = len(output_names)
     
     # Create a 2x2 grid
@@ -23,7 +23,7 @@ def PlotColorMaps(x_axis_name, y_axis_name, variable_inputs_array, output_names,
 
     for ax, output_name in zip(axes, output_names):
         X, Y, Z = SetupArrays(variable_inputs_array, x_axis_name, y_axis_name, output_name, output_array)
-        PlotColorMap(X, Y, Z, x_axis_name, y_axis_name, output_name, output_array, ax=ax)
+        PlotColorMap(X, Y, Z, x_axis_name, y_axis_name, output_name, output_array, show_copv_limiting_factor, ax=ax)
 
     # Hide any unused subplots if there are fewer than 4 outputs
     for ax in axes[num_outputs:]:
@@ -45,7 +45,7 @@ def SetupArrays(variable_inputs_array, x_axis_name, y_axis_name, output_name, ou
     return (X, Y, Z)
 
 
-def PlotColorMap(X, Y, Z, x_axis_name, y_axis_name, output_name, output_array, ax=None):
+def PlotColorMap(X, Y, Z, x_axis_name, y_axis_name, output_name, output_array, show_copv_limiting_factor, ax=None):
     if ax is None:
         ax = plt.gca()  # default to current axes
         
@@ -127,12 +127,16 @@ def PlotColorMap(X, Y, Z, x_axis_name, y_axis_name, output_name, output_array, a
     #     ax.contour(X, Y, Z, contour_lines)
 
     
-    
-    # mesh = ax.pcolormesh(X, Y, Z, cmap='Spectral_r')
-    mesh = ax.pcolormesh(X, Y, Z, cmap='RdYlGn')
+    if show_copv_limiting_factor:
+        color_scheme = "RdYlGn"
+    else:
+        color_scheme = "RdBu_r"
+    #   "Spectral_r"
+        
+    mesh = ax.pcolormesh(X, Y, Z, cmap=color_scheme)
+    # mesh = ax.contourf(X, Y, Z, 100, cmap=color_scheme)
     # mesh = ax.pcolormesh(X, Y, Z, cmap='RdBu_r')
-    # mesh = ax.contourf(X, Y, Z, 100, cmap='Spectral_r')
-    # ax.set_title(f"{output_name.title()} of {inputs.constant_inputs['FUEL_NAME'][0].title()} For Different {x_axis_name.title()}s and {y_axis_name.title()}s", fontsize=8)
+        
     ax.set_title(f"{output_name.title()} of {inputs.constant_inputs['FUEL_NAME'][0].title()}", fontsize=12)
     ax.set_facecolor("lightgray")
     plt.colorbar(mesh, label=colorbar_label)
