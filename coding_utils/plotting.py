@@ -94,13 +94,22 @@ def PlotColorMap(X, Y, Z, x_axis_name, y_axis_name, output_name, output_array, a
     elif output_name == "WET_MASS":
         Z = Z * c.KG2LB
         colorbar_label="Wet Rocket Mass [lbm]"
+    elif output_name == "DRY_MASS":
+        Z = Z * c.KG2LB
+        colorbar_label="Dry Rocket Mass [lbm]"
     elif output_name == "BURN_TIME":
         colorbar_label="Burn Time [s]"
     elif output_name == "RAIL_EXIT_VELOCITY":
         colorbar_label="Rail Exit Velocity [m/s]"
+    elif output_name == "RAIL_EXIT_ACCELERATION":
+        Z = Z / c.GRAVITY
+        colorbar_label="Rail Exit Acceleration [G's]"
     elif output_name == "MAX_ACCELERATION":
-        # Z = Z / c.GRAVITY
+        Z = Z / c.GRAVITY
         colorbar_label="Max Acceleration [G's]"
+    elif output_name == "MAX_VELOCITY":
+        Z = Z / 343
+        colorbar_label="Max Velocity [Mach]"
     elif output_name == "CHAMBER_TEMPERATURE":
         colorbar_label="Chamber Temperature [k]"
     elif output_name == "OXIDIZER_TANK_LENGTH":
@@ -119,7 +128,9 @@ def PlotColorMap(X, Y, Z, x_axis_name, y_axis_name, output_name, output_array, a
 
     
     
-    mesh = ax.pcolormesh(X, Y, Z, cmap='Spectral_r')
+    # mesh = ax.pcolormesh(X, Y, Z, cmap='Spectral_r')
+    mesh = ax.pcolormesh(X, Y, Z, cmap='RdYlGn')
+    # mesh = ax.pcolormesh(X, Y, Z, cmap='RdBu_r')
     # mesh = ax.contourf(X, Y, Z, 100, cmap='Spectral_r')
     # ax.set_title(f"{output_name.title()} of {inputs.constant_inputs['FUEL_NAME'][0].title()} For Different {x_axis_name.title()}s and {y_axis_name.title()}s", fontsize=8)
     ax.set_title(f"{output_name.title()} of {inputs.constant_inputs['FUEL_NAME'][0].title()}", fontsize=12)

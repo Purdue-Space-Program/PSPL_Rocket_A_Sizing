@@ -95,36 +95,49 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 
 
-# Open RPA graph
-import coding_utils.plotting as p
-import pandas as pd
-import inputs
+# # Open RPA graph
+# import coding_utils.plotting as p
+# import pandas as pd
+# import inputs
 
-RPA_df = pd.read_csv(
-    "fuck_money.txt",
-    delim_whitespace=True,   # values separated by spaces
-    comment='#',             # ignore header/comment lines
-    header=None              # no header row in data
-)
+# RPA_df = pd.read_csv(
+#     "fuck_money.txt",
+#     delim_whitespace=True,   # values separated by spaces
+#     comment='#',             # ignore header/comment lines
+#     header=None              # no header row in data
+# )
 
-RPA_df.columns = [
-    "OF_RATIO", "CHAMBER_PRESSURE", "Nozzle_inl", "Nozzle_exi", "rho", "Tc",
-    "M", "gamma", "k", "c_star", "Is_opt", "Is_vac",
-    "Cf_opt", "Cf_vac", "c_factor"
-]
+# RPA_df.columns = [
+#     "OF_RATIO", "CHAMBER_PRESSURE", "Nozzle_inl", "Nozzle_exi", "rho", "Tc",
+#     "M", "gamma", "k", "c_star", "Is_opt", "Is_vac",
+#     "Cf_opt", "Cf_vac", "c_factor"
+# ]
 
-OF = RPA_df['OF_RATIO'].to_numpy()
-Pc = RPA_df['CHAMBER_PRESSURE'].to_numpy()
+# OF = RPA_df['OF_RATIO'].to_numpy()
+# Pc = RPA_df['CHAMBER_PRESSURE'].to_numpy()
 
-# 4. Get unique values for axes
-OF_unique = np.unique(OF)
-Pc_unique = np.unique(Pc)
+# # 4. Get unique values for axes
+# OF_unique = np.unique(OF)
+# Pc_unique = np.unique(Pc)
 
-x = Pc_unique
-y = OF_unique
-z = RPA_df['Tc'].to_numpy()
+# x = Pc_unique
+# y = OF_unique
+# z = RPA_df['Tc'].to_numpy()
 
-Y, X = np.meshgrid(x,y) # I don't know why you have to swap X and Y but you do
-Z = z.reshape(len(x), len(y))
+# Y, X = np.meshgrid(x,y) # I don't know why you have to swap X and Y but you do
+# Z = z.reshape(len(x), len(y))
 
-p.PlotColorMap(X, Y, Z, RPA_df['Tc'])
+# p.PlotColorMap(X, Y, Z, RPA_df['Tc'])
+
+
+
+from CoolProp.CoolProp import PropsSI
+import CoolProp.CoolProp as CP
+
+pressurantCv = PropsSI("D", "P", c.ATM2PA, "T", 100 + 273, "water")
+phase = CP.PhaseSI('T', 100 + 273 + c.T_AMBIENT, 'P', c.ATM2PA, "water")
+print(phase)
+print(pressurantCv)
+
+pressurantCv = PropsSI("D", "P", c.ATM2PA, "Q", 0, "water")
+print(pressurantCv)

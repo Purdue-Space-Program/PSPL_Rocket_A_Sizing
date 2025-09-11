@@ -1,16 +1,10 @@
-from inputs import USE_FAKE_TANKS_DATA
-
 
 # import os
 # import sys
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 # import coding_utils.constants as c
 
-
-if USE_FAKE_TANKS_DATA == False:
-    from CoolProp.CoolProp import PropsSI
-# else:
-#     from coding_utils.constants import PropsSI
+from CoolProp.CoolProp import PropsSI
 
 import coding_utils.constants as c
 import numpy as np
@@ -66,11 +60,13 @@ def GoFluids(PROPELLANT_TANK_INNER_DIAMETER,
     
     # worst case from: https://docs.google.com/spreadsheets/d/1r7DucPdWUhxp2y30QmzvK9DFTFOnPvq5XJ1A3TCKh4o/edit?usp=sharing
     copv_pressure = 4300 * c.PSI2PA
-    copv_volume = 1.6 * c.L2M3
+    copv_volume = 3 * c.L2M3
     
     COPV_TEMP_1 = c.T_AMBIENT + 15  # [K] Assumed initial COPV pressurant temperature
 
-    CFC_OX = 3 # [1] Oxidizer tank cumulative collapse factor
+    worst_case_CFC_LOx =  10 #
+    best_case_CFC_LOx = 1.75 # sizing for LOx-Helium collapse
+    
     CFC_FUEL = 1 # [1] Fuel tank cumulative collapse factor
 
     # pressurant = "helium"

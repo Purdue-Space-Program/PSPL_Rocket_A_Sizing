@@ -52,20 +52,23 @@ variable_inputs_array = numpy_ndarray_handler.dictionary_to_ndarray(inputs.varia
 constant_inputs_array = numpy_ndarray_handler.dictionary_to_ndarray(inputs.constant_inputs)
 
 output_names = [
+    # "OXIDIZER_TANK_LENGTH",                          # [ft]
+    # "CHAMBER_TEMPERATURE",                       # [k]
+    
     # "MASS_FLOW_RATE",                         # [kg/s]
     # "ISP",                                      # [s]
     "JET_THRUST",                             # [lbf] engine jet thrust
-    # "OXIDIZER_TANK_LENGTH",                          # [ft]
+    # "TOTAL_LENGTH",                              # [ft]
     # "WET_MASS",                                 # [lbm]
-    # "CHAMBER_TEMPERATURE",                       # [k]
-    
-    "TAKEOFF_TWR",                              # [n/a]
+    # "DRY_MASS",                                 # [lbm]
     "BURN_TIME",                 # [s]
-    "APOGEE",                                   # [ft]
-    "MAX_ACCELERATION",                         # [G's]
-    "RAIL_EXIT_VELOCITY",                          # [ft/s]
-    "RAIL_EXIT_TWR",                            # [n/a]
-    "TOTAL_LENGTH",                              # [ft]
+    
+    # "APOGEE",                                   # [ft]
+    # "MAX_ACCELERATION",                         # [G's]
+    # "MAX_VELOCITY",                         # [m/s]
+    # "RAIL_EXIT_VELOCITY",                          # [ft/s]
+    # "RAIL_EXIT_ACCELERATION",                          # [ft/s]
+    # "RAIL_EXIT_TWR",                            # [n/a]
 ] # USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA 
   # USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA 
   # USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA 
@@ -91,44 +94,49 @@ def run_rocket_function(idx, variable_input_combination):
                 # CEA_Array[idx],
                 )
 
-
-    if inputs.USE_FAKE_TANKS_DATA == True:
-        total_usable_propellant_mass, engine_burn_time, oxidizer_tank_length = (14.577917569187084, 8.77083825323153, 0.46935451405705586)
-    else:
-        total_usable_propellant_mass, engine_burn_time, oxidizer_tank_length, tanks_too_big = tanks.GoFluids(
-                    numpy_ndarray_handler.GetFrom_ndarray("PROPELLANT_TANK_INNER_DIAMETER", constant_inputs_array, variable_input_combination),
-                    numpy_ndarray_handler.GetFrom_ndarray("FUEL_TANK_LENGTH", constant_inputs_array, variable_input_combination),
-                    numpy_ndarray_handler.GetFrom_ndarray("CHAMBER_PRESSURE", constant_inputs_array, variable_input_combination),
-                    numpy_ndarray_handler.GetFrom_ndarray("OXIDIZER_NAME", constant_inputs_array, variable_input_combination),
-                    numpy_ndarray_handler.GetFrom_ndarray("FUEL_NAME", constant_inputs_array, variable_input_combination),
-                    numpy_ndarray_handler.GetFrom_ndarray("OF_RATIO", constant_inputs_array, variable_input_combination),
-                    mass_flow_rate,
-                    )
+    total_usable_propellant_mass, engine_burn_time, oxidizer_tank_length, tanks_too_big = tanks.GoFluids(
+                numpy_ndarray_handler.GetFrom_ndarray("PROPELLANT_TANK_INNER_DIAMETER", constant_inputs_array, variable_input_combination),
+                numpy_ndarray_handler.GetFrom_ndarray("FUEL_TANK_LENGTH", constant_inputs_array, variable_input_combination),
+                numpy_ndarray_handler.GetFrom_ndarray("CHAMBER_PRESSURE", constant_inputs_array, variable_input_combination),
+                numpy_ndarray_handler.GetFrom_ndarray("OXIDIZER_NAME", constant_inputs_array, variable_input_combination),
+                numpy_ndarray_handler.GetFrom_ndarray("FUEL_NAME", constant_inputs_array, variable_input_combination),
+                numpy_ndarray_handler.GetFrom_ndarray("OF_RATIO", constant_inputs_array, variable_input_combination),
+                mass_flow_rate,
+                )
 
     wet_mass = total_usable_propellant_mass * numpy_ndarray_handler.GetFrom_ndarray("WET_MASS_TO_USABLE_PROPELLANT_MASS_RATIO", constant_inputs_array, variable_input_combination)
-    total_length = 5 * (oxidizer_tank_length + numpy_ndarray_handler.GetFrom_ndarray("FUEL_TANK_LENGTH", constant_inputs_array, variable_input_combination)) # fix this dumbass
+    dry_mass = wet_mass - total_usable_propellant_mass
     
-    # if tanks_too_big:
-    #     jet_thrust = np.nan    
+    total_length = 7 * (oxidizer_tank_length + numpy_ndarray_handler.GetFrom_ndarray("FUEL_TANK_LENGTH", constant_inputs_array, variable_input_combination)) # fix this dumbass
     
-    # avoid calculating trajectory if the value is not going to be used
-    if any(output in output_names for output in ["APOGEE", "MAX_ACCELERATION", "RAIL_EXIT_VELOCITY", "RAIL_EXIT_ACCELERATION", "TAKEOFF_TWR", "RAIL_EXIT_TWR"]):
-        estimated_apogee, max_accel, rail_exit_velocity, rail_exit_accel, total_impulse = trajectory.calculate_trajectory(
-                                wet_mass, 
-                                mass_flow_rate,
-                                jet_thrust,
-                                numpy_ndarray_handler.GetFrom_ndarray("PROPELLANT_TANK_OUTER_DIAMETER", constant_inputs_array, variable_input_combination),
-                                3,
-                                0.15,
-                                engine.RadiusToArea((numpy_ndarray_handler.GetFrom_ndarray("PROPELLANT_TANK_OUTER_DIAMETER", constant_inputs_array, variable_input_combination)/2) - (0.5 * c.IN2M)), # lowkey a guess
-                                10 * c.PSI2PA,
-                                engine_burn_time, 
-                                total_length,
-                                True,
-                            )
-        print(max_accel)
-        takeoff_TWR = jet_thrust/(wet_mass * c.GRAVITY)
-        rail_exit_TWR = AccelerationToTWR(rail_exit_accel)
+    # tanks_too_big = False # override to show all results
+    if tanks_too_big:
+        jet_thrust = 0
+        # jet_thrust = np.nan
+        isp = np.nan
+        engine_burn_time = np.nan
+        mass_flow_rate = np.nan
+        
+    else:
+        jet_thrust = 1
+        # avoid calculating trajectory if the value is not going to be used
+        if any(output in output_names for output in ["APOGEE", "MAX_ACCELERATION", "RAIL_EXIT_VELOCITY", "RAIL_EXIT_ACCELERATION", "TAKEOFF_TWR", "RAIL_EXIT_TWR", "MAX_ACCELERATION"]):
+            estimated_apogee, max_accel, max_velocity, rail_exit_velocity, rail_exit_accel, total_impulse = trajectory.calculate_trajectory(
+                                    wet_mass, 
+                                    mass_flow_rate,
+                                    jet_thrust,
+                                    numpy_ndarray_handler.GetFrom_ndarray("PROPELLANT_TANK_OUTER_DIAMETER", constant_inputs_array, variable_input_combination),
+                                    3,
+                                    0.15,
+                                    engine.RadiusToArea((numpy_ndarray_handler.GetFrom_ndarray("PROPELLANT_TANK_OUTER_DIAMETER", constant_inputs_array, variable_input_combination)/2) - (0.5 * c.IN2M)), # lowkey a guess
+                                    10 * c.PSI2PA,
+                                    engine_burn_time, 
+                                    total_length,
+                                    False
+                                )
+            
+            rail_exit_TWR = AccelerationToTWR(rail_exit_accel)
+            
 
     # if tanks_too_big:
     #     rail_exit_velocity = np.nan
@@ -155,17 +163,18 @@ def run_rocket_function(idx, variable_input_combination):
         "ISP": isp,
         "MASS_FLOW_RATE": mass_flow_rate,
         "WET_MASS": wet_mass,
+        "DRY_MASS": dry_mass,
         "OXIDIZER_TANK_LENGTH": oxidizer_tank_length,
         "TOTAL_LENGTH" : total_length,
-                
-        "APOGEE": estimated_apogee if "APOGEE" in output_names else np.nan,
-        "TAKEOFF_TWR": takeoff_TWR if "TAKEOFF_TWR" in output_names else np.nan,
-        "MAX_ACCELERATION": max_accel if "MAX_ACCELERATION" in output_names else np.nan,
-        "RAIL_EXIT_VELOCITY": rail_exit_velocity if "RAIL_EXIT_VELOCITY" in output_names else np.nan,
-        "RAIL_EXIT_ACCELERATION": rail_exit_accel if "RAIL_EXIT_ACCELERATION" in output_names else np.nan,
-        "RAIL_EXIT_TWR": rail_exit_TWR if "RAIL_EXIT_TWR" in output_names else np.nan,
-        "BURN_TIME" : engine_burn_time if "BURN_TIME" in output_names else np.nan,
-        "CHAMBER_TEMPERATURE": chamber_temperature if "CHAMBER_TEMPERATURE" in output_names else np.nan,
+        "CHAMBER_TEMPERATURE": chamber_temperature,
+        "BURN_TIME" : engine_burn_time,
+        
+        "APOGEE": estimated_apogee if "estimated_apogee" in locals() else np.nan,
+        "MAX_ACCELERATION": max_accel if "max_accel" in locals() else np.nan,
+        "MAX_VELOCITY": max_velocity if "max_velocity" in locals() else np.nan,
+        "RAIL_EXIT_VELOCITY": rail_exit_velocity if "rail_exit_velocity" in locals() else np.nan,
+        "RAIL_EXIT_ACCELERATION": rail_exit_accel if "rail_exit_accel" in locals() else np.nan,
+        "RAIL_EXIT_TWR": rail_exit_TWR if "rail_exit_TWR" in locals() else np.nan,
     }
 
 
@@ -177,30 +186,64 @@ def run_rocket_function(idx, variable_input_combination):
     # HERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!
     # Allocate structured array with one record
     output_list = np.zeros(1, dtype=dtype)
-
+    
     # Fill values
     for name, _ in dtype:
         output_list[name] = mapping[name]
-    
+        
+        # exists = (any((name == "RAIL_EXIT_ACCELERATION") and not(np.isnan(mapping[name])) for name, value in dtype))
+        # if exists:
+        #     within_bounds = ((rail_exit_accel > (5 * c.GRAVITY)) and (rail_exit_accel < (7 * c.GRAVITY)))
+        
+        # if exists and within_bounds:
+        #     output_list[name] = mapping[name]
+        # else:
+        #     output_list[name] = np.nan
+            
+
     # # Compare to Copperhead
     # CR = numpy_ndarray_handler.GetFrom_ndarray("CONTRACTION_RATIO", constant_inputs_array, variable_input_combination)
     # FTL = numpy_ndarray_handler.GetFrom_ndarray("FUEL_TANK_LENGTH", constant_inputs_array, variable_input_combination)
     # if (CR > 4.9) & (CR < 5.1) & (FTL > 3.9 * c.FT2M) & (FTL < 4.1 * c.FT2M):
     #     print(f"Contraction Ratio: {CR}, Fuel Tank Length: {FTL * c.M2FT}, Estimated Apogee: {estimated_apogee * c.M2FT}, Takeoff TWR: {takeoff_TWR}")
 
+    # Chosen parameters
+    CR = numpy_ndarray_handler.GetFrom_ndarray("CONTRACTION_RATIO", constant_inputs_array, variable_input_combination)
+    FTL = numpy_ndarray_handler.GetFrom_ndarray("FUEL_TANK_LENGTH", constant_inputs_array, variable_input_combination)
+    if (CR > 4.95) & (CR < 5.06) & (FTL > 11.8 * c.IN2M) & (FTL < 12.2 * c.IN2M):
+        print(f"\nContraction Ratio: {CR}")
+        print(f"Fuel Tank Length: {FTL * c.M2FT} feet")
+              
+        print(f"\nJET_THRUST: {jet_thrust * c.N2LBF} lbf")
+        print(f"ISP: {isp} seconds")
+        print(f"MASS_FLOW_RATE: {mass_flow_rate * c.KG2LB} lbm")
+        print(f"BURN_TIME: {engine_burn_time} seconds")
+        print(f"TOTAL_LENGTH: {total_length * c.M2FT} feet")
+        print(f"WET_MASS: {wet_mass * c.KG2LB} lbm")
+        print(f"DRY_MASS: {dry_mass * c.KG2LB} lbm")
+        
+        print(f"Estimated Apogee: {estimated_apogee * c.M2FT} feet")
+        print(f"Off the rail TWR: {rail_exit_TWR}")
+        print(f"Off the rail acceleration: {rail_exit_accel / c.GRAVITY} G's")
+        print(f"Off the rail velocity: {rail_exit_velocity} m/s")
+        print(f"Max Acceleration: {max_accel / c.GRAVITY} G's")
+        print(f"Max Velocity: {max_velocity / 343} Mach")
+        
+        print(f"ox tank volume: ")
+    
+    
+    
+    
     return (idx, output_list)
 
 
-output_array = threaded_run.ThreadedRun(run_rocket_function, variable_inputs_array, output_names, False)
+output_array = threaded_run.ThreadedRun(run_rocket_function, variable_inputs_array, output_names, True)
 
-
-if inputs.USE_FAKE_TANKS_DATA == True:
-    print("THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE THE DATA IS FAKE ")
 
 print(constant_inputs_array)
 
-# AXES = ["OF_RATIO", "CHAMBER_PRESSURE"]
-AXES = ["CONTRACTION_RATIO", "FUEL_TANK_LENGTH"]
+AXES = ["OF_RATIO", "CHAMBER_PRESSURE"]
+# AXES = ["CONTRACTION_RATIO", "FUEL_TANK_LENGTH"]
 # AXES = ["OF_RATIO", "FUEL_TANK_LENGTH"]
 if len(AXES) == 2:
     # make axes automated (idc to do that rn)
