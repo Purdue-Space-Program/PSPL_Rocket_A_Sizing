@@ -23,9 +23,9 @@ def PlotColorMaps(x_axis_name, y_axis_name, variable_inputs_array, output_names,
 
     for ax, output_name in zip(axes, output_names):
         X, Y, Z = SetupArrays(variable_inputs_array, x_axis_name, y_axis_name, output_name, output_array)
-        PlotColorMap(X, Y, Z, x_axis_name, y_axis_name, output_name, output_array, show_copv_limiting_factor, ax=ax)
+        PlotColorMap(X, Y, Z, x_axis_name, y_axis_name, output_name, show_copv_limiting_factor, ax=ax)
 
-    # Hide any unused subplots if there are fewer than 4 outputs
+    # Hide any unused subplots
     for ax in axes[num_outputs:]:
         ax.set_visible(False)
 
@@ -45,106 +45,25 @@ def SetupArrays(variable_inputs_array, x_axis_name, y_axis_name, output_name, ou
     return (X, Y, Z)
 
 
-def PlotColorMap(X, Y, Z, x_axis_name, y_axis_name, output_name, output_array, show_copv_limiting_factor, ax=None):
+def PlotColorMap(X, Y, output_values, x_axis_name, y_axis_name, output_name, show_copv_limiting_factor, ax=None):
     if ax is None:
         ax = plt.gca()  # default to current axes
         
-    if x_axis_name == "OF_RATIO":
-        ax.set_xlabel('OF Ratio', fontsize=8)
-    elif x_axis_name == "FUEL_TANK_LENGTH":
-        X = X * c.M2IN
-        ax.set_xlabel('Fuel Tank Length [in]', fontsize=8)
-    elif x_axis_name == "WET_MASS_TO_USABLE_PROPELLANT_MASS_RATIO":
-        ax.set_xlabel('Wet Mass to Usable Propellant Mass Ratio', fontsize=8)
-    elif x_axis_name == "CONTRACTION_RATIO":
-        ax.set_xlabel('Chamber to Throat Contraction Ratio', fontsize=8)
-    else:
-        raise ValueError("output name not recognized for plotting")
-
-
-    if y_axis_name == "CHAMBER_PRESSURE":
-        Y = Y * c.PA2PSI
-        ax.set_ylabel('Chamber Pressure [psi]', fontsize=8)
-    elif y_axis_name == "FUEL_TANK_LENGTH":
-        Y = Y * c.M2IN
-        ax.set_ylabel('Fuel Tank Length [in]', fontsize=8)
-    elif y_axis_name == "WET_MASS_TO_USABLE_PROPELLANT_MASS_RATIO":
-        ax.set_ylabel('Wet Mass to Usable Propellant Mass Ratio', fontsize=8)
-    elif y_axis_name == "CONTRACTION_RATIO":
-        ax.set_ylabel('Chamber to Throat Contraction Ratio', fontsize=8)
-    else:
-        raise ValueError("output name not recognized for plotting")
-
         
-    contour_lines = -1        
-    if output_name == "JET_THRUST":
-        Z = Z * c.N2LBF
-        colorbar_label="Jet Thrust [lbf]"
-    elif output_name == "MASS_FLOW_RATE":
-        colorbar_label="Mass Flow Rate [kg/s]"
-    elif output_name == "ISP":
-        num_lines = 8
-        power = 1/4
-        contour_lines = np.max(output_array[output_name]) * 0.995 / (num_lines**power) * np.linspace(1, num_lines, num_lines)**power
-        colorbar_label="isp [s]"
-    elif output_name == "APOGEE":
-        Z = Z * c.M2FT
-        altitude_limit = ax.contour(X, Y, Z, levels=[10000], colors='red', linewidths=2)
-        ax.clabel(altitude_limit, fmt='%d')
-        colorbar_label="Estimated Apogee [ft]"
-    elif output_name == "TAKEOFF_TWR":
-        colorbar_label="Takeoff TWR"
-    elif output_name == "RAIL_EXIT_TWR":
-        colorbar_label="Rail Exit TWR"
-    elif output_name == "WET_MASS":
-        Z = Z * c.KG2LB
-        colorbar_label="Wet Rocket Mass [lbm]"
-    elif output_name == "DRY_MASS":
-        Z = Z * c.KG2LB
-        colorbar_label="Dry Rocket Mass [lbm]"
-    elif output_name == "BURN_TIME":
-        colorbar_label="Burn Time [s]"
-    elif output_name == "RAIL_EXIT_VELOCITY":
-        colorbar_label="Rail Exit Velocity [m/s]"
-    elif output_name == "RAIL_EXIT_ACCELERATION":
-        Z = Z / c.GRAVITY
-        colorbar_label="Rail Exit Acceleration [G's]"
-    elif output_name == "MAX_ACCELERATION":
-        Z = Z / c.GRAVITY
-        colorbar_label="Max Acceleration [G's]"
-    elif output_name == "MAX_VELOCITY":
-        Z = Z / 343
-        colorbar_label="Max Velocity [Mach]"
-    elif output_name == "CHAMBER_TEMPERATURE":
-        colorbar_label="Chamber Temperature [k]"
-    elif output_name == "OXIDIZER_TANK_LENGTH":
-        Z = Z * c.M2FT
-        colorbar_label="Oxidizer Tank Length [ft]"
-    elif output_name == "TOTAL_LENGTH":
-        Z = Z * c.M2FT
-        colorbar_label="Total Length [ft]"
-    else:
-        raise ValueError("output name not recognized for plotting")
-
-    # if contour_lines == -1:
-    #     ax.contour(X, Y, Z)
-    # else:
-    #     ax.contour(X, Y, Z, contour_lines)
-
+    axis_label_list, axis_values_list, output_label, output_values, color_scheme = FormatPlot([x_axis_name, y_axis_name], [X, Y], output_name, output_values, show_copv_limiting_factor)
     
-    if show_copv_limiting_factor:
-        color_scheme = "RdYlGn"
-    else:
-        color_scheme = "RdBu_r"
-    #   "Spectral_r"
+    ax.set_xlabel(axis_label_list[0], fontsize=8)
+    ax.set_ylabel(axis_label_list[1], fontsize=8)
+
+    X, Y = *axis_values_list,
         
-    mesh = ax.pcolormesh(X, Y, Z, cmap=color_scheme)
+    mesh = ax.pcolormesh(X, Y, output_values, cmap=color_scheme)
     # mesh = ax.contourf(X, Y, Z, 100, cmap=color_scheme)
     # mesh = ax.pcolormesh(X, Y, Z, cmap='RdBu_r')
         
     ax.set_title(f"{output_name.title()} of {inputs.constant_inputs['FUEL_NAME'][0].title()}", fontsize=12)
     ax.set_facecolor("lightgray")
-    plt.colorbar(mesh, label=colorbar_label)
+    plt.colorbar(mesh, label=output_label)
 
 
 
@@ -208,23 +127,31 @@ def SetupArrays3D(variable_inputs_array, x_axis_name, y_axis_name, z_axis_name, 
 
     return (X, Y, Z, values)
 
-def PlotColorMap3D(X, Y, Z, values, x_axis_name, y_axis_name, z_axis_name, output_name, show_copv_limiting_factor, ax=None):
+def PlotColorMap3D(X, Y, Z, output_values, x_axis_name, y_axis_name, z_axis_name, output_name, show_copv_limiting_factor, ax=None):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
-    print("X values:", np.unique(X))
-    print("Y values:", np.unique(Y))
-    # choose color scheme
-    cmap = "RdYlGn" if show_copv_limiting_factor else "RdBu_r"
+    
+    
+    axis_label_list, axis_values_list, output_label, output_values, color_scheme = FormatPlot([x_axis_name, y_axis_name, z_axis_name], [X, Y, Z], output_name, output_values, show_copv_limiting_factor)
+
+    
+    # print("X values:", np.unique(X))
+    # print("Y values:", np.unique(Y))
+
+    X, Y, Z  = *axis_values_list,
 
     # scatter points with color mapped to values
     sc = ax.scatter(X.flatten(), Y.flatten(), Z.flatten(),
-                    c=values.flatten(), cmap=cmap, marker='o')
+                    c=output_values.flatten(), cmap=color_scheme, marker='o')
 
-    ax.set_xlabel(x_axis_name)
-    ax.set_ylabel(y_axis_name)
-    ax.set_zlabel(z_axis_name)
+    # choose color scheme
+    cmap = "RdYlGn" if show_copv_limiting_factor else "RdBu_r"
+    
+    ax.set_xlabel(axis_label_list[0], fontsize=8)
+    ax.set_ylabel(axis_label_list[1], fontsize=8)
+    ax.set_zlabel(axis_label_list[2], fontsize=8)
 
-    fig.colorbar(sc, ax=ax, label=output_name)
+    fig.colorbar(sc, ax=ax, label=output_label)
 
     plt.show()
     
@@ -240,10 +167,96 @@ def PlotColorMap3D(X, Y, Z, values, x_axis_name, y_axis_name, z_axis_name, outpu
     
     
     
+def FormatPlot(axis_name_list, axis_values_list, output_name, output_values, show_copv_limiting_factor):
+
+    axis_label_list = [""] * len(axis_name_list)
+
+    axis_values_factor = 1 # in case no factor is needed
+    for count, axis_name in enumerate(axis_name_list):    
+        if axis_name == "OF_RATIO":
+            axis_label = "OF Ratio"
+        elif axis_name == "FUEL_TANK_LENGTH":
+            axis_values_factor = c.M2IN
+            axis_label = "Fuel Tank Length [in]"
+        elif axis_name == "CONTRACTION_RATIO":
+            axis_label = "Chamber to Throat Contraction Ratio"
+        elif axis_name == "CHAMBER_PRESSURE":
+            axis_values_factor = c.PA2PSI
+            axis_label = "Chamber Pressure [psi]"
+        else:
+            raise ValueError("axis name not recognized for plotting")
+
+
+        axis_label_list[count] = axis_label
+        axis_values_list[count] = axis_values_list[count] * axis_values_factor
     
+    output_values_factor = 1 # in case no factor is needed
+    contour_lines = -1        
+    if output_name == "JET_THRUST":
+        output_values_factor = c.N2LBF
+        output_label="Jet Thrust [lbf]"
+    elif output_name == "MASS_FLOW_RATE":
+        output_label="Mass Flow Rate [kg/s]"
+    elif output_name == "ISP":
+        # num_lines = 8
+        # power = 1/4
+        # contour_lines = np.max(output_array[output_name]) * 0.995 / (num_lines**power) * np.linspace(1, num_lines, num_lines)**power
+        output_label="isp [s]"
+    elif output_name == "APOGEE":
+        output_values_factor = c.M2FT
+        # altitude_limit = ax.contour(X, Y, Z, levels=[10000], colors='red', linewidths=2)
+        # ax.clabel(altitude_limit, fmt='%d')
+        output_label="Estimated Apogee [ft]"
+    elif output_name == "TAKEOFF_TWR":
+        output_label="Takeoff TWR"
+    elif output_name == "RAIL_EXIT_TWR":
+        output_label="Rail Exit TWR"
+    elif output_name == "WET_MASS":
+        output_values_factor = c.KG2LB
+        output_label="Wet Rocket Mass [lbm]"
+    elif output_name == "DRY_MASS":
+        output_values_factor = c.KG2LB
+        output_label="Dry Rocket Mass [lbm]"
+    elif output_name == "BURN_TIME":
+        output_label="Burn Time [s]"
+    elif output_name == "RAIL_EXIT_VELOCITY":
+        output_label="Rail Exit Velocity [m/s]"
+    elif output_name == "RAIL_EXIT_ACCELERATION":
+        output_values_factor = 1 / c.GRAVITY
+        output_label="Rail Exit Acceleration [G's]"
+    elif output_name == "MAX_ACCELERATION":
+        output_values_factor = 1 / c.GRAVITY
+        output_label="Max Acceleration [G's]"
+    elif output_name == "MAX_VELOCITY":
+        output_values_factor = 1 / 343 # [m/s] 343 is da speed of sound
+        output_label="Max Velocity [Mach]"
+    elif output_name == "CHAMBER_TEMPERATURE":
+        output_label="Chamber Temperature [k]"
+    elif output_name == "OXIDIZER_TANK_LENGTH":
+        output_values_factor = c.M2FT
+        output_label="Oxidizer Tank Length [ft]"
+    elif output_name == "TOTAL_LENGTH":
+        output_values_factor = c.M2FT
+        output_label="Total Length [ft]"
+    else:
+        raise ValueError("output name not recognized for plotting")
+
+
+    output_values = output_values * output_values_factor
     
+    # if contour_lines == -1:
+    #     ax.contour(X, Y, Z)
+    # else:
+    #     ax.contour(X, Y, Z, contour_lines)
+
     
+    if show_copv_limiting_factor:
+        color_scheme = "RdYlGn"
+    else:
+        color_scheme = "RdBu_r"
+        "Spectral_r"
     
+    return (axis_label_list, axis_values_list, output_label, output_values, color_scheme)
     
     
     

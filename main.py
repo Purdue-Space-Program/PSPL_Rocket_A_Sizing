@@ -47,9 +47,9 @@ import pandas as pd
 # good visual: https://www.w3resource.com/numpy/ndarray/index.php
 
 
-show_all_results = False
+ignore_copv_limit = False
 show_copv_limiting_factor = False
-show_rail_exit_accel_limiting_factor = False
+show_rail_exit_accel_limiting_factor = True
 
 already_found = 1
 
@@ -62,20 +62,20 @@ output_names = [
     # "OXIDIZER_TANK_LENGTH",                          # [ft]
     # "CHAMBER_TEMPERATURE",                       # [k]
     
-    "MASS_FLOW_RATE",                         # [kg/s]
+    # "MASS_FLOW_RATE",                         # [kg/s]
     # "ISP",                                      # [s]
     "JET_THRUST",                             # [lbf] engine jet thrust
-    "TOTAL_LENGTH",                              # [ft]
-    "WET_MASS",                                 # [lbm]
-    "DRY_MASS",                                 # [lbm]
+    # "TOTAL_LENGTH",                              # [ft]
+    # "WET_MASS",                                 # [lbm]
+    # "DRY_MASS",                                 # [lbm]
     "BURN_TIME",                 # [s]
     
     "APOGEE",                                   # [ft]
-    "MAX_ACCELERATION",                         # [G's]
+    # "MAX_ACCELERATION",                         # [G's]
     # "MAX_VELOCITY",                         # [m/s]
-    "RAIL_EXIT_VELOCITY",                          # [ft/s]
+    # "RAIL_EXIT_VELOCITY",                          # [ft/s]
     "RAIL_EXIT_ACCELERATION",                          # [ft/s]
-    "RAIL_EXIT_TWR",                            # [n/a]
+    # "RAIL_EXIT_TWR",                            # [n/a]
 ] # USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA 
   # USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA 
   # USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA 
@@ -141,12 +141,12 @@ def run_rocket_function(idx, variable_input_combination, already_found):
     
     total_length = nosecone_length + main_parachute_module_length + drogue_parachute_module_length + avionics_module_length + lower_plus_engine_length + oxidizer_tank_length + fuel_tank_length + (4*bulkhead_length)
     
-    if show_all_results:
+    if ignore_copv_limit:
         best_case_tanks_too_big = False # override to show all results
         worst_case_tanks_too_big = False # override to show all results
     
     if show_copv_limiting_factor:
-        if show_all_results:
+        if ignore_copv_limit:
             raise RuntimeError("DUMBASS. DONT HAVE SHOW ALL RESULTS AND SHOW COPV LIMITING FACTOR AT THE SAME TIME")
         
         if best_case_tanks_too_big:
