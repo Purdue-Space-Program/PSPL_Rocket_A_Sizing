@@ -88,8 +88,10 @@ def UpdateContinuousColorMap(X, Y, Z, color_variable_label="this dumbass did not
 
 
 
-def PlotColorMaps3D(x_axis_name, y_axis_name, z_axis_name, variable_inputs_array, output_names, output_array, show_copv_limiting_factor):
+def PlotColorMaps3D(axis_names, variable_inputs_array, output_names, output_array, show_copv_limiting_factor):
     num_outputs = len(output_names)
+    
+    x_axis_name, y_axis_name, z_axis_name = axis_names[0], axis_names[1], axis_names[2]
     
     # Create a 2x2 grid
     square_grid_length = int(np.ceil(np.sqrt(num_outputs) - 0.0001)) # minus small number to avoid floating point rounding bs
@@ -171,8 +173,8 @@ def FormatPlot(axis_name_list, axis_values_list, output_name, output_values, sho
 
     axis_label_list = [""] * len(axis_name_list)
 
-    axis_values_factor = 1 # in case no factor is needed
     for count, axis_name in enumerate(axis_name_list):    
+        axis_values_factor = 1 # in case no factor is needed
         if axis_name == "OF_RATIO":
             axis_label = "OF Ratio"
         elif axis_name == "FUEL_TANK_LENGTH":
@@ -186,7 +188,7 @@ def FormatPlot(axis_name_list, axis_values_list, output_name, output_values, sho
         else:
             raise ValueError("axis name not recognized for plotting")
 
-
+        print(axis_values_factor)
         axis_label_list[count] = axis_label
         axis_values_list[count] = axis_values_list[count] * axis_values_factor
     

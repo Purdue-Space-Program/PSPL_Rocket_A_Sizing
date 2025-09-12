@@ -1,8 +1,8 @@
 import coding_utils.constants as c
 import numpy as np
 
-step_size = 45 # number of values to use for each variable input
-# DONT GOT OVER 30 FOR 3D GRAPHS ITS SLOW ASF, 13 IS A GOOD NUMBER
+step_size = 4 # number of values to use for each variable input
+# DONT GOT OVER 30 FOR 3D GRAPHS ITS SLOW ASF, 25 IS A GOOD NUMBER
 
 # A dictionary used to define the possible definitions where each key is an input (constant or variable)
 # and each value is either the constant value or a range of values
@@ -12,11 +12,11 @@ step_size = 45 # number of values to use for each variable input
 variable_inputs = {
     # "FUEL_NAME":                  ["Ethanol", "Kerosene"],
 
-    "OF_RATIO":                   np.linspace(0.1, 2, step_size), # [dimensionless] ratio of oxygen to fuel by mass
-    "CHAMBER_PRESSURE":           np.linspace(45, 250, step_size) * c.PSI2PA, # [pa] pressure in the chamber during combustion
+    "OF_RATIO":                   np.linspace(0.4, 1.2, step_size), # [dimensionless] ratio of oxygen to fuel by mass
+    "CHAMBER_PRESSURE":           np.linspace(75, 130, step_size) * c.PSI2PA, # [pa] pressure in the chamber during combustion
     
 
-    "CONTRACTION_RATIO":          np.linspace(3, 7, step_size), # [dimensionless] area ratio of chamber to throat (3 to 6 recommended by textbook)
+    "CONTRACTION_RATIO":          np.linspace(2.5, 4, step_size), # [dimensionless] area ratio of chamber to throat (3 to 6 recommended by textbook)
     # "FUEL_TANK_LENGTH":   np.linspace(6 * c.IN2M, 2 * c.FT2M, step_size), # [meters] possible speedy metals pipe lengths: https://www.speedymetals.com/pc-4648-8371-6-od-x-0125-wall-tube-6061-t6-aluminum.aspx
     
     # "OXIDIZER_ON_TOP_FUEL_ON_BOTTOM": [True, False], # [boolean (true or false)] whether the oxidizer tank is above the fuel tank or not
