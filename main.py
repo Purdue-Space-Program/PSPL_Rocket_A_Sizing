@@ -47,10 +47,9 @@ import pandas as pd
 # good visual: https://www.w3resource.com/numpy/ndarray/index.php
 
 
-show_all_results = False
+show_all_results = True
+show_rail_exit_accel_limiting_factor = False
 show_copv_limiting_factor = False
-
-
 
 
 
@@ -62,8 +61,8 @@ output_names = [
     # "OXIDIZER_TANK_LENGTH",                          # [ft]
     # "CHAMBER_TEMPERATURE",                       # [k]
     
-    # "MASS_FLOW_RATE",                         # [kg/s]
-    # "ISP",                                      # [s]
+    "MASS_FLOW_RATE",                         # [kg/s]
+    "ISP",                                      # [s]
     "JET_THRUST",                             # [lbf] engine jet thrust
     # "TOTAL_LENGTH",                              # [ft]
     # "WET_MASS",                                 # [lbm]
@@ -91,8 +90,12 @@ def AccelerationToTWR(acceleration):
 
 def run_rocket_function(idx, variable_input_combination):
 
+    fuel_name = numpy_ndarray_handler.GetFrom_ndarray("FUEL_NAME", constant_inputs_array, variable_input_combination)
+
+    fuel_tank_length = numpy_ndarray_handler.GetFrom_ndarray("FUEL_TANK_LENGTH", constant_inputs_array, variable_input_combination)
+
     jet_thrust, isp, mass_flow_rate, chamber_temperature = engine.ThrustyBusty(
-                numpy_ndarray_handler.GetFrom_ndarray("FUEL_NAME", constant_inputs_array, variable_input_combination),
+                fuel_name,
                 numpy_ndarray_handler.GetFrom_ndarray("OXIDIZER_NAME", constant_inputs_array, variable_input_combination),
                 numpy_ndarray_handler.GetFrom_ndarray("PROPELLANT_TANK_OUTER_DIAMETER", constant_inputs_array, variable_input_combination),
                 numpy_ndarray_handler.GetFrom_ndarray("CONTRACTION_RATIO", constant_inputs_array, variable_input_combination),
@@ -103,7 +106,7 @@ def run_rocket_function(idx, variable_input_combination):
 
     total_usable_propellant_mass, engine_burn_time, oxidizer_tank_length, best_case_tanks_too_big, worst_case_tanks_too_big = tanks.GoFluids(
                 numpy_ndarray_handler.GetFrom_ndarray("PROPELLANT_TANK_INNER_DIAMETER", constant_inputs_array, variable_input_combination),
-                numpy_ndarray_handler.GetFrom_ndarray("FUEL_TANK_LENGTH", constant_inputs_array, variable_input_combination),
+                fuel_tank_length,
                 numpy_ndarray_handler.GetFrom_ndarray("CHAMBER_PRESSURE", constant_inputs_array, variable_input_combination),
                 numpy_ndarray_handler.GetFrom_ndarray("OXIDIZER_NAME", constant_inputs_array, variable_input_combination),
                 numpy_ndarray_handler.GetFrom_ndarray("FUEL_NAME", constant_inputs_array, variable_input_combination),
@@ -111,10 +114,20 @@ def run_rocket_function(idx, variable_input_combination):
                 mass_flow_rate,
                 )
 
-    wet_mass = total_usable_propellant_mass * numpy_ndarray_handler.GetFrom_ndarray("WET_MASS_TO_USABLE_PROPELLANT_MASS_RATIO", constant_inputs_array, variable_input_combination)
-    dry_mass = wet_mass - total_usable_propellant_mass
+    # wet_mass = total_usable_propellant_mass * numpy_ndarray_handler.GetFrom_ndarray("WET_MASS_TO_USABLE_PROPELLANT_MASS_RATIO", constant_inputs_array, variable_input_combination)
+    # dry_mass = wet_mass - total_usable_propellant_mass
     
-    total_length = 7 * (oxidizer_tank_length + numpy_ndarray_handler.GetFrom_ndarray("FUEL_TANK_LENGTH", constant_inputs_array, variable_input_combination)) # fix this dumbass
+    regulator_mass = 1.200 # regulator https://valvesandregulators.aquaenvironment.com/item/high-flow-reducing-regulators-2/873-d-high-flow-dome-loaded-reducing-regulators/item-1659
+    valves_mass = 2 * 5.84 * c.LB2KG # fuel and ox 3/4 inch valve https://habonim.com/wp-content/uploads/2020/08/C47-BD_C47__2023_VO4_28-06-23.pdf
+    tank_wall_mass = (0.2200 * ((oxidizer_tank_length + fuel_tank_length) * c.M2IN) * c.LB2KG) # 0.2200 lbs per inch * tank length
+    bulkhead_mass = (4 * 2.6227 * 4 * c.LB2KG) # 4 bulkheads * 2.6227 lbs per inch * 4 inch long bulkhead
+    recovery_bay_mass = 25 * c.LB2KG  # [kg] Estimated mass of the recovery bay https://github.com/Purdue-Space-Program/PSPL_Rocket_4_Sizing/blob/2b15e1dc508a56731056ff594a3c6b5afb639b4c/scripts/structures.py#L75
+    structures = 15 * c.LB2KG # structures !
+    
+    dry_mass = (valves_mass + regulator_mass + tank_wall_mass + bulkhead_mass  + recovery_bay_mass + structures) * 1.2 # 1.2 factor of safety margin
+    wet_mass = total_usable_propellant_mass + dry_mass
+    
+    total_length = 7 * (oxidizer_tank_length + fuel_tank_length) # fix this dumbass
     
     if show_all_results:
         best_case_tanks_too_big = False # override to show all results
@@ -137,30 +150,33 @@ def run_rocket_function(idx, variable_input_combination):
             engine_burn_time = np.nan
             mass_flow_rate = np.nan
     
-        # avoid calculating trajectory if the value is not going to be used
-        if any(output in output_names for output in ["APOGEE", "MAX_ACCELERATION", "RAIL_EXIT_VELOCITY", "RAIL_EXIT_ACCELERATION", "TAKEOFF_TWR", "RAIL_EXIT_TWR", "MAX_ACCELERATION"]):
-            estimated_apogee, max_accel, max_velocity, rail_exit_velocity, rail_exit_accel, total_impulse = trajectory.calculate_trajectory(
-                                    wet_mass, 
-                                    mass_flow_rate,
-                                    jet_thrust,
-                                    numpy_ndarray_handler.GetFrom_ndarray("PROPELLANT_TANK_OUTER_DIAMETER", constant_inputs_array, variable_input_combination),
-                                    3,
-                                    0.15,
-                                    engine.RadiusToArea((numpy_ndarray_handler.GetFrom_ndarray("PROPELLANT_TANK_OUTER_DIAMETER", constant_inputs_array, variable_input_combination)/2) - (0.5 * c.IN2M)), # lowkey a guess
-                                    10 * c.PSI2PA,
-                                    engine_burn_time, 
-                                    total_length,
-                                    False
-                                )
+    # avoid calculating trajectory if the value is not going to be used
+    if any(output in output_names for output in ["APOGEE", "MAX_ACCELERATION", "RAIL_EXIT_VELOCITY", "RAIL_EXIT_ACCELERATION", "TAKEOFF_TWR", "RAIL_EXIT_TWR", "MAX_ACCELERATION"]):
+        estimated_apogee, max_accel, max_velocity, rail_exit_velocity, rail_exit_accel, total_impulse = trajectory.calculate_trajectory(
+                                wet_mass, 
+                                mass_flow_rate,
+                                jet_thrust,
+                                numpy_ndarray_handler.GetFrom_ndarray("PROPELLANT_TANK_OUTER_DIAMETER", constant_inputs_array, variable_input_combination),
+                                3,
+                                0.15,
+                                engine.RadiusToArea((numpy_ndarray_handler.GetFrom_ndarray("PROPELLANT_TANK_OUTER_DIAMETER", constant_inputs_array, variable_input_combination)/2) - (0.5 * c.IN2M)), # lowkey a guess
+                                15 * c.PSI2PA,
+                                engine_burn_time, 
+                                total_length,
+                                False
+                            )
+        
+        rail_exit_TWR = AccelerationToTWR(rail_exit_accel)
             
-            rail_exit_TWR = AccelerationToTWR(rail_exit_accel)
-            
-
-    if worst_case_tanks_too_big:
+    initial_thrust = ((jet_thrust) - (c.GRAVITY * wet_mass)) / wet_mass
+    
+    if worst_case_tanks_too_big or initial_thrust <= 0:
+        rail_exit_accel = np.nan
         rail_exit_velocity = np.nan
         rail_exit_TWR = np.nan
-        takeoff_TWR = np.nan
+        max_velocity = np.nan
         max_accel = np.nan
+        estimated_apogee = np.nan
 
 
     # for output_name in output_names:
@@ -207,17 +223,18 @@ def run_rocket_function(idx, variable_input_combination):
     
     # Fill values
     for name, _ in dtype:
-        output_list[name] = mapping[name]
         
-        # exists = (any((name == "RAIL_EXIT_ACCELERATION") and not(np.isnan(mapping[name])) for name, value in dtype))
-        # if exists:
-        #     within_bounds = ((rail_exit_accel > (5 * c.GRAVITY)) and (rail_exit_accel < (7 * c.GRAVITY)))
-        
-        # if exists and within_bounds:
-        #     output_list[name] = mapping[name]
-        # else:
-        #     output_list[name] = np.nan
+        if show_rail_exit_accel_limiting_factor:
+            exists = (any((name == "RAIL_EXIT_ACCELERATION") and not(np.isnan(mapping[name])) for name, value in dtype))
+            if exists:
+                within_bounds = ((rail_exit_accel > (5 * c.GRAVITY)) and (rail_exit_accel < (7 * c.GRAVITY)))
             
+            if exists and within_bounds:
+                output_list[name] = mapping[name]
+            else:
+                output_list[name] = np.nan
+        else:
+            output_list[name] = mapping[name]
 
     # # Compare to Copperhead
     # CR = numpy_ndarray_handler.GetFrom_ndarray("CONTRACTION_RATIO", constant_inputs_array, variable_input_combination)
@@ -225,29 +242,29 @@ def run_rocket_function(idx, variable_input_combination):
     # if (CR > 4.9) & (CR < 5.1) & (FTL > 3.9 * c.FT2M) & (FTL < 4.1 * c.FT2M):
     #     print(f"Contraction Ratio: {CR}, Fuel Tank Length: {FTL * c.M2FT}, Estimated Apogee: {estimated_apogee * c.M2FT}, Takeoff TWR: {takeoff_TWR}")
 
-    # Chosen parameters
-    CR = numpy_ndarray_handler.GetFrom_ndarray("CONTRACTION_RATIO", constant_inputs_array, variable_input_combination)
-    FTL = numpy_ndarray_handler.GetFrom_ndarray("FUEL_TANK_LENGTH", constant_inputs_array, variable_input_combination)
-    if (CR > 4.95) & (CR < 5.06) & (FTL > 11.8 * c.IN2M) & (FTL < 12.2 * c.IN2M):
-        print(f"\nContraction Ratio: {CR}")
-        print(f"Fuel Tank Length: {FTL * c.M2FT} feet")
+    # # Chosen parameters
+    # CR = numpy_ndarray_handler.GetFrom_ndarray("CONTRACTION_RATIO", constant_inputs_array, variable_input_combination)
+    # FTL = numpy_ndarray_handler.GetFrom_ndarray("FUEL_TANK_LENGTH", constant_inputs_array, variable_input_combination)
+    # if (CR > 4.95) & (CR < 5.06) & (FTL > 11.8 * c.IN2M) & (FTL < 12.2 * c.IN2M):
+    #     print(f"\nContraction Ratio: {CR}")
+    #     print(f"Fuel Tank Length: {FTL * c.M2FT} feet")
               
-        print(f"\nJET_THRUST: {jet_thrust * c.N2LBF} lbf")
-        print(f"ISP: {isp} seconds")
-        print(f"MASS_FLOW_RATE: {mass_flow_rate * c.KG2LB} lbm")
-        print(f"BURN_TIME: {engine_burn_time} seconds")
-        print(f"TOTAL_LENGTH: {total_length * c.M2FT} feet")
-        print(f"WET_MASS: {wet_mass * c.KG2LB} lbm")
-        print(f"DRY_MASS: {dry_mass * c.KG2LB} lbm")
+    #     print(f"\nJET_THRUST: {jet_thrust * c.N2LBF} lbf")
+    #     print(f"ISP: {isp} seconds")
+    #     print(f"MASS_FLOW_RATE: {mass_flow_rate * c.KG2LB} lbm")
+    #     print(f"BURN_TIME: {engine_burn_time} seconds")
+    #     print(f"TOTAL_LENGTH: {total_length * c.M2FT} feet")
+    #     print(f"WET_MASS: {wet_mass * c.KG2LB} lbm")
+    #     print(f"DRY_MASS: {dry_mass * c.KG2LB} lbm")
         
-        print(f"Estimated Apogee: {estimated_apogee * c.M2FT} feet")
-        print(f"Off the rail TWR: {rail_exit_TWR}")
-        print(f"Off the rail acceleration: {rail_exit_accel / c.GRAVITY} G's")
-        print(f"Off the rail velocity: {rail_exit_velocity} m/s")
-        print(f"Max Acceleration: {max_accel / c.GRAVITY} G's")
-        print(f"Max Velocity: {max_velocity / 343} Mach")
-        
-        print(f"ox tank volume: ")
+    #     print(f"Estimated Apogee: {estimated_apogee * c.M2FT} feet")
+    #     print(f"Off the rail TWR: {rail_exit_TWR}")
+    #     print(f"Off the rail acceleration: {rail_exit_accel / c.GRAVITY} G's")
+    #     print(f"Off the rail velocity: {rail_exit_velocity} m/s")
+    #     print(f"Max Acceleration: {max_accel / c.GRAVITY} G's")
+    #     print(f"Max Velocity: {max_velocity / 343} Mach")
+
+        # print(f"ox tank volume: {oxidizer_tank_length}")
     
     
     
@@ -258,15 +275,13 @@ output_array = threaded_run.ThreadedRun(run_rocket_function, variable_inputs_arr
 
 
 print(constant_inputs_array)
+print("\nfix that dumbass !")
 
-AXES = ["OF_RATIO", "CHAMBER_PRESSURE"]
-# AXES = ["CONTRACTION_RATIO", "FUEL_TANK_LENGTH"]
-# AXES = ["OF_RATIO", "FUEL_TANK_LENGTH"]
+AXES = [variable_inputs_array.dtype.names[i] for i in range(len(variable_inputs_array.dtype))]
 if len(AXES) == 2:
     # make axes automated (idc to do that rn)
     p.PlotColorMaps(AXES[0], AXES[1], variable_inputs_array, output_names, output_array, show_copv_limiting_factor)
-# elif len(AXES) == 3:
-#     X, Y, Z = p.SetupHolyFuckArrays(variable_inputs_array, AXES[0], AXES[1], AXES[2], output_names, output_array)
-#     p.HolyFuck(AXES[0], AXES[1], AXES[2], variable_inputs_array, output_names, output_array)
+elif len(AXES) == 3:
+    p.PlotColorMaps3D(AXES[0], AXES[1], AXES[2], variable_inputs_array, output_names, output_array, show_copv_limiting_factor)
 else:
     raise ValueError(f"{len(AXES)} is an unsupported number of axis")

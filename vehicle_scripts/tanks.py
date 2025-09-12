@@ -77,13 +77,8 @@ def CalculateIfTanksTooBig(tank_pressure, oxidizer_total_tank_volume, fuel_total
 
     COPV_TEMP_1 = c.T_AMBIENT + 15  # [K] Assumed initial COPV pressurant temperature
 
-    density_before_collapse = PropsSI("D", "P", COPV_pressure, "T", c.T_AMBIENT + 15, "nitrogen")
-    density_after_collapse = PropsSI("D", "P", tank_pressure, "Q", 0, "nitrogen")
-
-    worst_case_CFC_LOx = density_after_collapse/density_before_collapse # assuming all pressurant becomes a saturated vapor
-    # print(worst_case_CFC_LOx)
+    worst_case_CFC_LOx = 3
     best_case_CFC_LOx = 1.75 # copperhead sizing for LOx-Helium collapse
-    # best_case_CFC_LOx = 1 # copperhead sizing for LOx-Helium collapse
     
     CFC_FUEL = 1 # [1] Fuel tank cumulative collapse factor
 
@@ -105,7 +100,6 @@ def CalculateIfTanksTooBig(tank_pressure, oxidizer_total_tank_volume, fuel_total
 
     tank_volume_ratio =  oxidizer_total_tank_volume / fuel_total_tank_volume
     total_tanks_volume = fuel_total_tank_volume + oxidizer_total_tank_volume
-
 
     best_case_max_both_tank_volume = (
         ((copvDensity1 * COPV_volume * copvEnergy1) - (copvDensity2 * COPV_volume * copvEnergy2))

@@ -145,13 +145,35 @@ import CoolProp.CoolProp as CP
 # phase = CP.PhaseSI('P', c.ATM2PA, 'D', density, "water")
 # print(phase)
 
+total_ox_tank_volume = 6 * c.L2M3
+total_fuel_tank_volume = 11 * c.L2M3
+
+
 
 COPV_pressure = 4500 * c.PSI2PA
-tank_pressure = 50 * c.PSI2PA
+tank_pressure = 100 * c.PSI2PA
+COPV_volume = 3 * c.L2M3
 
-density_before_collapse = PropsSI("D", "P", COPV_pressure, "T", c.T_AMBIENT + 15, "nitrogen")
-density_after_collapse = PropsSI("D", "P", tank_pressure, "Q", 0, "nitrogen")
+pressurant_in_COPV_density = PropsSI("D", "P", COPV_pressure, "T", c.T_AMBIENT + 15, "nitrogen")
+pressurant_in_COPV_entropy = PropsSI("S", "P", COPV_pressure, "T", c.T_AMBIENT + 15, "nitrogen")
+pressurant_in_fuel_tank_entropy = pressurant_in_COPV_entropy
 
-worst_case_collapse_factor = density_after_collapse/density_before_collapse
+pressurant_in_ox_density = PropsSI("D", "P", tank_pressure, "Q", 1, "nitrogen")
+pressurant_in_fuel_density = PropsSI("D", "P", tank_pressure, "S", pressurant_in_fuel_tank_entropy, "nitrogen")
 
-print(f"collapse: {worst_case_collapse_factor}")
+pressurant_in_ox_tank_before_collapse_density = PropsSI("D", "P", tank_pressure, "S", pressurant_in_fuel_tank_entropy, "nitrogen")
+pressurant_in_ox_tank_after_collapse_density = PropsSI("D", "P", tank_pressure, "Q", 1, "nitrogen")
+
+
+pressurant_in_COPV_to_in_ox_density_ratio = pressurant_in_COPV_density/(pressurant_in_ox_density * pressurant_in_fuel_density)
+pressurant_in_COPV_to_in_fuel_density_ratio = pressurant_in_COPV_density/pressurant_in_fuel_density
+
+print(f"pressurant_in_COPV_to_in_ox_density_ratio: {pressurant_in_COPV_to_in_ox_density_ratio:.2f}")
+print(f"pressurant_in_COPV_to_in_fuel_density_ratio: {pressurant_in_COPV_to_in_fuel_density_ratio:.2f}")
+
+needed_COPV_volume_for_ox =  (total_ox_tank_volume + (COPV_volume * 2))/pressurant_in_COPV_to_in_ox_density_ratio
+needed_COPV_volume_for_fuel =  (total_fuel_tank_volume + (COPV_volume * 2))/pressurant_in_COPV_to_in_fuel_density_ratio
+
+needed_COPV_volume = needed_COPV_volume_for_ox + needed_COPV_volume_for_fuel
+
+print(f"need_copv_volume: {needed_COPV_volume * c.M32L:.2f}")

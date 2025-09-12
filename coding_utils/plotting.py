@@ -35,11 +35,11 @@ def PlotColorMaps(x_axis_name, y_axis_name, variable_inputs_array, output_names,
     plt.show()
     
 def SetupArrays(variable_inputs_array, x_axis_name, y_axis_name, output_name, output_array):
-    x = np.array(variable_inputs_array[0, :][y_axis_name]) # what the fuck !
-    y = np.array(variable_inputs_array[:, 0][x_axis_name]) # what the fuck !
+    x = np.array(variable_inputs_array[0, :][y_axis_name])
+    y = np.array(variable_inputs_array[:, 0][x_axis_name])
     z = np.array(output_array[output_name])
     
-    Y, X = np.meshgrid(x, y) # I don't know why you have to swap X and Y but you do
+    Y, X = np.meshgrid(x, y) # I don't know why you have to swap X and Y but you do!
     Z = z.reshape(len(x), len(y))
     
     return (X, Y, Z)
@@ -58,7 +58,10 @@ def PlotColorMap(X, Y, Z, x_axis_name, y_axis_name, output_name, output_array, s
         ax.set_xlabel('Wet Mass to Usable Propellant Mass Ratio', fontsize=8)
     elif x_axis_name == "CONTRACTION_RATIO":
         ax.set_xlabel('Chamber to Throat Contraction Ratio', fontsize=8)
-    
+    else:
+        raise ValueError("output name not recognized for plotting")
+
+
     if y_axis_name == "CHAMBER_PRESSURE":
         Y = Y * c.PA2PSI
         ax.set_ylabel('Chamber Pressure [psi]', fontsize=8)
@@ -69,7 +72,9 @@ def PlotColorMap(X, Y, Z, x_axis_name, y_axis_name, output_name, output_array, s
         ax.set_ylabel('Wet Mass to Usable Propellant Mass Ratio', fontsize=8)
     elif y_axis_name == "CONTRACTION_RATIO":
         ax.set_ylabel('Chamber to Throat Contraction Ratio', fontsize=8)
-        
+    else:
+        raise ValueError("output name not recognized for plotting")
+
         
     contour_lines = -1        
     if output_name == "JET_THRUST":
@@ -141,6 +146,8 @@ def PlotColorMap(X, Y, Z, x_axis_name, y_axis_name, output_name, output_array, s
     ax.set_facecolor("lightgray")
     plt.colorbar(mesh, label=colorbar_label)
 
+
+
 # if you want to continuously update a colormap plot as each value is calculated
 def UpdateContinuousColorMap(X, Y, Z, color_variable_label="this dumbass did not change the label"):
     
@@ -158,8 +165,68 @@ def UpdateContinuousColorMap(X, Y, Z, color_variable_label="this dumbass did not
         
     plt.draw()
     plt.pause(0.5)
+
+
+
+
+def PlotColorMaps3D(x_axis_name, y_axis_name, z_axis_name, variable_inputs_array, output_names, output_array, show_copv_limiting_factor):
+    num_outputs = len(output_names)
     
+    # Create a 2x2 grid
+    square_grid_length = int(np.ceil(np.sqrt(num_outputs) - 0.0001)) # minus small number to avoid floating point rounding bs
+    fig, axes = plt.subplots(square_grid_length, square_grid_length, figsize=(12, 10))  
     
+    if num_outputs == 1:
+        axes = [axes]  # make it iterable
+    else:   
+        # Flatten axes to iterate
+        axes = axes.flatten()
+
+    for ax, output_name in zip(axes, output_names):
+        X, Y, Z, values = SetupArrays3D(variable_inputs_array, x_axis_name, y_axis_name, z_axis_name, output_name, output_array)
+        PlotColorMap3D(X, Y, Z, values, x_axis_name, y_axis_name, z_axis_name, output_name, show_copv_limiting_factor, ax=ax)
+    # Hide any unused subplots if there are fewer than 4 outputs
+    for ax in axes[num_outputs:]:
+        ax.set_visible(False)
+
+    plt.tight_layout()
+    plt.show()
+
+
+def SetupArrays3D(variable_inputs_array, x_axis_name, y_axis_name, z_axis_name, output_name, output_array):
+    
+    # type shit !
+    x = np.unique(variable_inputs_array[x_axis_name])
+    y = np.unique(variable_inputs_array[y_axis_name])
+    z = np.unique(variable_inputs_array[z_axis_name])
+
+    # make 3D meshgrid
+    X, Y, Z = np.meshgrid(x, y, z, indexing="ij")
+
+    # reshape output array into 3D
+    values = np.array(output_array[output_name]).reshape(len(x), len(y), len(z))
+
+    return (X, Y, Z, values)
+
+def PlotColorMap3D(X, Y, Z, values, x_axis_name, y_axis_name, z_axis_name, output_name, show_copv_limiting_factor, ax=None):
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    print("X values:", np.unique(X))
+    print("Y values:", np.unique(Y))
+    # choose color scheme
+    cmap = "RdYlGn" if show_copv_limiting_factor else "RdBu_r"
+
+    # scatter points with color mapped to values
+    sc = ax.scatter(X.flatten(), Y.flatten(), Z.flatten(),
+                    c=values.flatten(), cmap=cmap, marker='o')
+
+    ax.set_xlabel(x_axis_name)
+    ax.set_ylabel(y_axis_name)
+    ax.set_zlabel(z_axis_name)
+
+    fig.colorbar(sc, ax=ax, label=output_name)
+
+    plt.show()
     
     
     
@@ -195,8 +262,8 @@ def UpdateContinuousColorMap(X, Y, Z, color_variable_label="this dumbass did not
     
     
 def SetupHolyFuckArrays(variable_inputs_array, x_axis_name, y_axis_name, output_name, output_array):
-    x = np.array(variable_inputs_array[0, :][y_axis_name]) # what the fuck !
-    y = np.array(variable_inputs_array[:, 0][x_axis_name]) # what the fuck !
+    x = np.array(variable_inputs_array[0, :][y_axis_name])
+    y = np.array(variable_inputs_array[:, 0][x_axis_name])
     z = np.array(output_array[output_name])
     
     Y, X = np.meshgrid(x, y) # I don't know why you have to swap X and Y but you do
