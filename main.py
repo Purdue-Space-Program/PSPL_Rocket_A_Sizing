@@ -47,10 +47,11 @@ import pandas as pd
 # good visual: https://www.w3resource.com/numpy/ndarray/index.php
 
 
-show_all_results = True
-show_rail_exit_accel_limiting_factor = False
+show_all_results = False
 show_copv_limiting_factor = False
+show_rail_exit_accel_limiting_factor = False
 
+already_found = 1
 
 
 # The variable_inputs_array will be separate from the constant_inputs_array to save memory size and hopefully increase speed
@@ -62,19 +63,19 @@ output_names = [
     # "CHAMBER_TEMPERATURE",                       # [k]
     
     "MASS_FLOW_RATE",                         # [kg/s]
-    "ISP",                                      # [s]
+    # "ISP",                                      # [s]
     "JET_THRUST",                             # [lbf] engine jet thrust
-    # "TOTAL_LENGTH",                              # [ft]
-    # "WET_MASS",                                 # [lbm]
-    # "DRY_MASS",                                 # [lbm]
+    "TOTAL_LENGTH",                              # [ft]
+    "WET_MASS",                                 # [lbm]
+    "DRY_MASS",                                 # [lbm]
     "BURN_TIME",                 # [s]
     
-    # "APOGEE",                                   # [ft]
-    # "MAX_ACCELERATION",                         # [G's]
+    "APOGEE",                                   # [ft]
+    "MAX_ACCELERATION",                         # [G's]
     # "MAX_VELOCITY",                         # [m/s]
-    # "RAIL_EXIT_VELOCITY",                          # [ft/s]
-    # "RAIL_EXIT_ACCELERATION",                          # [ft/s]
-    # "RAIL_EXIT_TWR",                            # [n/a]
+    "RAIL_EXIT_VELOCITY",                          # [ft/s]
+    "RAIL_EXIT_ACCELERATION",                          # [ft/s]
+    "RAIL_EXIT_TWR",                            # [n/a]
 ] # USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA 
   # USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA 
   # USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA 
@@ -88,7 +89,7 @@ def AccelerationToTWR(acceleration):
 
 # CEA_Array = engine.CreateMassiveCEAArray(constant_inputs_array, variable_inputs_array)
 
-def run_rocket_function(idx, variable_input_combination):
+def run_rocket_function(idx, variable_input_combination, already_found):
 
     fuel_name = numpy_ndarray_handler.GetFrom_ndarray("FUEL_NAME", constant_inputs_array, variable_input_combination)
 
@@ -117,17 +118,28 @@ def run_rocket_function(idx, variable_input_combination):
     # wet_mass = total_usable_propellant_mass * numpy_ndarray_handler.GetFrom_ndarray("WET_MASS_TO_USABLE_PROPELLANT_MASS_RATIO", constant_inputs_array, variable_input_combination)
     # dry_mass = wet_mass - total_usable_propellant_mass
     
+    injector_mass = (2.6227 * 3 * c.LB2KG) # injector 2.6227 lbs per inch * 3 inches long
     regulator_mass = 1.200 # regulator https://valvesandregulators.aquaenvironment.com/item/high-flow-reducing-regulators-2/873-d-high-flow-dome-loaded-reducing-regulators/item-1659
     valves_mass = 2 * 5.84 * c.LB2KG # fuel and ox 3/4 inch valve https://habonim.com/wp-content/uploads/2020/08/C47-BD_C47__2023_VO4_28-06-23.pdf
     tank_wall_mass = (0.2200 * ((oxidizer_tank_length + fuel_tank_length) * c.M2IN) * c.LB2KG) # 0.2200 lbs per inch * tank length
-    bulkhead_mass = (4 * 2.6227 * 4 * c.LB2KG) # 4 bulkheads * 2.6227 lbs per inch * 4 inch long bulkhead
+    
+    bulkhead_length = 3 * c.IN2M
+    bulkhead_top_thickness = 0.5 * c.IN2M
+    bulkhead_mass = 4 * ((2.6227 * c.IN2M * bulkhead_length * c.LB2KG) - (2.1864 * c.IN2M * (bulkhead_length - bulkhead_top_thickness) * c.LB2KG)) # 4 bulkheads * 2.6227 lbs per inch for 5.75, 2.1864 lbs per in for 5.25
+    
     recovery_bay_mass = 25 * c.LB2KG  # [kg] Estimated mass of the recovery bay https://github.com/Purdue-Space-Program/PSPL_Rocket_4_Sizing/blob/2b15e1dc508a56731056ff594a3c6b5afb639b4c/scripts/structures.py#L75
     structures = 15 * c.LB2KG # structures !
     
-    dry_mass = (valves_mass + regulator_mass + tank_wall_mass + bulkhead_mass  + recovery_bay_mass + structures) * 1.2 # 1.2 factor of safety margin
+    dry_mass = (valves_mass + regulator_mass + tank_wall_mass + bulkhead_mass  + recovery_bay_mass + structures) * 1.2 # factor of safety margin
     wet_mass = total_usable_propellant_mass + dry_mass
     
-    total_length = 7 * (oxidizer_tank_length + fuel_tank_length) # fix this dumbass
+    nosecone_length = 2 * c.FT2M
+    main_parachute_module_length = 3 * c.FT2M
+    drogue_parachute_module_length = 2 * c.FT2M
+    avionics_module_length = 0.5 * c.FT2M
+    lower_plus_engine_length = 3 * c.FT2M
+    
+    total_length = nosecone_length + main_parachute_module_length + drogue_parachute_module_length + avionics_module_length + lower_plus_engine_length + oxidizer_tank_length + fuel_tank_length + (4*bulkhead_length)
     
     if show_all_results:
         best_case_tanks_too_big = False # override to show all results
@@ -242,40 +254,43 @@ def run_rocket_function(idx, variable_input_combination):
     # if (CR > 4.9) & (CR < 5.1) & (FTL > 3.9 * c.FT2M) & (FTL < 4.1 * c.FT2M):
     #     print(f"Contraction Ratio: {CR}, Fuel Tank Length: {FTL * c.M2FT}, Estimated Apogee: {estimated_apogee * c.M2FT}, Takeoff TWR: {takeoff_TWR}")
 
-    # # Chosen parameters
-    # CR = numpy_ndarray_handler.GetFrom_ndarray("CONTRACTION_RATIO", constant_inputs_array, variable_input_combination)
-    # FTL = numpy_ndarray_handler.GetFrom_ndarray("FUEL_TANK_LENGTH", constant_inputs_array, variable_input_combination)
-    # if (CR > 4.95) & (CR < 5.06) & (FTL > 11.8 * c.IN2M) & (FTL < 12.2 * c.IN2M):
-    #     print(f"\nContraction Ratio: {CR}")
-    #     print(f"Fuel Tank Length: {FTL * c.M2FT} feet")
-              
-    #     print(f"\nJET_THRUST: {jet_thrust * c.N2LBF} lbf")
-    #     print(f"ISP: {isp} seconds")
-    #     print(f"MASS_FLOW_RATE: {mass_flow_rate * c.KG2LB} lbm")
-    #     print(f"BURN_TIME: {engine_burn_time} seconds")
-    #     print(f"TOTAL_LENGTH: {total_length * c.M2FT} feet")
-    #     print(f"WET_MASS: {wet_mass * c.KG2LB} lbm")
-    #     print(f"DRY_MASS: {dry_mass * c.KG2LB} lbm")
-        
-    #     print(f"Estimated Apogee: {estimated_apogee * c.M2FT} feet")
-    #     print(f"Off the rail TWR: {rail_exit_TWR}")
-    #     print(f"Off the rail acceleration: {rail_exit_accel / c.GRAVITY} G's")
-    #     print(f"Off the rail velocity: {rail_exit_velocity} m/s")
-    #     print(f"Max Acceleration: {max_accel / c.GRAVITY} G's")
-    #     print(f"Max Velocity: {max_velocity / 343} Mach")
+    # Chosen parameters
+    CR = numpy_ndarray_handler.GetFrom_ndarray("CONTRACTION_RATIO", constant_inputs_array, variable_input_combination)
+    FTL = numpy_ndarray_handler.GetFrom_ndarray("FUEL_TANK_LENGTH", constant_inputs_array, variable_input_combination)
+    
+    
+    if (already_found == 0):
+        if (CR > 5) & (FTL > 12 * c.IN2M):
+            print(f"\nContraction Ratio: {CR}")
+            print(f"Fuel Tank Length: {FTL * c.M2FT} feet")
+                
+            print(f"\nJET_THRUST: {jet_thrust * c.N2LBF} lbf")
+            print(f"ISP: {isp} seconds")
+            print(f"MASS_FLOW_RATE: {mass_flow_rate * c.KG2LB} lbm")
+            print(f"BURN_TIME: {engine_burn_time} seconds")
+            print(f"TOTAL_LENGTH: {total_length * c.M2FT} feet")
+            print(f"WET_MASS: {wet_mass * c.KG2LB} lbm")
+            print(f"DRY_MASS: {dry_mass * c.KG2LB} lbm")
+            
+            print(f"Estimated Apogee: {estimated_apogee * c.M2FT} feet")
+            print(f"Off the rail TWR: {rail_exit_TWR}")
+            print(f"Off the rail acceleration: {rail_exit_accel / c.GRAVITY} G's")
+            print(f"Off the rail velocity: {rail_exit_velocity} m/s")
+            print(f"Max Acceleration: {max_accel / c.GRAVITY} G's")
+            print(f"Max Velocity: {max_velocity / 343} Mach")
 
-        # print(f"ox tank volume: {oxidizer_tank_length}")
+            print(f"ox tank volume: {oxidizer_tank_length}")
+            already_found = 1
     
     
     
-    return (idx, output_list)
+    return (idx, output_list, already_found)
 
 
-output_array = threaded_run.ThreadedRun(run_rocket_function, variable_inputs_array, output_names, True)
+output_array, already_found = threaded_run.ThreadedRun(run_rocket_function, variable_inputs_array, output_names, already_found, True)
 
 
 print(constant_inputs_array)
-print("\nfix that dumbass !")
 
 AXES = [variable_inputs_array.dtype.names[i] for i in range(len(variable_inputs_array.dtype))]
 if len(AXES) == 2:

@@ -82,59 +82,95 @@ def CalculateIfTanksTooBig(tank_pressure, oxidizer_total_tank_volume, fuel_total
     
     CFC_FUEL = 1 # [1] Fuel tank cumulative collapse factor
 
-    
-    pressurantCv = PropsSI("CVMASS", "P", 1 * c.ATM2PA, "T", c.T_AMBIENT, pressurant)  # [J/kgK] Constant-volume specific heat of pressurant at STP (assumed constant)
-
-    copvPressure1 = COPV_pressure  # [Pa] COPV initial pressure
-    copvPressure2 = (c.BURNOUT_PRESSURE_RATIO * tank_pressure)  # [Pa] COPV burnout pressure
-
-    copvEntropy1 = PropsSI("S", "P", copvPressure1, "T", COPV_TEMP_1, pressurant)  # [J/kgK] COPV initial specific entropy
-    copvEntropy2 = copvEntropy1  # [J/kgK] COPV burnout specific entropy (assumed isentropic expansion)
-
-    copvDensity1 = PropsSI("D", "P", copvPressure1, "T", COPV_TEMP_1, pressurant)  # [kg/m^3] COPV initial density
-    copvDensity2 = PropsSI("D", "P", copvPressure2, "S", copvEntropy2, pressurant)  # [kg/m^3] COPV burnout density
-
-    copvEnergy1 = PropsSI("U", "P", copvPressure1, "T", COPV_TEMP_1, pressurant)  # [J/kg] COPV initial specific energy
-    copvEnergy2 = PropsSI("U", "P", copvPressure2, "S", copvEntropy2, pressurant)  # [J/kg] COPV burnout specific energy
-
-
     tank_volume_ratio =  oxidizer_total_tank_volume / fuel_total_tank_volume
     total_tanks_volume = fuel_total_tank_volume + oxidizer_total_tank_volume
+    
+    pressurant_in_COPV_density = PropsSI("D", "P", COPV_pressure, "T", c.T_AMBIENT + 15, "nitrogen")
+    pressurant_in_COPV_entropy = PropsSI("S", "P", COPV_pressure, "T", c.T_AMBIENT + 15, "nitrogen")
+    pressurant_in_fuel_tank_entropy = pressurant_in_COPV_entropy
 
-    best_case_max_both_tank_volume = (
-        ((copvDensity1 * COPV_volume * copvEnergy1) - (copvDensity2 * COPV_volume * copvEnergy2))
-    / 
-        (
-        (best_case_CFC_LOx * tank_pressure * tank_volume_ratio * pressurantCv / gas_constant)
-        + (best_case_CFC_LOx * tank_pressure * tank_volume_ratio)
-        + (CFC_FUEL * tank_pressure * pressurantCv / gas_constant)
-        + (CFC_FUEL * tank_pressure)
-        )
-    )
+    pressurant_in_ox_density = PropsSI("D", "P", tank_pressure, "Q", 1, "nitrogen")
+    pressurant_in_fuel_density = PropsSI("D", "P", tank_pressure, "S", pressurant_in_fuel_tank_entropy, "nitrogen")
+
+    pressurant_in_ox_tank_before_collapse_density = PropsSI("D", "P", tank_pressure, "S", pressurant_in_fuel_tank_entropy, "nitrogen")
+    pressurant_in_ox_tank_after_collapse_density = PropsSI("D", "P", tank_pressure, "Q", 1, "nitrogen")
+
+
+    pressurant_in_COPV_to_in_ox_density_ratio = pressurant_in_COPV_density/pressurant_in_ox_density
+    pressurant_in_COPV_to_in_fuel_density_ratio = pressurant_in_COPV_density/pressurant_in_fuel_density
+
+    # print(f"pressurant_in_COPV_to_in_ox_density_ratio: {pressurant_in_COPV_to_in_ox_density_ratio:.2f}")
+    # print(f"pressurant_in_COPV_to_in_fuel_density_ratio: {pressurant_in_COPV_to_in_fuel_density_ratio:.2f}")
+
+    needed_COPV_volume_for_ox =  (oxidizer_total_tank_volume + (COPV_volume * 2))/pressurant_in_COPV_to_in_ox_density_ratio
+    needed_COPV_volume_for_fuel =  (fuel_total_tank_volume + (COPV_volume * 2))/pressurant_in_COPV_to_in_fuel_density_ratio
+
+    needed_COPV_volume = needed_COPV_volume_for_ox + needed_COPV_volume_for_fuel
+
+    # print(f"need_copv_volume: {needed_COPV_volume * c.M32L:.2f}")
+        
     
-    worst_case_max_both_tank_volume = (
-        ((copvDensity1 * COPV_volume * copvEnergy1) - (copvDensity2 * COPV_volume * copvEnergy2))
-    / 
-        (
-        (worst_case_CFC_LOx * tank_pressure * tank_volume_ratio * pressurantCv / gas_constant)
-        + (worst_case_CFC_LOx * tank_pressure * tank_volume_ratio)
-        + (CFC_FUEL * tank_pressure * pressurantCv / gas_constant)
-        + (CFC_FUEL * tank_pressure)
-        )
-    )
     
-    worst_case_tanks_too_big = np.nan
-    if total_tanks_volume > best_case_max_both_tank_volume:
+    if needed_COPV_volume > COPV_volume:
         best_case_tanks_too_big = True
         worst_case_tanks_too_big = True
-    elif (total_tanks_volume < best_case_max_both_tank_volume) and (total_tanks_volume > worst_case_max_both_tank_volume):
-        best_case_tanks_too_big = False
-        worst_case_tanks_too_big = True
-    elif (total_tanks_volume < worst_case_max_both_tank_volume): 
+    elif needed_COPV_volume < COPV_volume:
         best_case_tanks_too_big = False
         worst_case_tanks_too_big = False
+
     else:
         raise ValueError("what")
+    
+    
+    
+    # pressurantCv = PropsSI("CVMASS", "P", 1 * c.ATM2PA, "T", c.T_AMBIENT, pressurant)  # [J/kgK] Constant-volume specific heat of pressurant at STP (assumed constant)
+
+    # copvPressure1 = COPV_pressure  # [Pa] COPV initial pressure
+    # copvPressure2 = (c.BURNOUT_PRESSURE_RATIO * tank_pressure)  # [Pa] COPV burnout pressure
+
+    # copvEntropy1 = PropsSI("S", "P", copvPressure1, "T", COPV_TEMP_1, pressurant)  # [J/kgK] COPV initial specific entropy
+    # copvEntropy2 = copvEntropy1  # [J/kgK] COPV burnout specific entropy (assumed isentropic expansion)
+
+    # copvDensity1 = PropsSI("D", "P", copvPressure1, "T", COPV_TEMP_1, pressurant)  # [kg/m^3] COPV initial density
+    # copvDensity2 = PropsSI("D", "P", copvPressure2, "S", copvEntropy2, pressurant)  # [kg/m^3] COPV burnout density
+
+    # copvEnergy1 = PropsSI("U", "P", copvPressure1, "T", COPV_TEMP_1, pressurant)  # [J/kg] COPV initial specific energy
+    # copvEnergy2 = PropsSI("U", "P", copvPressure2, "S", copvEntropy2, pressurant)  # [J/kg] COPV burnout specific energy
+
+    # best_case_max_both_tank_volume = (
+    #     ((copvDensity1 * COPV_volume * copvEnergy1) - (copvDensity2 * COPV_volume * copvEnergy2))
+    # / 
+    #     (
+    #     (best_case_CFC_LOx * tank_pressure * tank_volume_ratio * pressurantCv / gas_constant)
+    #     + (best_case_CFC_LOx * tank_pressure * tank_volume_ratio)
+    #     + (CFC_FUEL * tank_pressure * pressurantCv / gas_constant)
+    #     + (CFC_FUEL * tank_pressure)
+    #     )
+    # )
+    
+    # worst_case_max_both_tank_volume = (
+    #     ((copvDensity1 * COPV_volume * copvEnergy1) - (copvDensity2 * COPV_volume * copvEnergy2))
+    # / 
+    #     (
+    #     (worst_case_CFC_LOx * tank_pressure * tank_volume_ratio * pressurantCv / gas_constant)
+    #     + (worst_case_CFC_LOx * tank_pressure * tank_volume_ratio)
+    #     + (CFC_FUEL * tank_pressure * pressurantCv / gas_constant)
+    #     + (CFC_FUEL * tank_pressure)
+    #     )
+    # )
+    
+    # worst_case_tanks_too_big = np.nan
+    # if total_tanks_volume > best_case_max_both_tank_volume:
+    #     best_case_tanks_too_big = True
+    #     worst_case_tanks_too_big = True
+    # elif (total_tanks_volume < best_case_max_both_tank_volume) and (total_tanks_volume > worst_case_max_both_tank_volume):
+    #     best_case_tanks_too_big = False
+    #     worst_case_tanks_too_big = True
+    # elif (total_tanks_volume < worst_case_max_both_tank_volume): 
+    #     best_case_tanks_too_big = False
+    #     worst_case_tanks_too_big = False
+    # else:
+    #     raise ValueError("what")
     
     return (best_case_tanks_too_big, worst_case_tanks_too_big)
 

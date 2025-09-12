@@ -9,7 +9,7 @@ from vehicle_scripts import numpy_ndarray_handler
 from coding_utils import constants as c
 from inputs import constant_inputs as constant_inputs_dict
 
-def ThreadedRun(run_rocket_function, variable_inputs_array, output_names, USE_AI_SLOP):
+def ThreadedRun(run_rocket_function, variable_inputs_array, output_names, already_found, USE_AI_SLOP):
 
     fields_dtype = [] # datatype for output array
 
@@ -29,9 +29,9 @@ def ThreadedRun(run_rocket_function, variable_inputs_array, output_names, USE_AI
 
 
         with ThreadPoolExecutor() as executor:
-            futures = [executor.submit(run_rocket_function, idx, v) for idx, v in jobs]
+            futures = [executor.submit(run_rocket_function, idx, v, already_found) for idx, v in jobs]
             for f in tqdm(as_completed(futures), total=len(futures), desc="Threaded Run"):
-                idx, output_list = f.result()
+                idx, output_list, already_found = f.result()
               
                 output_array[idx] = output_list
 
@@ -43,10 +43,10 @@ def ThreadedRun(run_rocket_function, variable_inputs_array, output_names, USE_AI
         for count, variable_input_combination in tqdm(enumerate(it), total=inputs.step_size**2, desc="Not Threaded Run"):            
             idx = (count // inputs.step_size), (count % inputs.step_size)
             
-            idx, output_list = run_rocket_function(idx, variable_input_combination)
+            idx, output_list, already_found = run_rocket_function(idx, variable_input_combination, already_found)
             output_array[idx] = output_list
             
             # X, Y, Z = p.SetupArrays(variable_inputs_array, isp_map)
             # p.UpdateContinuousColorMap(X, Y, Z, constant_inputs_array)
 
-    return (output_array)
+    return (output_array, already_found)

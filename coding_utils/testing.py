@@ -130,50 +130,57 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 # p.PlotColorMap(X, Y, Z, RPA_df['Tc'])
 
 
-# coolprop vapor testing
-from CoolProp.CoolProp import PropsSI
-import CoolProp.CoolProp as CP
+# # coolprop ullage collapse testing
+# from CoolProp.CoolProp import PropsSI
+# import CoolProp.CoolProp as CP
 
-# density = PropsSI("D", 'P', 101325, 'T', 100 + 273, "water")
-# print(density)
-# phase = CP.PhaseSI(    'P', 101325, 'T', 99 + 273, "water")
-# print(phase)
+# # density = PropsSI("D", 'P', 101325, 'T', 100 + 273, "water")
+# # print(density)
+# # phase = CP.PhaseSI(    'P', 101325, 'T', 99 + 273, "water")
+# # print(phase)
 
-# density = PropsSI("D", "P", c.ATM2PA, "Q", 0, "water")
-# print(density)
+# # density = PropsSI("D", "P", c.ATM2PA, "Q", 0, "water")
+# # print(density)
 
-# phase = CP.PhaseSI('P', c.ATM2PA, 'D', density, "water")
-# print(phase)
+# # phase = CP.PhaseSI('P', c.ATM2PA, 'D', density, "water")
+# # print(phase)
 
-total_ox_tank_volume = 6 * c.L2M3
-total_fuel_tank_volume = 11 * c.L2M3
-
-
-
-COPV_pressure = 4500 * c.PSI2PA
-tank_pressure = 100 * c.PSI2PA
-COPV_volume = 3 * c.L2M3
-
-pressurant_in_COPV_density = PropsSI("D", "P", COPV_pressure, "T", c.T_AMBIENT + 15, "nitrogen")
-pressurant_in_COPV_entropy = PropsSI("S", "P", COPV_pressure, "T", c.T_AMBIENT + 15, "nitrogen")
-pressurant_in_fuel_tank_entropy = pressurant_in_COPV_entropy
-
-pressurant_in_ox_density = PropsSI("D", "P", tank_pressure, "Q", 1, "nitrogen")
-pressurant_in_fuel_density = PropsSI("D", "P", tank_pressure, "S", pressurant_in_fuel_tank_entropy, "nitrogen")
-
-pressurant_in_ox_tank_before_collapse_density = PropsSI("D", "P", tank_pressure, "S", pressurant_in_fuel_tank_entropy, "nitrogen")
-pressurant_in_ox_tank_after_collapse_density = PropsSI("D", "P", tank_pressure, "Q", 1, "nitrogen")
+# total_ox_tank_volume = 6 * c.L2M3
+# total_fuel_tank_volume = 11 * c.L2M3
 
 
-pressurant_in_COPV_to_in_ox_density_ratio = pressurant_in_COPV_density/(pressurant_in_ox_density * pressurant_in_fuel_density)
-pressurant_in_COPV_to_in_fuel_density_ratio = pressurant_in_COPV_density/pressurant_in_fuel_density
+# COPV_pressure = 4500 * c.PSI2PA
+# tank_pressure = 100 * c.PSI2PA
+# COPV_volume = 3 * c.L2M3
 
-print(f"pressurant_in_COPV_to_in_ox_density_ratio: {pressurant_in_COPV_to_in_ox_density_ratio:.2f}")
-print(f"pressurant_in_COPV_to_in_fuel_density_ratio: {pressurant_in_COPV_to_in_fuel_density_ratio:.2f}")
+# pressurant_in_COPV_density = PropsSI("D", "P", COPV_pressure, "T", c.T_AMBIENT + 15, "nitrogen")
+# pressurant_in_COPV_entropy = PropsSI("S", "P", COPV_pressure, "T", c.T_AMBIENT + 15, "nitrogen")
+# pressurant_in_fuel_tank_entropy = pressurant_in_COPV_entropy
 
-needed_COPV_volume_for_ox =  (total_ox_tank_volume + (COPV_volume * 2))/pressurant_in_COPV_to_in_ox_density_ratio
-needed_COPV_volume_for_fuel =  (total_fuel_tank_volume + (COPV_volume * 2))/pressurant_in_COPV_to_in_fuel_density_ratio
+# pressurant_in_ox_density = PropsSI("D", "P", tank_pressure, "Q", 1, "nitrogen")
+# pressurant_in_fuel_density = PropsSI("D", "P", tank_pressure, "S", pressurant_in_fuel_tank_entropy, "nitrogen")
 
-needed_COPV_volume = needed_COPV_volume_for_ox + needed_COPV_volume_for_fuel
+# pressurant_in_ox_tank_before_collapse_density = PropsSI("D", "P", tank_pressure, "S", pressurant_in_fuel_tank_entropy, "nitrogen")
+# pressurant_in_ox_tank_after_collapse_density = PropsSI("D", "P", tank_pressure, "Q", 1, "nitrogen")
 
-print(f"need_copv_volume: {needed_COPV_volume * c.M32L:.2f}")
+
+# pressurant_in_COPV_to_in_ox_density_ratio = pressurant_in_COPV_density/pressurant_in_ox_density
+# pressurant_in_COPV_to_in_fuel_density_ratio = pressurant_in_COPV_density/pressurant_in_fuel_density
+
+# print(f"pressurant_in_COPV_to_in_ox_density_ratio: {pressurant_in_COPV_to_in_ox_density_ratio:.2f}")
+# print(f"pressurant_in_COPV_to_in_fuel_density_ratio: {pressurant_in_COPV_to_in_fuel_density_ratio:.2f}")
+
+# needed_COPV_volume_for_ox =  (total_ox_tank_volume + (COPV_volume * 2))/pressurant_in_COPV_to_in_ox_density_ratio
+# needed_COPV_volume_for_fuel =  (total_fuel_tank_volume + (COPV_volume * 2))/pressurant_in_COPV_to_in_fuel_density_ratio
+
+# needed_COPV_volume = needed_COPV_volume_for_ox + needed_COPV_volume_for_fuel
+
+# print(f"need_copv_volume: {needed_COPV_volume * c.M32L:.2f}")
+
+
+
+
+
+
+
+# 3d plot testing
