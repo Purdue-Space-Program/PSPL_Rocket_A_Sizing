@@ -23,9 +23,7 @@ def GoFluids(PROPELLANT_TANK_INNER_DIAMETER,
     
     fuel_density = FindPropellantDensity(FUEL_NAME, tank_pressure)
     oxidizer_density = FindPropellantDensity(OXIDIZER_NAME, tank_pressure)
-    # print(f"fuel_density: {fuel_density}")
-    # print(f"oxidizer_density: {oxidizer_density}")
-    
+
     fuel_total_tank_volume = TankDimensionsToTotalTankVolume(PROPELLANT_TANK_INNER_DIAMETER, FUEL_TANK_LENGTH)
 
     # 0% of the tank volume is intentionally left empty for an initial ullage volume

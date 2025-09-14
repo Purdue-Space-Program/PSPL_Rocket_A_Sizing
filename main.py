@@ -61,7 +61,7 @@ limit_rail_exit_accel = True
 
 already_found = 1
 
-if True:
+if False:
     p.PlotColorMaps3D(*load_last_run())
 else:
 
@@ -70,23 +70,23 @@ else:
     constant_inputs_array = numpy_ndarray_handler.dictionary_to_ndarray(inputs.constant_inputs)
 
     output_names = [
-        # "OXIDIZER_TANK_LENGTH",                          # [ft]
-        # "CHAMBER_TEMPERATURE",                       # [k]
+        # "OXIDIZER_TANK_LENGTH",    # [ft]
+        # "CHAMBER_TEMPERATURE",     # [k]
         
-        # "MASS_FLOW_RATE",                         # [kg/s]
-        # "ISP",                                      # [s]
-        "JET_THRUST",                             # [lbf] engine jet thrust
-        # "TOTAL_LENGTH",                              # [ft]
-        # "WET_MASS",                                 # [lbm]
-        # "DRY_MASS",                                 # [lbm]
+        # "MASS_FLOW_RATE",          # [kg/s]
+        # "ISP",                     # [s]
+        # "JET_THRUST",              # [lbf] engine jet thrust
+        # "TOTAL_LENGTH",            # [ft]
+        "WET_MASS",                # [lbm]
+        # "DRY_MASS",                # [lbm]
         "BURN_TIME",                 # [s]
         
-        "APOGEE",                                   # [ft]
-        # "MAX_ACCELERATION",                         # [G's]
-        # "MAX_VELOCITY",                         # [m/s]
-        # "RAIL_EXIT_VELOCITY",                          # [ft/s]
-        "RAIL_EXIT_ACCELERATION",                          # [ft/s]
-        # "RAIL_EXIT_TWR",                            # [n/a]
+        "APOGEE",                    # [ft]
+        # "MAX_ACCELERATION",        # [G's]
+        # "MAX_VELOCITY",            # [m/s]
+        "RAIL_EXIT_VELOCITY",        # [ft/s]
+        "RAIL_EXIT_ACCELERATION",    # [ft/s]
+        "RAIL_EXIT_TWR",             # [n/a]
     ] # USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA 
     # USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA 
     # USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA 
@@ -131,26 +131,28 @@ else:
         
         injector_mass = (2.6227 * 3 * c.LB2KG) # injector 2.6227 lbs per inch * 3 inches long
         regulator_mass = 1.200 # regulator https://valvesandregulators.aquaenvironment.com/item/high-flow-reducing-regulators-2/873-d-high-flow-dome-loaded-reducing-regulators/item-1659
-        valves_mass = 2 * 5.84 * c.LB2KG # fuel and ox 3/4 inch valve https://habonim.com/wp-content/uploads/2020/08/C47-BD_C47__2023_VO4_28-06-23.pdf
+        valves_mass = 2 * 3.26 * c.LB2KG # fuel and ox 3/4 inch valve https://habonim.com/wp-content/uploads/2020/08/C47-BD_C47__2023_VO4_28-06-23.pdf
+        copv_mass = 6.3 * c.LB2KG 
+        
         tank_wall_mass = (0.2200 * ((oxidizer_tank_length + fuel_tank_length) * c.M2IN) * c.LB2KG) # 0.2200 lbs per inch * tank length
         
         bulkhead_length = 3 * c.IN2M
         bulkhead_top_thickness = 0.5 * c.IN2M
-        bulkhead_mass = 4 * ((2.6227 * c.IN2M * bulkhead_length * c.LB2KG) - (2.1864 * c.IN2M * (bulkhead_length - bulkhead_top_thickness) * c.LB2KG)) # 4 bulkheads * 2.6227 lbs per inch for 5.75, 2.1864 lbs per in for 5.25
-        
+        bulkhead_mass = 4 * ((2.6227 * c.M2IN * bulkhead_length * c.LB2KG) - (2.1864 * c.M2IN * (bulkhead_length - bulkhead_top_thickness) * c.LB2KG)) # 4 bulkheads * 2.6227 lbs per inch for 5.75, 2.1864 lbs per in for 5.25
         recovery_bay_mass = 25 * c.LB2KG  # [kg] Estimated mass of the recovery bay https://github.com/Purdue-Space-Program/PSPL_Rocket_4_Sizing/blob/2b15e1dc508a56731056ff594a3c6b5afb639b4c/scripts/structures.py#L75
         structures = 15 * c.LB2KG # structures !
         
-        dry_mass = (valves_mass + regulator_mass + tank_wall_mass + bulkhead_mass  + recovery_bay_mass + structures) * 1.2 # factor of safety margin
+        dry_mass = (valves_mass + regulator_mass + tank_wall_mass + bulkhead_mass  + recovery_bay_mass + structures) * 1.1 # factor of safety margin
         wet_mass = total_usable_propellant_mass + dry_mass
         
         nosecone_length = 2 * c.FT2M
-        main_parachute_module_length = 3 * c.FT2M
-        drogue_parachute_module_length = 2 * c.FT2M
+        helium_bay_length = 2 * c.FT2M
+        main_parachute_module_length = 2 * c.FT2M
+        drogue_parachute_module_length = 1 * c.FT2M
         avionics_module_length = 0.5 * c.FT2M
         lower_plus_engine_length = 3 * c.FT2M
         
-        total_length = nosecone_length + main_parachute_module_length + drogue_parachute_module_length + avionics_module_length + lower_plus_engine_length + oxidizer_tank_length + fuel_tank_length + (4*bulkhead_length)
+        total_length = nosecone_length + helium_bay_length + main_parachute_module_length + drogue_parachute_module_length + avionics_module_length + lower_plus_engine_length + oxidizer_tank_length + fuel_tank_length + (4*bulkhead_length)
         
         if ignore_copv_limit:
             best_case_tanks_too_big = False # override to show all results
@@ -250,7 +252,7 @@ else:
             if limit_rail_exit_accel:
                 exists = (any((name == "RAIL_EXIT_ACCELERATION") and not(np.isnan(mapping[name])) for name, value in dtype))
                 if exists:
-                    within_bounds = ((rail_exit_accel > (5 * c.GRAVITY)) and (rail_exit_accel < (7 * c.GRAVITY)))
+                    within_bounds = ((rail_exit_accel > (5 * c.GRAVITY)) and (rail_exit_accel < (9 * c.GRAVITY)))
                 
                 if exists and within_bounds:
                     output_list[name] = mapping[name]

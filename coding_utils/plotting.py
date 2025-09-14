@@ -188,7 +188,6 @@ def FormatPlot(axis_name_list, axis_values_list, output_name, output_values, sho
         else:
             raise ValueError("axis name not recognized for plotting")
 
-        print(axis_values_factor)
         axis_label_list[count] = axis_label
         axis_values_list[count] = axis_values_list[count] * axis_values_factor
     

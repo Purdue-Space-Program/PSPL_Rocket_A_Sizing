@@ -130,28 +130,79 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 # p.PlotColorMap(X, Y, Z, RPA_df['Tc'])
 
 
-# # coolprop ullage collapse testing
-# from CoolProp.CoolProp import PropsSI
-# import CoolProp.CoolProp as CP
+# coolprop ullage collapse testing
+from CoolProp.CoolProp import PropsSI
+import CoolProp.CoolProp as CP
 
-# # density = PropsSI("D", 'P', 101325, 'T', 100 + 273, "water")
-# # print(density)
-# # phase = CP.PhaseSI(    'P', 101325, 'T', 99 + 273, "water")
-# # print(phase)
-
-# # density = PropsSI("D", "P", c.ATM2PA, "Q", 0, "water")
-# # print(density)
-
-# # phase = CP.PhaseSI('P', c.ATM2PA, 'D', density, "water")
-# # print(phase)
 
 # total_ox_tank_volume = 6 * c.L2M3
 # total_fuel_tank_volume = 11 * c.L2M3
 
 
-# COPV_pressure = 4500 * c.PSI2PA
-# tank_pressure = 100 * c.PSI2PA
-# COPV_volume = 3 * c.L2M3
+COPV_pressure_1 = 4500 * c.PSI2PA
+COPV_temp_1 = c.T_AMBIENT + 15
+COPV_volume = 3 * c.L2M3
+
+COPV_density_1 = PropsSI("D", "P", COPV_pressure_1, "T", COPV_temp_1, "nitrogen")
+print(f"COPV_density_1: {COPV_density_1:.2f}")
+
+COPV_mass_1 = COPV_density_1 * COPV_volume
+print(f"COPV_mass_1: {COPV_mass_1:.2f}")
+
+COPV_entropy_1 = PropsSI("S", "P", COPV_pressure_1, "T", COPV_temp_1, "nitrogen")
+print(f"COPV_entropy_1: {COPV_entropy_1:.2f}")
+
+
+tank_pressure = 100 * c.PSI2PA
+ox_tank_volume = 15 * c.L2M3
+fuel_tank_volume = 20 * c.L2M3
+
+ox_tank_density = PropsSI("D", "P", tank_pressure, "Q", 1, "nitrogen")
+print(f"ox_tank_density: {ox_tank_density:.2f}")
+
+ox_tank_mass = ox_tank_density * ox_tank_volume
+print(f"ox_tank_mass: {ox_tank_mass:.2f}")
+
+
+if (COPV_mass_1 - ox_tank_mass) < 0:
+    raise ValueError
+
+COPV_mass_2 = COPV_mass_1 - ox_tank_mass
+COPV_density_2 = COPV_mass_2 / COPV_volume
+COPV_entropy_2 = COPV_entropy_1 # isentropic expansion
+COPV_pressure_2 = PropsSI("P", "D", COPV_density_2, "S", COPV_entropy_2, "nitrogen")
+print(f"COPV_pressure_2: {COPV_pressure_2:.2f}")
+
+COPV_temperature_2 = PropsSI("T", "D", COPV_density_2, "S", COPV_entropy_2, "nitrogen")
+print(f"COPV_temperature_2: {COPV_temperature_2:.2f}")
+
+nitrogen_gamma = 1.4
+fuel_internal_energy = tank_pressure*fuel_tank_volume / (nitrogen_gamma - 1)
+print(f"fuel_internal_energy: {fuel_internal_energy:.2f}")
+
+# fuel_tank_mass = (tank_pressure*fuel_tank_volume) / ()
+# T = ?
+# n = tank_pressure*fuel_tank_volume / 8.31 * T
+
+# fuel_tank_density = PropsSI("D", "UMolar", fuel_internal_energy/n, "P", tank_pressure, "nitrogen")
+# fuel_tank_mass = fuel_tank_density * fuel_tank_volume
+
+# if (COPV_mass_2 - fuel_tank_mass) < 0:
+#     raise ValueError
+
+# COPV_mass_3 = COPV_mass_2 - fuel_tank_mass
+# COPV_density_3 = COPV_mass_3 / COPV_volume
+# COPV_entropy_3 = COPV_entropy_2 # isentropic expansion
+# COPV_pressure_3 = PropsSI("P", "D", COPV_density_3, "S", COPV_entropy_3, "nitrogen")
+
+fuel_boundary_work = ((COPV_pressure_2*COPV_volume) - (COPV_pressure_3*COPV_volume)) / (nitrogen_gamma - 1)
+
+energy_used_for_fuel = fuel_internal_energy + fuel_boundary_work
+
+COPV_internal_energy_2 = PropsSI("UMolar", "D", COPV_density_2, "S", COPV_entropy_2, "nitrogen")
+COPV_internal_energy_3 = COPV_internal_energy_2 - energy_used_for_fuel
+
+
 
 # pressurant_in_COPV_density = PropsSI("D", "P", COPV_pressure, "T", c.T_AMBIENT + 15, "nitrogen")
 # pressurant_in_COPV_entropy = PropsSI("S", "P", COPV_pressure, "T", c.T_AMBIENT + 15, "nitrogen")

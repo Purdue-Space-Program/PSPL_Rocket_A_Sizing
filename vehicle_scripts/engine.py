@@ -21,7 +21,7 @@ def ThrustyBusty(FUEL_NAME, OXIDIZER_NAME, PROPELLANT_TANK_OUTER_DIAMETER, CONTR
     expected_exhaust_velocity = expected_isp * c.GRAVITY
     
     chamber_radius, chamber_length, throat_radius = CalculateEngineDimensions(PROPELLANT_TANK_OUTER_DIAMETER, FUEL_NAME, OXIDIZER_NAME, CONTRACTION_RATIO)
-    expected_total_mass_flow_rate = CalculateMassFlowRate(throat_radius, CHAMBER_PRESSURE, cea_results["c_mw"], cea_results["c_gamma"], cea_results["c_t"])
+    expected_total_mass_flow_rate = CalculateMassFlowRate(throat_radius, CHAMBER_PRESSURE, cea_results["c_mw"], cea_results["c_gamma"], chamber_temperature)
 
     expected_jet_thrust = CalculateExpectedThrust(expected_isp, expected_total_mass_flow_rate)
 
@@ -191,7 +191,7 @@ def CalculateMassFlowRate(throat_radius, chamber_pressure, chamber_molar_mass, c
     return expected_total_mass_flow_rate
 
 def CalculateEngineDimensions(PROPELLANT_TANK_OUTER_DIAMETER, fuel_name, oxidizer_name, contraction_ratio):
-    chamber_radius = (PROPELLANT_TANK_OUTER_DIAMETER/2) - (0.5 * c.IN2M) # lowkey a guess
+    chamber_radius = (PROPELLANT_TANK_OUTER_DIAMETER/2) - (1 * c.IN2M) # lowkey a guess
     chamber_area = RadiusToArea(chamber_radius)
     
     throat_area = chamber_area/contraction_ratio
