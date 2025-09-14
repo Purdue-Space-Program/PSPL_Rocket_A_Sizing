@@ -40,7 +40,10 @@ def ThreadedRun(run_rocket_function, variable_inputs_array, output_names, alread
         # Iterate while keeping the structure
         it = np.nditer(variable_inputs_array, flags=["multi_index"], op_flags=["readonly"])
         
+        # num_axis = len(inputs.variable_inputs)
+        
         for count, variable_input_combination in tqdm(enumerate(it), total=inputs.step_size**2, desc="Not Threaded Run"):            
+            
             idx = (count // inputs.step_size), (count % inputs.step_size)
             
             idx, output_list, already_found = run_rocket_function(idx, variable_input_combination, already_found)

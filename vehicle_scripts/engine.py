@@ -8,12 +8,18 @@ import vehicle_scripts.numpy_ndarray_handler as NNH
 os.environ["CEA_USE_LEGACY"] = "1" # https://github.com/civilwargeeky/CEA_Wrap/issues/8
 import CEA_Wrap as CEA
 import numpy as np
+from tqdm import tqdm
+
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
-def ThrustyBusty(FUEL_NAME, OXIDIZER_NAME, PROPELLANT_TANK_OUTER_DIAMETER, CONTRACTION_RATIO, OF_RATIO, CHAMBER_PRESSURE):
+def ThrustyBusty(FUEL_NAME, OXIDIZER_NAME, PROPELLANT_TANK_OUTER_DIAMETER, CONTRACTION_RATIO, OF_RATIO, CHAMBER_PRESSURE, CEA_Array_Result=None):
 # def ThrustyBusty(FUEL_NAME, OXIDIZER_NAME, PROPELLANT_TANK_OUTER_DIAMETER, CONTRACTION_RATIO, OF_RATIO, CHAMBER_PRESSURE, cea_results):
 
-    cea_results = RunCEA(CHAMBER_PRESSURE, FUEL_NAME, OXIDIZER_NAME, OF_RATIO)
+    if CEA_Array_Result == None:
+        cea_results = RunCEA(CHAMBER_PRESSURE, FUEL_NAME, OXIDIZER_NAME, OF_RATIO)
+    else:
+        cea_results = CEA_Array_Result
     
     expected_isp = CalculateExpectedISP(cea_results["isp"])
     chamber_temperature = cea_results["c_t"]
@@ -31,6 +37,9 @@ def ThrustyBusty(FUEL_NAME, OXIDIZER_NAME, PROPELLANT_TANK_OUTER_DIAMETER, CONTR
 
 
 def CreateMassiveCEAArray(constant_inputs_array, variable_inputs_array):
+    
+    # not faster :(
+    
     CIA = constant_inputs_array
     VIA = variable_inputs_array
 
@@ -103,26 +112,52 @@ def CreateMassiveCEAArray(constant_inputs_array, variable_inputs_array):
     CEAArray = np.zeros(variable_inputs_array.size, dtype=np.dtype(fields_dtype))
     CEAArray = CEAArray.reshape(variable_inputs_array.shape)
 
+    # Make a list of all indices to parallelize over
+    indices = list(np.ndindex(variable_inputs_array.shape))
 
-    it = np.nditer(variable_inputs_array, flags=["multi_index"], op_flags=["readonly"])
-    for variable_input_combination in it: 
-        # ((it.multi_index, variable_input_combination.copy()))
-        
-        cea_results = RunCEA(NNH.GetFrom_ndarray("CHAMBER_PRESSURE", CIA, VIA[it.multi_index]), 
-                             NNH.GetFrom_ndarray("FUEL_NAME", CIA, VIA[it.multi_index]),
-                             NNH.GetFrom_ndarray("OXIDIZER_NAME", CIA, VIA[it.multi_index]), 
-                             NNH.GetFrom_ndarray("OF_RATIO", CIA, VIA[it.multi_index]), 
-                            )
+    def inner_function(multi_index):
+        cea_results = RunCEA(
+                        NNH.GetFrom_ndarray("CHAMBER_PRESSURE", CIA, VIA[multi_index]), 
+                        NNH.GetFrom_ndarray("FUEL_NAME", CIA, VIA[multi_index]),
+                        NNH.GetFrom_ndarray("OXIDIZER_NAME", CIA, VIA[multi_index]), 
+                        NNH.GetFrom_ndarray("OF_RATIO", CIA, VIA[multi_index]), 
+                    )
         
         hardcoded_cea_results = np.zeros(1, dtype=fields_dtype)
         help = [cea_results.c_t, cea_results.c_mw, cea_results.c_gamma, cea_results.isp] # i am dumb
-        
         for count, (name, _) in enumerate(fields_dtype):
             hardcoded_cea_results[name] = help[count]
 
-        CEAArray[it.multi_index] = hardcoded_cea_results
+        CEAArray[multi_index] = hardcoded_cea_results
 
+    with ThreadPoolExecutor() as thread_pool:
+        thread_pool.map(inner_function, indices)
+        list(tqdm(
+            thread_pool.map(inner_function, indices),
+            total=len(indices),
+            desc="Creating Massive CEA Array"
+        ))
+        
     return(CEAArray)
+
+    
+    # for variable_input_combination in tqdm(it, total=it.itersize, desc="Creating Massive CEA Array"): 
+        
+    #     cea_results = RunCEA(NNH.GetFrom_ndarray("CHAMBER_PRESSURE", CIA, VIA[it.multi_index]), 
+    #                          NNH.GetFrom_ndarray("FUEL_NAME", CIA, VIA[it.multi_index]),
+    #                          NNH.GetFrom_ndarray("OXIDIZER_NAME", CIA, VIA[it.multi_index]), 
+    #                          NNH.GetFrom_ndarray("OF_RATIO", CIA, VIA[it.multi_index]), 
+    #                         )
+        
+    #     hardcoded_cea_results = np.zeros(1, dtype=fields_dtype)
+    #     help = [cea_results.c_t, cea_results.c_mw, cea_results.c_gamma, cea_results.isp] # i am dumb
+        
+    #     for count, (name, _) in enumerate(fields_dtype):
+    #         hardcoded_cea_results[name] = help[count]
+
+    #     CEAArray[it.multi_index] = hardcoded_cea_results
+
+    # return(CEAArray)
 
 
 def RunCEA(
@@ -143,6 +178,8 @@ def RunCEA(
 
     if oxidizer_name == "liquid oxygen":
         CEA_oxidizer_name = CEA.Oxidizer("O2(L)", temp=90) # 90 K is temperature of oxidizer upon injection into combustion (same as copperhead's sizing)
+    else:
+        raise ValueError(f"{oxidizer_name} not supported")
 
 
     pressure_ratio = chamber_pressure / (15 * c.PSI2PA) # assume exit pressure is a constantly at the pressure of air a bit above sea level
@@ -176,10 +213,9 @@ def CalculateExpectedISP(ideal_isp):
 
 # fixed :)
 def CalculateMassFlowRate(throat_radius, chamber_pressure, chamber_molar_mass, chamber_gamma, T_c): # eq (1-19) on page 7 of sp-125 https://ntrs.nasa.gov/citations/19710019929
-    y = chamber_gamma # for readability
+    y = chamber_gamma # for equation readability
     
     R = 8.314 / (chamber_molar_mass/1000) # R is the specific gas constant here
-    # R /= 1000
     
     radicand = (y/(R*T_c)) * ( (2/(y+1)) ** (((y+1) / (y-1))) )
     
@@ -193,7 +229,7 @@ def CalculateMassFlowRate(throat_radius, chamber_pressure, chamber_molar_mass, c
 def CalculateEngineDimensions(PROPELLANT_TANK_OUTER_DIAMETER, fuel_name, oxidizer_name, contraction_ratio):
     chamber_radius = (PROPELLANT_TANK_OUTER_DIAMETER/2) - (1 * c.IN2M) # lowkey a guess
     chamber_area = RadiusToArea(chamber_radius)
-    
+
     throat_area = chamber_area/contraction_ratio
     throat_radius = AreaToRadius(throat_area)
     
@@ -216,11 +252,11 @@ def CalculateChamberLength(throat_area, chamber_area, fuel_name, oxidizer_name):
 def FindLstar(fuel_name, oxidizer_name):
     if (oxidizer_name == "liquid oxygen"):
         if (fuel_name == "ethanol"):
-            L_star = 45 * c.IN2M # source:  my asshole
+            L_star = 45 * c.IN2M # source: my asshole (brazil)
         elif (fuel_name == "kerosene"):
             L_star = 45 * c.IN2M # table 4-1 on page 87 of nasa sp-125 https://ntrs.nasa.gov/citations/19710019929
         elif (fuel_name == "ipa"):
-            L_star = 10000000000 * c.IN2M # 
+            L_star = 99999999999999 * c.IN2M
         else:
             raise ValueError("No L* Found")
     else:

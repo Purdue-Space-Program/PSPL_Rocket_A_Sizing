@@ -1,8 +1,8 @@
 import coding_utils.constants as c
 import numpy as np
 
-step_size = 20 # number of values to use for each variable input
-# DONT GOT OVER 30 FOR 3D GRAPHS ITS SLOW ASF, 25 IS A GOOD NUMBER
+step_size = 40 # number of values to use for each variable input
+# DONT GOT OVER 30 FOR 3D GRAPHS ITS SLOW ASF, 20 IS A GOOD NUMBER
 
 # A dictionary used to define the possible definitions where each key is an input (constant or variable)
 # and each value is either the constant value or a range of values
@@ -13,10 +13,10 @@ variable_inputs = {
     # "FUEL_NAME":                  ["Ethanol", "Kerosene"],
 
     "OF_RATIO":                   np.linspace(0.2, 2, step_size), # [dimensionless] ratio of oxygen to fuel by mass
-    "CHAMBER_PRESSURE":           np.linspace(80, 120, step_size) * c.PSI2PA, # [pa] pressure in the chamber during combustion
+    # "CHAMBER_PRESSURE":           np.linspace(80, 120, step_size) * c.PSI2PA, # [pa] pressure in the chamber during combustion
     
 
-    "CONTRACTION_RATIO":          np.linspace(2, 5, step_size), # [dimensionless] area ratio of chamber to throat (3 to 6 recommended by textbook)
+    "CONTRACTION_RATIO":          np.linspace(2, 6, step_size), # [dimensionless] area ratio of chamber to throat (3 to 6 recommended by textbook)
     # "FUEL_TANK_LENGTH":   np.linspace(6 * c.IN2M, 2 * c.FT2M, step_size), # [meters] possible speedy metals pipe lengths: https://www.speedymetals.com/pc-4648-8371-6-od-x-0125-wall-tube-6061-t6-aluminum.aspx
     
     # "OXIDIZER_ON_TOP_FUEL_ON_BOTTOM": [True, False], # [boolean (true or false)] whether the oxidizer tank is above the fuel tank or not
@@ -32,10 +32,10 @@ variable_inputs = {
 }
 
 constant_inputs = {
-    # "CHAMBER_PRESSURE":                         100 * c.PSI2PA, # [psi] pressure in the chamber during combustion
+    "CHAMBER_PRESSURE":                         100 * c.PSI2PA, # [psi] pressure in the chamber during combustion
     # "OF_RATIO":                                 0.9, # [dimensionless] ratio of oxygen to fuel by mass
     
-    "FUEL_TANK_LENGTH":                           12 * c.IN2M, # [meters] possible speedy metals pipe lengths: https://www.speedymetals.com/pc-4648-8371-6-od-x-0125-wall-tube-6061-t6-aluminum.aspx
+    "FUEL_TANK_LENGTH":                           12.1 * c.IN2M, # [meters] possible speedy metals pipe lengths: https://www.speedymetals.com/pc-4648-8371-6-od-x-0125-wall-tube-6061-t6-aluminum.aspx
     # "CONTRACTION_RATIO":                        2.5, # [dimensionless] area ratio of chamber to throat (3 to 6 recommended by textbook)
     
     "FUEL_NAME":                                  "IPA",

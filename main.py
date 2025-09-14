@@ -55,9 +55,9 @@ def load_last_run(filename="last_run.npz"):
     return data["AXES"], data["variable_inputs_array"], data["output_names"], data["output_array"], data["show_copv_limiting_factor"]
 
 
-ignore_copv_limit = False
+ignore_copv_limit = True
 show_copv_limiting_factor = False
-limit_rail_exit_accel = True
+limit_rail_exit_accel = False
 
 already_found = 1
 
@@ -106,6 +106,7 @@ else:
 
         fuel_tank_length = numpy_ndarray_handler.GetFrom_ndarray("FUEL_TANK_LENGTH", constant_inputs_array, variable_input_combination)
 
+
         jet_thrust, isp, mass_flow_rate, chamber_temperature = engine.ThrustyBusty(
                     fuel_name,
                     numpy_ndarray_handler.GetFrom_ndarray("OXIDIZER_NAME", constant_inputs_array, variable_input_combination),
@@ -129,7 +130,7 @@ else:
         # wet_mass = total_usable_propellant_mass * numpy_ndarray_handler.GetFrom_ndarray("WET_MASS_TO_USABLE_PROPELLANT_MASS_RATIO", constant_inputs_array, variable_input_combination)
         # dry_mass = wet_mass - total_usable_propellant_mass
         
-        injector_mass = (2.6227 * 3 * c.LB2KG) # injector 2.6227 lbs per inch * 3 inches long
+        injector_mass = (2.6227 * 2 * c.LB2KG) # injector 2.6227 lbs per inch * 3 inches long
         regulator_mass = 1.200 # regulator https://valvesandregulators.aquaenvironment.com/item/high-flow-reducing-regulators-2/873-d-high-flow-dome-loaded-reducing-regulators/item-1659
         valves_mass = 2 * 3.26 * c.LB2KG # fuel and ox 3/4 inch valve https://habonim.com/wp-content/uploads/2020/08/C47-BD_C47__2023_VO4_28-06-23.pdf
         copv_mass = 6.3 * c.LB2KG 
@@ -273,7 +274,7 @@ else:
         
         
         if (already_found == 0):
-            if (CR > 5) & (FTL > 12 * c.IN2M):
+            if (CR > 2) & (FTL > 12 * c.IN2M):
                 print(f"\nContraction Ratio: {CR}")
                 print(f"Fuel Tank Length: {FTL * c.M2FT} feet")
                     
