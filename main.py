@@ -55,9 +55,9 @@ def load_last_run(filename="last_run.npz"):
     return data["AXES"], data["variable_inputs_array"], data["output_names"], data["output_array"], data["show_copv_limiting_factor"]
 
 
-ignore_copv_limit = True
+ignore_copv_limit = False
 show_copv_limiting_factor = False
-limit_rail_exit_accel = False
+limit_rail_exit_accel = True
 
 already_found = 1
 
@@ -75,7 +75,7 @@ else:
         
         # "MASS_FLOW_RATE",          # [kg/s]
         # "ISP",                     # [s]
-        # "JET_THRUST",              # [lbf] engine jet thrust
+        "JET_THRUST",              # [lbf] engine jet thrust
         # "TOTAL_LENGTH",            # [ft]
         "WET_MASS",                # [lbm]
         # "DRY_MASS",                # [lbm]
@@ -133,7 +133,7 @@ else:
         injector_mass = (2.6227 * 2 * c.LB2KG) # injector 2.6227 lbs per inch * 3 inches long
         regulator_mass = 1.200 # regulator https://valvesandregulators.aquaenvironment.com/item/high-flow-reducing-regulators-2/873-d-high-flow-dome-loaded-reducing-regulators/item-1659
         valves_mass = 2 * 3.26 * c.LB2KG # fuel and ox 3/4 inch valve https://habonim.com/wp-content/uploads/2020/08/C47-BD_C47__2023_VO4_28-06-23.pdf
-        copv_mass = 6.3 * c.LB2KG 
+        copv_mass = 2.9 
         
         tank_wall_mass = (0.2200 * ((oxidizer_tank_length + fuel_tank_length) * c.M2IN) * c.LB2KG) # 0.2200 lbs per inch * tank length
         
@@ -175,6 +175,7 @@ else:
                 isp = np.nan
                 engine_burn_time = np.nan
                 mass_flow_rate = np.nan
+                chamber_temperature = np.nan
         
         # avoid calculating trajectory if the value is not going to be used
         if any(output in output_names for output in ["APOGEE", "MAX_ACCELERATION", "RAIL_EXIT_VELOCITY", "RAIL_EXIT_ACCELERATION", "TAKEOFF_TWR", "RAIL_EXIT_TWR", "MAX_ACCELERATION"]):
@@ -193,7 +194,7 @@ else:
                                 )
             
             rail_exit_TWR = AccelerationToTWR(rail_exit_accel)
-                
+        
         initial_thrust = ((jet_thrust) - (c.GRAVITY * wet_mass)) / wet_mass
         
         if worst_case_tanks_too_big or initial_thrust <= 0:

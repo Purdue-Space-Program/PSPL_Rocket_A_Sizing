@@ -85,7 +85,7 @@ def calculate_trajectory(
     velocity = 0  # [m/s] initial velocity of the rocket
     accel = ((jetThrust + (exitPressure - ATMOSPHERE_DATA[(0, 1)]) * exitArea) - (c.GRAVITY * wetMass)) / wetMass  # [m/s] initial acceleration of the rocket, assume no drag and at 0 altitude
     time = 0  # [s] initial time of the rocket
-    dt = 0.05  # [s] time step of the rocket
+    dt = 0.01  # [s] time step of the rocket
 
     # Array Initialization:
     altitudeArray = [altitude]

@@ -37,7 +37,6 @@ def ThrustyBusty(FUEL_NAME, OXIDIZER_NAME, PROPELLANT_TANK_OUTER_DIAMETER, CONTR
 
 
 def CreateMassiveCEAArray(constant_inputs_array, variable_inputs_array):
-    
     # not faster :(
     
     CIA = constant_inputs_array

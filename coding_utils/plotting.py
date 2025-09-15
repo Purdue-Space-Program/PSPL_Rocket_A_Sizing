@@ -56,10 +56,13 @@ def PlotColorMap(X, Y, output_values, x_axis_name, y_axis_name, output_name, sho
     ax.set_ylabel(axis_label_list[1], fontsize=8)
 
     X, Y = *axis_values_list,
-        
-    mesh = ax.pcolormesh(X, Y, output_values, cmap=color_scheme)
-    # mesh = ax.contourf(X, Y, Z, 100, cmap=color_scheme)
-    # mesh = ax.pcolormesh(X, Y, Z, cmap='RdBu_r')
+    
+    if show_copv_limiting_factor:
+        mesh = ax.pcolormesh(X, Y, output_values, cmap=color_scheme, vmin=0, vmax=1*c.N2LBF)
+    else:
+        mesh = ax.pcolormesh(X, Y, output_values, cmap=color_scheme)
+        # mesh = ax.contourf(X, Y, Z, 100, cmap=color_scheme)
+
         
     ax.set_title(f"{output_name.title()} of {inputs.constant_inputs['FUEL_NAME'][0].title()}", fontsize=12)
     ax.set_facecolor("lightgray")
@@ -253,6 +256,7 @@ def FormatPlot(axis_name_list, axis_values_list, output_name, output_values, sho
     
     if show_copv_limiting_factor:
         color_scheme = "RdYlGn"
+        
     else:
         color_scheme = "RdBu_r"
         "Spectral_r"
