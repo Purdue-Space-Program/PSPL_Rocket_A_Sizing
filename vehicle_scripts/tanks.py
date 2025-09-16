@@ -28,6 +28,7 @@ def GoFluids(PROPELLANT_TANK_INNER_DIAMETER,
 
     # 0% of the tank volume is intentionally left empty for an initial ullage volume
     fuel_total_propellant_volume = fuel_total_tank_volume * 1
+    fuel_total_propellant_mass = fuel_total_propellant_volume * fuel_density
     
     # 10% of the that propellant is assumed to be unused due to residuals 
     fuel_usable_propellant_volume = fuel_total_propellant_volume * 0.9
@@ -35,6 +36,7 @@ def GoFluids(PROPELLANT_TANK_INNER_DIAMETER,
     fuel_usable_propellant_mass = fuel_usable_propellant_volume * fuel_density
     
     
+    oxidizer_total_propellant_mass = fuel_total_propellant_mass * OF_RATIO
     oxidizer_usable_propellant_mass = fuel_usable_propellant_mass * OF_RATIO
     
     oxidizer_usable_propellant_volume = oxidizer_usable_propellant_mass / oxidizer_density
@@ -55,7 +57,7 @@ def GoFluids(PROPELLANT_TANK_INNER_DIAMETER,
 
     best_case_tanks_too_big, worst_case_tanks_too_big = CalculateIfTanksTooBig(tank_pressure, oxidizer_total_tank_volume, fuel_total_tank_volume)
    
-    return(total_usable_propellant_mass, engine_burn_time, oxidizer_tank_length, best_case_tanks_too_big, worst_case_tanks_too_big)
+    return(total_usable_propellant_mass, engine_burn_time, oxidizer_tank_length, oxidizer_total_tank_volume, oxidizer_total_propellant_mass, fuel_total_tank_volume, fuel_total_propellant_mass, best_case_tanks_too_big, worst_case_tanks_too_big)
 
 
 def CalculateIfTanksTooBig(tank_pressure, oxidizer_total_tank_volume, fuel_total_tank_volume):

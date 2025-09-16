@@ -236,12 +236,31 @@ def FormatPlot(axis_name_list, axis_values_list, output_name, output_values, sho
         output_label="Max Velocity [Mach]"
     elif output_name == "CHAMBER_TEMPERATURE":
         output_label="Chamber Temperature [k]"
-    elif output_name == "OXIDIZER_TANK_LENGTH":
-        output_values_factor = c.M2FT
-        output_label="Oxidizer Tank Length [ft]"
+    
     elif output_name == "TOTAL_LENGTH":
         output_values_factor = c.M2FT
         output_label="Total Length [ft]"
+    
+    elif output_name == "OXIDIZER_TANK_LENGTH":
+        output_values_factor = c.M2FT
+        output_label="Oxidizer Tank Length [ft]"
+    
+    elif output_name == "OXIDIZER_TANK_VOLUME":
+        output_values_factor = c.M32L
+        output_label="Oxidizer Tank Volume [liters]"
+        
+    elif output_name == "OXIDIZER_TOTAL_MASS":
+        output_values_factor = c.KG2LB
+        output_label="Oxidizer Tank Mass [lbm]"
+    
+    elif output_name == "FUEL_TANK_VOLUME":
+        output_values_factor = c.M32L
+        output_label="Fuel Tank Volume [liters]"
+        
+    elif output_name == "FUEL_TOTAL_MASS":
+        output_values_factor = c.KG2LB
+        output_label="Fuel Tank Mass [lbm]"        
+        
     else:
         raise ValueError("output name not recognized for plotting")
 

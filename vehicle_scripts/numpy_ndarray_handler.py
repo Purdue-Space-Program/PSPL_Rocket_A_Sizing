@@ -84,7 +84,7 @@ def dictionary_to_ndarray(dictionary):
                 max_length = max(len(s) for s in value)
             else:
                 max_length = len(value)
-            fields_dtype.append((key, np.str_,max_length))  # String of length = len(value)
+            fields_dtype.append((key, np.str_, max_length))  # String of length = len(value)
 
         else:
             raise TypeError(f"Unsupported type for key: {key}\n")

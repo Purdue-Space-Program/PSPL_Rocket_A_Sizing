@@ -85,7 +85,7 @@ def calculate_trajectory(
     velocity = 0  # [m/s] initial velocity of the rocket
     accel = ((jetThrust + (exitPressure - ATMOSPHERE_DATA[(0, 1)]) * exitArea) - (c.GRAVITY * wetMass)) / wetMass  # [m/s] initial acceleration of the rocket, assume no drag and at 0 altitude
     time = 0  # [s] initial time of the rocket
-    dt = 0.01  # [s] time step of the rocket
+    dt = 0.05  # [s] time step of the rocket
 
     # Array Initialization:
     altitudeArray = [altitude]
@@ -155,19 +155,28 @@ def calculate_trajectory(
     estimated_apogee = altitude * 0.651 # what the fuck is this for
 
     if plots == True:
+        plt.plot(timeArray, np.array(accelArray, dtype=float) * 0.651 * c.M2FT)
+        plt.title("Acceleration v. Time")
+        plt.ylabel("Acceleration [m/s^2]")
+        plt.xlabel("Time [s]")
+        
+        plt.plot(timeArray, np.array(velocityArray, dtype=float) * 0.651 * c.M2FT)
+        plt.title("Velocity v. Time")
+        plt.ylabel("Velocity [m/s]")
+        plt.xlabel("Time [s]")
+        
+        
         plt.figure(1)
-        # plt.plot(timeArray, np.array(altitudeArray, dtype=float) * c.M2FT)
-        # plt.title("Height v. Time")
-        # plt.ylabel("Height [ft]")
-        # plt.xlabel("Time [s]")
+        plt.plot(timeArray, np.array(altitudeArray, dtype=float) * 0.651 * c.M2FT)
+        plt.title("Height v. Time")
+        plt.ylabel("Height [ft]")
+        plt.xlabel("Time [s]")
         
         # plot estimated apogee
         # plt.axhline(y=estimated_apogee * c.M2FT, color='r', linestyle='--', label="Estimated Apogee")
         
-        plt.plot(timeArray, np.array(accelArray, dtype=float))
-        plt.title("Acceleration v. Time")
-        plt.ylabel("Acceleration [m/s^2]")
-        plt.xlabel("Time [s]")
+        
+        
         
         # # compare with OpenRocket trajectory
         # OR_df = pd.read_csv('open_rocket_altitude_data.csv', comment='#')
