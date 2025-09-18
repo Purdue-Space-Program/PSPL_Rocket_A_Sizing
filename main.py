@@ -65,17 +65,17 @@ variable_inputs_array = numpy_ndarray_handler.dictionary_to_ndarray(inputs.varia
 constant_inputs_array = numpy_ndarray_handler.dictionary_to_ndarray(inputs.constant_inputs)
 
 output_names = [
-    # "OXIDIZER_TANK_LENGTH",    # [ft]
-    # "OXIDIZER_TANK_VOLUME",
-    # "OXIDIZER_TOTAL_MASS",
-    # "FUEL_TANK_VOLUME",
-    # "FUEL_TOTAL_MASS",
-    # "CHAMBER_TEMPERATURE",     # [k]
+    "OXIDIZER_TANK_LENGTH",    # [ft]
+    "OXIDIZER_TANK_VOLUME",
+    "OXIDIZER_TOTAL_MASS",
+    "FUEL_TANK_VOLUME",
+    "FUEL_TOTAL_MASS",
+    "CHAMBER_TEMPERATURE",     # [k]
     
     "MASS_FLOW_RATE",          # [kg/s]
     "ISP",                     # [s]
     "JET_THRUST",              # [lbf] engine jet thrust
-    # "TOTAL_LENGTH",            # [ft]
+    "TOTAL_LENGTH",            # [ft]
     "WET_MASS",                # [lbm]
     "DRY_MASS",                # [lbm]
     "BURN_TIME",                 # [s]
@@ -86,6 +86,7 @@ output_names = [
     "RAIL_EXIT_VELOCITY",        # [ft/s]
     "RAIL_EXIT_ACCELERATION",    # [ft/s]
     "RAIL_EXIT_TWR",             # [n/a] 
+    "TOTAL_IMPULSE"             # [newton-seconds]
     
 
 ] # USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA 
@@ -244,6 +245,7 @@ def run_rocket_function(idx, variable_input_combination):
         "RAIL_EXIT_VELOCITY": rail_exit_velocity if "rail_exit_velocity" in locals() else np.nan,
         "RAIL_EXIT_ACCELERATION": rail_exit_accel if "rail_exit_accel" in locals() else np.nan,
         "RAIL_EXIT_TWR": rail_exit_TWR if "rail_exit_TWR" in locals() else np.nan,
+        "TOTAL_IMPULSE": total_impulse if "total_impulse" in locals() else np.nan,
     }
 
 
@@ -281,7 +283,7 @@ def run_rocket_function(idx, variable_input_combination):
     
     return (idx, output_list)
 
-if False:
+if True:
     # p.PlotColorMaps3D(*load_last_run())
     pass
 else:
@@ -334,3 +336,5 @@ print(f"Off the rail acceleration: {desired_rocket_output_list["RAIL_EXIT_ACCELE
 print(f"Off the rail velocity: {desired_rocket_output_list["RAIL_EXIT_VELOCITY"]} m/s")
 print(f"Max Acceleration: {desired_rocket_output_list["MAX_ACCELERATION"] / c.GRAVITY} G's")
 print(f"Max Velocity: {desired_rocket_output_list["MAX_VELOCITY"] / 343} Mach")
+
+print(f"Total Impulse: {desired_rocket_output_list["TOTAL_IMPULSE"]} Newton-seconds")
