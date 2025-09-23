@@ -57,7 +57,7 @@ def load_last_run(filename="last_run.npz"):
 
 ignore_copv_limit = False
 show_copv_limiting_factor = False
-limit_rail_exit_accel = False
+limit_rail_exit_accel = True
 
 
 # The variable_inputs_array will be separate from the constant_inputs_array to save memory size and hopefully increase speed
@@ -65,12 +65,6 @@ variable_inputs_array = numpy_ndarray_handler.dictionary_to_ndarray(inputs.varia
 constant_inputs_array = numpy_ndarray_handler.dictionary_to_ndarray(inputs.constant_inputs)
 
 output_names = [
-    "OXIDIZER_TANK_LENGTH",    # [ft]
-    "OXIDIZER_TANK_VOLUME",
-    "OXIDIZER_TOTAL_MASS",
-    "FUEL_TANK_VOLUME",
-    "FUEL_TOTAL_MASS",
-    "CHAMBER_TEMPERATURE",     # [k]
     
     "MASS_FLOW_RATE",          # [kg/s]
     "ISP",                     # [s]
@@ -78,8 +72,16 @@ output_names = [
     "TOTAL_LENGTH",            # [ft]
     "WET_MASS",                # [lbm]
     "DRY_MASS",                # [lbm]
-    "BURN_TIME",                 # [s]
+    "BURN_TIME",               # [s]
+    "CHAMBER_TEMPERATURE",     # [k]
     
+    "TANK_PRESSURE",          # [psi]
+    "OXIDIZER_TANK_VOLUME",
+    "OXIDIZER_TOTAL_MASS",
+    "FUEL_TANK_VOLUME",
+    "FUEL_TOTAL_MASS",
+    "OXIDIZER_TANK_LENGTH",    # [ft]
+
     "APOGEE",                    # [ft]
     "MAX_ACCELERATION",        # [G's]
     "MAX_VELOCITY",            # [m/s]
@@ -107,22 +109,23 @@ def run_rocket_function(idx, variable_input_combination):
     fuel_name = numpy_ndarray_handler.GetFrom_ndarray("FUEL_NAME", constant_inputs_array, variable_input_combination)
 
     fuel_tank_length = numpy_ndarray_handler.GetFrom_ndarray("FUEL_TANK_LENGTH", constant_inputs_array, variable_input_combination)
-
+    propellant_tank_outer_diameter = numpy_ndarray_handler.GetFrom_ndarray("PROPELLANT_TANK_OUTER_DIAMETER", constant_inputs_array, variable_input_combination)
+    propellant_tank_inner_diameter = numpy_ndarray_handler.GetFrom_ndarray("PROPELLANT_TANK_INNER_DIAMETER", constant_inputs_array, variable_input_combination)
 
     jet_thrust, isp, mass_flow_rate, chamber_temperature = engine.ThrustyBusty(
                 fuel_name,
                 numpy_ndarray_handler.GetFrom_ndarray("OXIDIZER_NAME", constant_inputs_array, variable_input_combination),
-                numpy_ndarray_handler.GetFrom_ndarray("PROPELLANT_TANK_OUTER_DIAMETER", constant_inputs_array, variable_input_combination),
+                propellant_tank_outer_diameter,
                 numpy_ndarray_handler.GetFrom_ndarray("CONTRACTION_RATIO", constant_inputs_array, variable_input_combination),
                 numpy_ndarray_handler.GetFrom_ndarray("OF_RATIO", constant_inputs_array, variable_input_combination),
                 numpy_ndarray_handler.GetFrom_ndarray("CHAMBER_PRESSURE", constant_inputs_array, variable_input_combination),
                 # CEA_Array[idx],
                 )
     
-    ()
+    
 
-    total_usable_propellant_mass, engine_burn_time, oxidizer_tank_length, oxidizer_total_tank_volume, oxidizer_total_propellant_mass, fuel_total_tank_volume, fuel_total_propellant_mass, best_case_tanks_too_big, worst_case_tanks_too_big = tanks.GoFluids(
-                numpy_ndarray_handler.GetFrom_ndarray("PROPELLANT_TANK_INNER_DIAMETER", constant_inputs_array, variable_input_combination),
+    total_usable_propellant_mass, engine_burn_time, oxidizer_tank_length, oxidizer_total_tank_volume, oxidizer_total_propellant_mass, fuel_total_tank_volume, fuel_total_propellant_mass, best_case_tanks_too_big, worst_case_tanks_too_big, tank_pressure = tanks.GoFluids(
+                propellant_tank_inner_diameter,
                 fuel_tank_length,
                 numpy_ndarray_handler.GetFrom_ndarray("CHAMBER_PRESSURE", constant_inputs_array, variable_input_combination),
                 numpy_ndarray_handler.GetFrom_ndarray("OXIDIZER_NAME", constant_inputs_array, variable_input_combination),
@@ -134,16 +137,31 @@ def run_rocket_function(idx, variable_input_combination):
     # wet_mass = total_usable_propellant_mass * numpy_ndarray_handler.GetFrom_ndarray("WET_MASS_TO_USABLE_PROPELLANT_MASS_RATIO", constant_inputs_array, variable_input_combination)
     # dry_mass = wet_mass - total_usable_propellant_mass
     
-    injector_mass = (2.6227 * 2 * c.LB2KG) # injector 2.6227 lbs per inch * 3 inches long
+    def CalcCylinderVolume(diameter, height):
+        radius = diameter/2
+        volume = np.pi * (radius**2) * height
+        
+        return volume
+    
+
+    injector_mass = c.DENSITY_AL * CalcCylinderVolume(propellant_tank_outer_diameter, 2 * c.IN2M)
+    
     regulator_mass = 1.200 # regulator https://valvesandregulators.aquaenvironment.com/item/high-flow-reducing-regulators-2/873-d-high-flow-dome-loaded-reducing-regulators/item-1659
     valves_mass = 2 * 3.26 * c.LB2KG # fuel and ox 3/4 inch valve https://habonim.com/wp-content/uploads/2020/08/C47-BD_C47__2023_VO4_28-06-23.pdf
     copv_mass = 2.9 
     
-    tank_wall_mass = (0.2200 * ((oxidizer_tank_length + fuel_tank_length) * c.M2IN) * c.LB2KG) # 0.2200 lbs per inch * tank length
+    tank_wall_mass = c.DENSITY_AL * (
+        CalcCylinderVolume(propellant_tank_outer_diameter, (oxidizer_tank_length + fuel_tank_length))
+        - CalcCylinderVolume(propellant_tank_inner_diameter, (oxidizer_tank_length + fuel_tank_length))
+                                     ) 
     
     bulkhead_length = 3 * c.IN2M
-    bulkhead_top_thickness = 0.5 * c.IN2M
-    bulkhead_mass = 4 * ((2.6227 * c.M2IN * bulkhead_length * c.LB2KG) - (2.1864 * c.M2IN * (bulkhead_length - bulkhead_top_thickness) * c.LB2KG)) # 4 bulkheads * 2.6227 lbs per inch for 5.75, 2.1864 lbs per in for 5.25
+    bulkhead_wall_thickness = 0.25 * c.IN2M
+    bulkhead_top_thickness = 0.76 * c.IN2M
+    
+    bulkhead_mass = 4 * c.DENSITY_AL * ((CalcCylinderVolume(propellant_tank_inner_diameter, bulkhead_length) - 
+                                        CalcCylinderVolume(propellant_tank_inner_diameter - (2 * bulkhead_wall_thickness), bulkhead_length - bulkhead_top_thickness))) # 4 bulkheads, 5.75, 5.25
+    
     recovery_bay_mass = 25 * c.LB2KG  # [kg] Estimated mass of the recovery bay https://github.com/Purdue-Space-Program/PSPL_Rocket_4_Sizing/blob/2b15e1dc508a56731056ff594a3c6b5afb639b4c/scripts/structures.py#L75
     structures = 15 * c.LB2KG # structures !
     
@@ -237,7 +255,8 @@ def run_rocket_function(idx, variable_input_combination):
         "DRY_MASS": dry_mass,
         "TOTAL_LENGTH" : total_length,
         "CHAMBER_TEMPERATURE": chamber_temperature,
-        "BURN_TIME" : engine_burn_time,
+        "BURN_TIME": engine_burn_time,
+        "TANK_PRESSURE": tank_pressure,
         
         "APOGEE": estimated_apogee if "estimated_apogee" in locals() else np.nan,
         "MAX_ACCELERATION": max_accel if "max_accel" in locals() else np.nan,
@@ -283,11 +302,14 @@ def run_rocket_function(idx, variable_input_combination):
     
     return (idx, output_list)
 
-if True:
-    # p.PlotColorMaps3D(*load_last_run())
+if False:
+    p.PlotColorMaps3D(*load_last_run())
     pass
 else:
-    output_array = threaded_run.ThreadedRun(run_rocket_function, variable_inputs_array, output_names, True)
+    use_threading = True
+    # if __debug__:
+    #     use_threading = False 
+    output_array = threaded_run.ThreadedRun(run_rocket_function, variable_inputs_array, output_names, use_threading)
     print(constant_inputs_array)
     axis_names = [variable_inputs_array.dtype.names[i] for i in range(len(variable_inputs_array.dtype))]
     
@@ -302,12 +324,13 @@ else:
         raise ValueError(f"{len(axis_names)} is an unsupported number of axes")
 
 
-
-
-
-fields_dtype = [("CONTRACTION_RATIO", np.float32), ("FUEL_TANK_LENGTH", np.float32), ("CHAMBER_PRESSURE", np.float32)]
-desired_input = np.array((3.5, 12 * c.IN2M, 150 * c.PSI2PA), dtype=np.dtype(fields_dtype))
+fields_dtype = []
+for variable_input in list(inputs.variable_inputs):
+    fields_dtype.append((variable_input, np.float32))
+ 
+desired_input = np.array((150 * c.PSI2PA, 3.5, 12 * c.IN2M), dtype=np.dtype(fields_dtype))
 _, desired_rocket_output_list = run_rocket_function(69 / 420, desired_input)
+
 # print(desired_rocket_output_list)
 print(f"\n-------Inputs-------")
 print(f"Chamber Pressure: {desired_input["CHAMBER_PRESSURE"] * c.PA2PSI} PSI")
@@ -316,11 +339,13 @@ print(f"Contraction Ratio: {desired_input["CONTRACTION_RATIO"]}")
 print(f"Fuel Tank Length: {desired_input["FUEL_TANK_LENGTH"] * c.M2FT} feet")
 
 print(f"\n-------Outputs-------")
+print(f"Tank Pressure: {desired_rocket_output_list["TANK_PRESSURE"] * c.PA2PSI} psi")
 print(f"JET_THRUST: {desired_rocket_output_list["JET_THRUST"] * c.N2LBF} lbf")
 print(f"ISP: {desired_rocket_output_list["ISP"]} seconds")
 print(f"MASS_FLOW_RATE: {desired_rocket_output_list["MASS_FLOW_RATE"] * c.KG2LB} lbm/s")
 print(f"BURN_TIME: {desired_rocket_output_list["BURN_TIME"]} seconds")
 print(f"TOTAL_LENGTH: {desired_rocket_output_list["TOTAL_LENGTH"] * c.M2FT} feet")
+print(f"CHAMBER_TEMPERATURE: {desired_rocket_output_list["CHAMBER_TEMPERATURE"]} kelvin")
 
 print(f"OXIDIZER_TANK_LENGTH: {desired_rocket_output_list["OXIDIZER_TANK_LENGTH"] * c.M2IN} in")
 print(f"OXIDIZER_TANK_VOLUME: {desired_rocket_output_list["OXIDIZER_TANK_VOLUME"] * c.M32L} liter")

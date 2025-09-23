@@ -57,7 +57,7 @@ def GoFluids(PROPELLANT_TANK_INNER_DIAMETER,
 
     best_case_tanks_too_big, worst_case_tanks_too_big = CalculateIfTanksTooBig(tank_pressure, oxidizer_total_tank_volume, fuel_total_tank_volume)
    
-    return(total_usable_propellant_mass, engine_burn_time, oxidizer_tank_length, oxidizer_total_tank_volume, oxidizer_total_propellant_mass, fuel_total_tank_volume, fuel_total_propellant_mass, best_case_tanks_too_big, worst_case_tanks_too_big)
+    return(total_usable_propellant_mass, engine_burn_time, oxidizer_tank_length, oxidizer_total_tank_volume, oxidizer_total_propellant_mass, fuel_total_tank_volume, fuel_total_propellant_mass, best_case_tanks_too_big, worst_case_tanks_too_big, tank_pressure)
 
 
 def CalculateIfTanksTooBig(tank_pressure, oxidizer_total_tank_volume, fuel_total_tank_volume):

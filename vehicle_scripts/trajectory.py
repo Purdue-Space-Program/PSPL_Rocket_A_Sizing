@@ -12,7 +12,6 @@ import coding_utils.constants as c
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
-from numba import njit
 
 
 ATMOSPHERE_DATA = pd.read_csv("atmosphere.csv")

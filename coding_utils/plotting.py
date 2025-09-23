@@ -206,6 +206,14 @@ def FormatPlot(axis_name_list, axis_values_list, output_name, output_values, sho
         # power = 1/4
         # contour_lines = np.max(output_array[output_name]) * 0.995 / (num_lines**power) * np.linspace(1, num_lines, num_lines)**power
         output_label="isp [s]"
+    elif output_name == "CHAMBER_TEMPERATURE":
+        output_label="Chamber Temperature [k]"
+    elif output_name == "TANK_PRESSURE":
+        output_values_factor = c.PA2PSI
+        output_label="Tank Pressure [psi]"
+    
+    elif output_name == "TOTAL_IMPULSE":
+        output_label="Total Impulse [newtons-seconds]"
     elif output_name == "APOGEE":
         output_values_factor = c.M2FT
         # altitude_limit = ax.contour(X, Y, Z, levels=[10000], colors='red', linewidths=2)
@@ -234,8 +242,6 @@ def FormatPlot(axis_name_list, axis_values_list, output_name, output_values, sho
     elif output_name == "MAX_VELOCITY":
         output_values_factor = 1 / 343 # [m/s] 343 is da speed of sound
         output_label="Max Velocity [Mach]"
-    elif output_name == "CHAMBER_TEMPERATURE":
-        output_label="Chamber Temperature [k]"
     
     elif output_name == "TOTAL_LENGTH":
         output_values_factor = c.M2FT

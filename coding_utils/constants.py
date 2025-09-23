@@ -68,6 +68,9 @@ RPM2RADS = (2 * np.pi) / 60
 
 ### Material Properties
 
+# 6061-T6 https://www.onlinemetals.com/en/buy/aluminum/1-aluminum-round-bar-6061-t6511-extruded/pid/1090
+DENSITY_T6 = 3000  # [kg/m^3] Density
+
 # 6000-Series Aluminum (https://asm.matweb.com/search/specificmaterial.asp?bassnum=ma6061t6)
 
 DENSITY_AL = 2700  # [kg/m^3] Density
