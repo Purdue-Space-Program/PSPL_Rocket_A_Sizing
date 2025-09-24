@@ -57,7 +57,7 @@ def load_last_run(filename="last_run.npz"):
 
 ignore_copv_limit = False
 show_copv_limiting_factor = False
-limit_rail_exit_accel = True
+limit_rail_exit_accel = False
 
 
 # The variable_inputs_array will be separate from the constant_inputs_array to save memory size and hopefully increase speed
@@ -302,8 +302,8 @@ def run_rocket_function(idx, variable_input_combination):
     
     return (idx, output_list)
 
-if False:
-    p.PlotColorMaps3D(*load_last_run())
+if True:
+    # p.PlotColorMaps3D(*load_last_run())
     pass
 else:
     use_threading = True
@@ -325,14 +325,27 @@ else:
 
 
 fields_dtype = []
+values = []
 for variable_input in list(inputs.variable_inputs):
     fields_dtype.append((variable_input, np.float32))
+    if variable_input == "CHAMBER_PRESSURE":
+        values.append(150 * c.PSI2PA)
+    
+    elif variable_input == "CONTRACTION_RATIO":
+        values.append(3)
+        
+    elif variable_input == "FUEL_TANK_LENGTH":
+        values.append(6 * c.IN2M)
+        
+    else:
+        raise ValueError
  
-desired_input = np.array((150 * c.PSI2PA, 3.5, 12 * c.IN2M), dtype=np.dtype(fields_dtype))
+desired_input = np.array([tuple(values)], dtype=np.dtype(fields_dtype))
 _, desired_rocket_output_list = run_rocket_function(69 / 420, desired_input)
 
-# print(desired_rocket_output_list)
+print(desired_rocket_output_list)
 print(f"\n-------Inputs-------")
+print(f"Fuel: {numpy_ndarray_handler.GetFrom_ndarray("FUEL_NAME", constant_inputs_array, desired_input).title()}, Oxidizer: {numpy_ndarray_handler.GetFrom_ndarray("OXIDIZER_NAME", constant_inputs_array, desired_input).title()}")
 print(f"Chamber Pressure: {desired_input["CHAMBER_PRESSURE"] * c.PA2PSI} PSI")
 print(f"OF Ratio: {numpy_ndarray_handler.GetFrom_ndarray("OF_RATIO", constant_inputs_array, desired_input)}")
 print(f"Contraction Ratio: {desired_input["CONTRACTION_RATIO"]}")
@@ -363,3 +376,36 @@ print(f"Max Acceleration: {desired_rocket_output_list["MAX_ACCELERATION"] / c.GR
 print(f"Max Velocity: {desired_rocket_output_list["MAX_VELOCITY"] / 343} Mach")
 
 print(f"Total Impulse: {desired_rocket_output_list["TOTAL_IMPULSE"]} Newton-seconds")
+
+
+# print(f"\n-------Inputs-------")
+# print(f"Chamber Pressure: {desired_input["CHAMBER_PRESSURE"]} Pa")
+# print(f"OF Ratio: {numpy_ndarray_handler.GetFrom_ndarray("OF_RATIO", constant_inputs_array, desired_input)}")
+# print(f"Contraction Ratio: {desired_input["CONTRACTION_RATIO"]}")
+# print(f"Fuel Tank Length: {desired_input["FUEL_TANK_LENGTH"]} meters")
+
+# print(f"\n-------Outputs-------")
+# print(f"Tank Pressure: {desired_rocket_output_list["TANK_PRESSURE"]} Pa")
+# print(f"JET_THRUST: {desired_rocket_output_list["JET_THRUST"]} Newtons")
+# print(f"ISP: {desired_rocket_output_list["ISP"]} seconds")
+# print(f"MASS_FLOW_RATE: {desired_rocket_output_list["MASS_FLOW_RATE"]} kg/s")
+# print(f"BURN_TIME: {desired_rocket_output_list["BURN_TIME"]} seconds")
+# print(f"TOTAL_LENGTH: {desired_rocket_output_list["TOTAL_LENGTH"] } meter")
+# print(f"CHAMBER_TEMPERATURE: {desired_rocket_output_list["CHAMBER_TEMPERATURE"]} kelvin")
+
+# print(f"OXIDIZER_TANK_LENGTH: {desired_rocket_output_list["OXIDIZER_TANK_LENGTH"]} meter")
+# print(f"OXIDIZER_TANK_VOLUME: {desired_rocket_output_list["OXIDIZER_TANK_VOLUME"] } m^3")
+# print(f"OXIDIZER_TOTAL_MASS: {desired_rocket_output_list["OXIDIZER_TOTAL_MASS"]} kg")
+# print(f"FUEL_TANK_VOLUME: {desired_rocket_output_list["FUEL_TANK_VOLUME"]} m^3")
+# print(f"FUEL_TOTAL_MASS: {desired_rocket_output_list["FUEL_TOTAL_MASS"]} kg")
+# print(f"WET_MASS: {desired_rocket_output_list["WET_MASS"]} kg")
+# print(f"DRY_MASS: {desired_rocket_output_list["DRY_MASS"]} kg")
+
+# print(f"Estimated Apogee: {desired_rocket_output_list["APOGEE"]} meter")
+# print(f"Off the rail TWR: {desired_rocket_output_list["RAIL_EXIT_TWR"]}")
+# print(f"Off the rail acceleration: {desired_rocket_output_list["RAIL_EXIT_ACCELERATION"] / c.GRAVITY} G's")
+# print(f"Off the rail velocity: {desired_rocket_output_list["RAIL_EXIT_VELOCITY"]} m/s")
+# print(f"Max Acceleration: {desired_rocket_output_list["MAX_ACCELERATION"] / c.GRAVITY} G's")
+# print(f"Max Velocity: {desired_rocket_output_list["MAX_VELOCITY"] / 343} Mach")
+
+# print(f"Total Impulse: {desired_rocket_output_list["TOTAL_IMPULSE"]} Newton-seconds")
