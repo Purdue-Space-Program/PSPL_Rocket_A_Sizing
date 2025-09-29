@@ -1,6 +1,6 @@
 # Fluids/Combustion
 CEA_Wrap == 2.0.0
-CoolProp
+CoolProp == 6.8 # newer version errors when debugging
 # genericf2py; sys.platform == 'darwin' # only needed if on mac (darwin means MacOS for some reason lol) # cant get rocketcea to work on mac :(
 
 # Math/Data
@@ -13,6 +13,6 @@ matplotlib
 # plotly thing
 
 # GUI
-nicegui
-pyqtgraph
-pyqt5
+# nicegui
+# pyqtgraph
+# pyqt5

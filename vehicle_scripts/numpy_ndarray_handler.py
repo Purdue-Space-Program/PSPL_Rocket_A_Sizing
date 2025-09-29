@@ -24,7 +24,7 @@ def GetFrom_ndarray(key, constant_inputs_array, variable_input_combination):
     if key in constant_inputs_array.dtype.names:
         value = constant_inputs_array[key]
         if key in variable_input_combination.dtype.names:
-            raise KeyError(f"dumbass!!!!!!!!!!!!!!!!!!!!!!!!")
+            raise KeyError(f"dumbass!!!!!!!!!!!!!!!!!!!!!!!! same value in variable and constant array")
     elif key in variable_input_combination.dtype.names:
         value = variable_input_combination[key]
     else:
@@ -84,7 +84,7 @@ def dictionary_to_ndarray(dictionary):
                 max_length = max(len(s) for s in value)
             else:
                 max_length = len(value)
-            fields_dtype.append((key, np.str_,max_length))  # String of length = len(value)
+            fields_dtype.append((key, np.str_, max_length))  # String of length = len(value)
 
         else:
             raise TypeError(f"Unsupported type for key: {key}\n")
