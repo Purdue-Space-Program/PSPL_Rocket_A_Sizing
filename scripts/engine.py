@@ -1,7 +1,7 @@
 # import CEA_Wrap
 import numpy as np
-from scipy import constants
-from scipy.constants import gas_constant
+
+
 def size_engine(chamber_radius, fuel_name, oxidizer_name, contraction_ratio):
     chamber_area = radius_to_area(chamber_radius)
     throat_area = chamber_area / contraction_ratio
@@ -34,7 +34,7 @@ def find_L_star(fuel_name, oxidizer_name):
 
 
 def get_characteristic_velocity(Oxidizer, Fuel):
-    if(Oxidizer == "Liquid Oxygen"):
+    if(Oxidizer == "liquid Oxygen"):
         if(Fuel == "Ethanol"):
             return 1700
         if(Fuel == "Kerosene"):
@@ -45,16 +45,3 @@ def find_mass_flow_rate(throat_area, characteristic_velocity, chamber_pressure):
     mass_flow_rate = (chamber_pressure * throat_area) / (characteristic_velocity)
     return mass_flow_rate
 
-def get_y(Oxidizer, Fuel):
-    if(Oxidizer == "Liquid Oxygen"):
-        if(Fuel == "Kerosene"):
-            return 1.24
-        if(Fuel == "Methane"):
-            return 1.069
-
-def find_exaust_velocity(Oxidizer, Fuel, Tc, Pe, Pc,):
-    g = constants.g
-    R = gas_constant
-    y = get_y(Oxidizer, Fuel)
-    exaust_velocity = ((2*g*y)/(y-1))(R*Tc)((1-(Pe/Pc))**((y-1)/y))
-    return exaust_velocity

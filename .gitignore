@@ -12,3 +12,6 @@ venv
 # Pylint
 .pylintrc
 *.pyc
+
+# idk
+__pycache__

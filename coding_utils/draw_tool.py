@@ -1,5 +1,4 @@
 import pyqtgraph.examples
-pyqtgraph.examples.run()
 
 import numpy as np
 import pyqtgraph as pg
@@ -88,4 +87,5 @@ def DrawPoints(points_list):
 
 
 if __name__ == '__main__':
+    # pyqtgraph.examples.run()
     DrawEngine(3,5,1.5,1.5,2,6,10)

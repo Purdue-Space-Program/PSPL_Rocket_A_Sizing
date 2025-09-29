@@ -17,7 +17,7 @@ The outputs of this code are not the word of god, they are a set of preliminary 
         2. Windows🪟: ```.venv\Scripts\activate.bat```
 
 5. Run the below code in the terminal to import all required packages
-```pip install -r requirements.txt```
+```python -m pip install -r requirements.txt```
 
 5. Change inputs in inputs.py
     1. Choose fuel
