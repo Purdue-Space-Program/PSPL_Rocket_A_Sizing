@@ -13,8 +13,10 @@ The outputs of this code are not the word of god, they are a set of preliminary 
 4. Run the following code in the terminal to activate a virtual environment (or don't). [Learn more about virtual environments](https://www.youtube.com/watch?v=KxvKCSwlUv8) 🙂
     1. ```python -m venv .venv```
     2. Choose next line based off your operating system:
-        1. MacOS🍎: ```source .venv/bin/activate```
-        2. Windows🪟: ```.venv\Scripts\activate.bat```
+        1. MacOS🍎:
+           ```source .venv/bin/activate```
+        4. Windows🪟:
+           ```.venv\Scripts\activate.bat```
 
 5. Run the below code in the terminal to import all required packages
 ```python -m pip install -r requirements.txt```
