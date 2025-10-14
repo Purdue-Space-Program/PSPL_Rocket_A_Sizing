@@ -14,8 +14,10 @@ The outputs of this code are not the word of god, they are a set of preliminary 
     1. ```python -m venv .venv```
     2. Choose next line based off your operating system:
         1. MacOS🍎:
+      
            ```source .venv/bin/activate```
         4. Windows🪟:
+
            ```.venv\Scripts\activate.bat```
 
 5. Run the below code in the terminal to import all required packages
