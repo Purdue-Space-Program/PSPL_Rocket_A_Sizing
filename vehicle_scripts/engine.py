@@ -33,7 +33,7 @@ def ThrustyBusty(FUEL_NAME, OXIDIZER_NAME, PROPELLANT_TANK_OUTER_DIAMETER, CONTR
 
     # print(expected_total_mass_flow_rate, expected_exhaust_velocity)
     # return(expected_thrust, expected_isp, total_mass_flow_rate, chamber_radius, chamber_length, throat_radius)
-    return(expected_jet_thrust, expected_isp, expected_total_mass_flow_rate, chamber_temperature)
+    return(expected_jet_thrust, expected_isp, expected_total_mass_flow_rate, chamber_temperature, chamber_radius, throat_radius, chamber_length)
 
 
 def CreateMassiveCEAArray(constant_inputs_array, variable_inputs_array):
@@ -255,7 +255,7 @@ def FindLstar(fuel_name, oxidizer_name):
         elif (fuel_name == "kerosene"):
             L_star = 45 * c.IN2M # table 4-1 on page 87 of nasa sp-125 https://ntrs.nasa.gov/citations/19710019929
         elif (fuel_name == "ipa"):
-            L_star = 99999999999999 * c.IN2M
+            L_star = 45 * c.IN2M # best source i got... https://docs.google.com/presentation/d/1BgoW4NsStkoPDfLUcNBo5q-SOjZwojqc4FWam491l4I/edit?slide=id.g21452e51da0_0_25#slide=id.g21452e51da0_0_25
         else:
             raise ValueError("No L* Found")
     else:

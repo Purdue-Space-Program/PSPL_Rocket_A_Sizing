@@ -75,6 +75,10 @@ output_names = [
     "BURN_TIME",               # [s]
     "CHAMBER_TEMPERATURE",     # [k]
     
+    "CHAMBER_DIAMETER",        # [in]
+    "CHAMBER_LENGTH",          # [in]
+    "THROAT_DIAMETER",         # [in]
+    
     "TANK_PRESSURE",          # [psi]
     "OXIDIZER_TANK_VOLUME",
     "OXIDIZER_TOTAL_MASS",
@@ -112,7 +116,7 @@ def run_rocket_function(idx, variable_input_combination):
     propellant_tank_outer_diameter = numpy_ndarray_handler.GetFrom_ndarray("PROPELLANT_TANK_OUTER_DIAMETER", constant_inputs_array, variable_input_combination)
     propellant_tank_inner_diameter = numpy_ndarray_handler.GetFrom_ndarray("PROPELLANT_TANK_INNER_DIAMETER", constant_inputs_array, variable_input_combination)
 
-    jet_thrust, isp, mass_flow_rate, chamber_temperature = engine.ThrustyBusty(
+    jet_thrust, isp, mass_flow_rate, chamber_temperature, chamber_radius, throat_radius, chamber_length = engine.ThrustyBusty(
                 fuel_name,
                 numpy_ndarray_handler.GetFrom_ndarray("OXIDIZER_NAME", constant_inputs_array, variable_input_combination),
                 propellant_tank_outer_diameter,
@@ -246,17 +250,23 @@ def run_rocket_function(idx, variable_input_combination):
         "ISP": isp,
         "OF_RATIO": numpy_ndarray_handler.GetFrom_ndarray("OF_RATIO", constant_inputs_array, variable_input_combination),
         "MASS_FLOW_RATE": mass_flow_rate,
+        "CHAMBER_TEMPERATURE": chamber_temperature,
+        
+        "CHAMBER_DIAMETER": chamber_radius*2,
+        "CHAMBER_LENGTH": chamber_length,
+        "THROAT_DIAMETER": throat_radius*2,
+        
+        "TANK_PRESSURE": tank_pressure,
         "OXIDIZER_TANK_LENGTH": oxidizer_tank_length,
         "OXIDIZER_TANK_VOLUME": oxidizer_total_tank_volume,
         "OXIDIZER_TOTAL_MASS": oxidizer_total_propellant_mass,
         "FUEL_TANK_VOLUME": fuel_total_tank_volume,
         "FUEL_TOTAL_MASS": fuel_total_propellant_mass,
+        "BURN_TIME": engine_burn_time,
+        
         "WET_MASS": wet_mass,
         "DRY_MASS": dry_mass,
         "TOTAL_LENGTH" : total_length,
-        "CHAMBER_TEMPERATURE": chamber_temperature,
-        "BURN_TIME": engine_burn_time,
-        "TANK_PRESSURE": tank_pressure,
         
         "APOGEE": estimated_apogee if "estimated_apogee" in locals() else np.nan,
         "MAX_ACCELERATION": max_accel if "max_accel" in locals() else np.nan,
@@ -339,7 +349,7 @@ for variable_input in list(inputs.variable_inputs):
         
     else:
         raise ValueError
- 
+
 desired_input = np.array([tuple(values)], dtype=np.dtype(fields_dtype))
 _, desired_rocket_output_list = run_rocket_function(69 / 420, desired_input)
 
@@ -356,27 +366,34 @@ print(f"Tank Pressure: {desired_rocket_output_list["TANK_PRESSURE"] * c.PA2PSI} 
 print(f"JET_THRUST: {desired_rocket_output_list["JET_THRUST"] * c.N2LBF} lbf")
 print(f"ISP: {desired_rocket_output_list["ISP"]} seconds")
 print(f"MASS_FLOW_RATE: {desired_rocket_output_list["MASS_FLOW_RATE"] * c.KG2LB} lbm/s")
-print(f"BURN_TIME: {desired_rocket_output_list["BURN_TIME"]} seconds")
-print(f"TOTAL_LENGTH: {desired_rocket_output_list["TOTAL_LENGTH"] * c.M2FT} feet")
 print(f"CHAMBER_TEMPERATURE: {desired_rocket_output_list["CHAMBER_TEMPERATURE"]} kelvin")
-
+print("")
+print(f"CHAMBER_DIAMETER: {desired_rocket_output_list["CHAMBER_DIAMETER"] * c.M2IN} in")
+print(f"CHAMBER LENGTH: {desired_rocket_output_list["CHAMBER_LENGTH"] * c.M2IN} in")
+print(f"THROAT_DIAMETER: {desired_rocket_output_list["THROAT_DIAMETER"]* c.M2IN} in")
+print("")
 print(f"OXIDIZER_TANK_LENGTH: {desired_rocket_output_list["OXIDIZER_TANK_LENGTH"] * c.M2IN} in")
 print(f"OXIDIZER_TANK_VOLUME: {desired_rocket_output_list["OXIDIZER_TANK_VOLUME"] * c.M32L} liter")
 print(f"OXIDIZER_TOTAL_MASS: {desired_rocket_output_list["OXIDIZER_TOTAL_MASS"] * c.KG2LB} lbm")
 print(f"FUEL_TANK_VOLUME: {desired_rocket_output_list["FUEL_TANK_VOLUME"] * c.M32L} liter")
 print(f"FUEL_TOTAL_MASS: {desired_rocket_output_list["FUEL_TOTAL_MASS"] * c.KG2LB} lbm")
-print(f"WET_MASS: {desired_rocket_output_list["WET_MASS"] * c.KG2LB} lbm")
-print(f"DRY_MASS: {desired_rocket_output_list["DRY_MASS"] * c.KG2LB} lbm")
-
+print(f"BURN_TIME: {desired_rocket_output_list["BURN_TIME"]} seconds")
+print("")
 print(f"Estimated Apogee: {desired_rocket_output_list["APOGEE"] * c.M2FT} feet")
 print(f"Off the rail TWR: {desired_rocket_output_list["RAIL_EXIT_TWR"]}")
 print(f"Off the rail acceleration: {desired_rocket_output_list["RAIL_EXIT_ACCELERATION"] / c.GRAVITY} G's")
 print(f"Off the rail velocity: {desired_rocket_output_list["RAIL_EXIT_VELOCITY"]} m/s")
 print(f"Max Acceleration: {desired_rocket_output_list["MAX_ACCELERATION"] / c.GRAVITY} G's")
 print(f"Max Velocity: {desired_rocket_output_list["MAX_VELOCITY"] / 343} Mach")
-
+print("")
+print(f"WET_MASS: {desired_rocket_output_list["WET_MASS"] * c.KG2LB} lbm")
+print(f"DRY_MASS: {desired_rocket_output_list["DRY_MASS"] * c.KG2LB} lbm")
+print(f"TOTAL_LENGTH: {desired_rocket_output_list["TOTAL_LENGTH"] * c.M2FT} feet")
 print(f"Total Impulse: {desired_rocket_output_list["TOTAL_IMPULSE"]} Newton-seconds")
 
+
+
+# METRIC VERSION (MISSING SOME VALUES, IF YOU WANNA FIX IT JUST COMBINE THIS WITH THE IMPERIAL ONE WITH AN IF STATEMENT)
 
 # print(f"\n-------Inputs-------")
 # print(f"Chamber Pressure: {desired_input["CHAMBER_PRESSURE"]} Pa")

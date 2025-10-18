@@ -212,6 +212,15 @@ def FormatPlot(axis_name_list, axis_values_list, output_name, output_values, sho
         output_values_factor = c.PA2PSI
         output_label="Tank Pressure [psi]"
     
+    
+    
+    elif output_name == "CHAMBER_DIAMETER":
+        output_values_factor = c.M2IN
+        output_label="Chamber Diameter [in]"
+    elif output_name == "THROAT_DIAMETER":
+        output_values_factor = c.M2IN
+        output_label="Throat Diameter [in]"
+    
     elif output_name == "TOTAL_IMPULSE":
         output_label="Total Impulse [newtons-seconds]"
     elif output_name == "APOGEE":
