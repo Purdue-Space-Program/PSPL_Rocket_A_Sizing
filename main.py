@@ -66,25 +66,25 @@ constant_inputs_array = numpy_ndarray_handler.dictionary_to_ndarray(inputs.const
 
 output_names = [
     
-    "MASS_FLOW_RATE",          # [kg/s]
-    "ISP",                     # [s]
-    "JET_THRUST",              # [lbf] engine jet thrust
-    "TOTAL_LENGTH",            # [ft]
-    "WET_MASS",                # [lbm]
-    "DRY_MASS",                # [lbm]
-    "BURN_TIME",               # [s]
-    "CHAMBER_TEMPERATURE",     # [k]
+    # "MASS_FLOW_RATE",          # [kg/s]
+    # "ISP",                     # [s]
+    # "JET_THRUST",              # [lbf] engine jet thrust
+    # "TOTAL_LENGTH",            # [ft]
+    # "WET_MASS",                # [lbm]
+    # "DRY_MASS",                # [lbm]
+    # "BURN_TIME",               # [s]
+    # "CHAMBER_TEMPERATURE",     # [k]
     
-    "CHAMBER_DIAMETER",        # [in]
-    "CHAMBER_LENGTH",          # [in]
-    "THROAT_DIAMETER",         # [in]
+    # "CHAMBER_DIAMETER",        # [in]
+    # "CHAMBER_LENGTH",          # [in]
+    # "THROAT_DIAMETER",         # [in]
     
-    "TANK_PRESSURE",          # [psi]
-    "OXIDIZER_TANK_VOLUME",
-    "OXIDIZER_TOTAL_MASS",
-    "FUEL_TANK_VOLUME",
-    "FUEL_TOTAL_MASS",
-    "OXIDIZER_TANK_LENGTH",    # [ft]
+    # "TANK_PRESSURE",          # [psi]
+    # "OXIDIZER_TANK_VOLUME",
+    # "OXIDIZER_TOTAL_MASS",
+    # "FUEL_TANK_VOLUME",
+    # "FUEL_TOTAL_MASS",
+    # "OXIDIZER_TANK_LENGTH",    # [ft]
 
     "APOGEE",                    # [ft]
     "MAX_ACCELERATION",        # [G's]
@@ -312,7 +312,7 @@ def run_rocket_function(idx, variable_input_combination):
     
     return (idx, output_list)
 
-if True:
+if False:
     # p.PlotColorMaps3D(*load_last_run())
     pass
 else:
