@@ -78,7 +78,7 @@ def CalculateIfTanksTooBig(tank_pressure, oxidizer_total_tank_volume, fuel_total
         gas_constant = c.N2_GAS_CONSTANT
     
     
-    worst_case_CFC_LOx = 3
+    worst_case_CFC_LOx = 4
     best_case_CFC_LOx = 1.75 # copperhead sizing for LOx-Helium collapse    
     CFC_FUEL = 1 # [1] Fuel tank cumulative collapse factor
 

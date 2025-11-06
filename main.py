@@ -25,7 +25,8 @@ from vehicle_scripts import (
     engine,
     numpy_ndarray_handler,
     tanks,
-    trajectory
+    trajectory,
+    mass_and_length,
     # structures,
 )
 from coding_utils import (
@@ -57,7 +58,7 @@ def load_last_run(filename="last_run.npz"):
 
 ignore_copv_limit = False
 show_copv_limiting_factor = False
-limit_rail_exit_accel = False
+limit_rail_exit_accel = True
 
 
 # The variable_inputs_array will be separate from the constant_inputs_array to save memory size and hopefully increase speed
@@ -66,33 +67,33 @@ constant_inputs_array = numpy_ndarray_handler.dictionary_to_ndarray(inputs.const
 
 output_names = [
     
-    # "MASS_FLOW_RATE",          # [kg/s]
-    # "ISP",                     # [s]
-    # "JET_THRUST",              # [lbf] engine jet thrust
-    # "TOTAL_LENGTH",            # [ft]
-    # "WET_MASS",                # [lbm]
-    # "DRY_MASS",                # [lbm]
-    # "BURN_TIME",               # [s]
-    # "CHAMBER_TEMPERATURE",     # [k]
+    "MASS_FLOW_RATE",                        # [kg/s]
+    "ISP",                                 # [s]
+    "JET_THRUST",                            # [lbf]
+    # "TOTAL_LENGTH",                        # [ft]
+    "WET_MASS",                            # [lbm]
+    "DRY_MASS",                            # [lbm]
+    "BURN_TIME",                             # [s]
+    "CHAMBER_TEMPERATURE",                   # [k]
     
-    # "CHAMBER_DIAMETER",        # [in]
-    # "CHAMBER_LENGTH",          # [in]
-    # "THROAT_DIAMETER",         # [in]
+    "CHAMBER_DIAMETER",                      # [in]
+    "CHAMBER_STRAIGHT_WALL_LENGTH",          # [in]
+    "THROAT_DIAMETER",                       # [in]
     
-    # "TANK_PRESSURE",          # [psi]
-    # "OXIDIZER_TANK_VOLUME",
+    "TANK_PRESSURE",                         # [psi]
+    # "OXIDIZER_TANK_VOLUME",                
     # "OXIDIZER_TOTAL_MASS",
     # "FUEL_TANK_VOLUME",
     # "FUEL_TOTAL_MASS",
     # "OXIDIZER_TANK_LENGTH",    # [ft]
 
     "APOGEE",                    # [ft]
-    "MAX_ACCELERATION",        # [G's]
-    "MAX_VELOCITY",            # [m/s]
+    "MAX_ACCELERATION",                  # [G's]
+    "MAX_VELOCITY",                       # [m/s]
     "RAIL_EXIT_VELOCITY",        # [ft/s]
     "RAIL_EXIT_ACCELERATION",    # [ft/s]
     "RAIL_EXIT_TWR",             # [n/a] 
-    "TOTAL_IMPULSE"             # [newton-seconds]
+    # "TOTAL_IMPULSE"             # [newton-seconds]
     
 
 ] # USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA 
@@ -138,49 +139,17 @@ def run_rocket_function(idx, variable_input_combination):
                 mass_flow_rate,
                 )
 
-    # wet_mass = total_usable_propellant_mass * numpy_ndarray_handler.GetFrom_ndarray("WET_MASS_TO_USABLE_PROPELLANT_MASS_RATIO", constant_inputs_array, variable_input_combination)
-    # dry_mass = wet_mass - total_usable_propellant_mass
-    
-    def CalcCylinderVolume(diameter, height):
-        radius = diameter/2
-        volume = np.pi * (radius**2) * height
-        
-        return volume
-    
+    # Function from vehicle parameters page on PSPL_Rocket_A Repo github.com/Purdue-Space-Program/PSPL_Rocket_A/blob/a7066c7267f537f3e2d6b0d332520a23ce78649b/vehicle_parameters.py
+    dry_mass, wet_mass, total_length = mass_and_length.calculate_mass(
+                   fuel_tank_length, 
+                   oxidizer_tank_length, 
+                   propellant_tank_outer_diameter, 
+                   propellant_tank_inner_diameter, 
+                   fuel_total_propellant_mass, 
+                   oxidizer_total_propellant_mass,
+                   )
 
-    injector_mass = c.DENSITY_AL * CalcCylinderVolume(propellant_tank_outer_diameter, 2 * c.IN2M)
-    
-    regulator_mass = 1.200 # regulator https://valvesandregulators.aquaenvironment.com/item/high-flow-reducing-regulators-2/873-d-high-flow-dome-loaded-reducing-regulators/item-1659
-    valves_mass = 2 * 3.26 * c.LB2KG # fuel and ox 3/4 inch valve https://habonim.com/wp-content/uploads/2020/08/C47-BD_C47__2023_VO4_28-06-23.pdf
-    copv_mass = 2.9 
-    
-    tank_wall_mass = c.DENSITY_AL * (
-        CalcCylinderVolume(propellant_tank_outer_diameter, (oxidizer_tank_length + fuel_tank_length))
-        - CalcCylinderVolume(propellant_tank_inner_diameter, (oxidizer_tank_length + fuel_tank_length))
-                                     ) 
-    
-    bulkhead_length = 3 * c.IN2M
-    bulkhead_wall_thickness = 0.25 * c.IN2M
-    bulkhead_top_thickness = 0.76 * c.IN2M
-    
-    bulkhead_mass = 4 * c.DENSITY_AL * ((CalcCylinderVolume(propellant_tank_inner_diameter, bulkhead_length) - 
-                                        CalcCylinderVolume(propellant_tank_inner_diameter - (2 * bulkhead_wall_thickness), bulkhead_length - bulkhead_top_thickness))) # 4 bulkheads, 5.75, 5.25
-    
-    recovery_bay_mass = 25 * c.LB2KG  # [kg] Estimated mass of the recovery bay https://github.com/Purdue-Space-Program/PSPL_Rocket_4_Sizing/blob/2b15e1dc508a56731056ff594a3c6b5afb639b4c/scripts/structures.py#L75
-    structures = 15 * c.LB2KG # structures !
-    
-    dry_mass = (valves_mass + regulator_mass + tank_wall_mass + bulkhead_mass  + recovery_bay_mass + structures) * 1.1 # factor of safety margin
-    wet_mass = total_usable_propellant_mass + dry_mass
-    
-    nosecone_length = 1 * c.FT2M
-    helium_bay_length = 20 * c.IN2M
-    main_parachute_module_length = 1 * c.FT2M
-    drogue_parachute_module_length = 1 * c.FT2M
-    avionics_module_length = 0.5 * c.FT2M
-    lower_plus_engine_length = 2.5 * c.FT2M
-    
-    total_length = nosecone_length + helium_bay_length + main_parachute_module_length + drogue_parachute_module_length + avionics_module_length + lower_plus_engine_length + oxidizer_tank_length + fuel_tank_length + (4*bulkhead_top_thickness)
-    
+
     if ignore_copv_limit:
         best_case_tanks_too_big = False # override to show all results
         worst_case_tanks_too_big = False # override to show all results
@@ -202,7 +171,7 @@ def run_rocket_function(idx, variable_input_combination):
             engine_burn_time = np.nan
             mass_flow_rate = np.nan
             chamber_temperature = np.nan
-    
+
     # avoid calculating trajectory if the value is not going to be used
     if any(output in output_names for output in ["APOGEE", "MAX_ACCELERATION", "RAIL_EXIT_VELOCITY", "RAIL_EXIT_ACCELERATION", "TAKEOFF_TWR", "RAIL_EXIT_TWR", "MAX_ACCELERATION"]):
         estimated_apogee, max_accel, max_velocity, rail_exit_velocity, rail_exit_accel, total_impulse = trajectory.calculate_trajectory(
@@ -220,10 +189,10 @@ def run_rocket_function(idx, variable_input_combination):
                             )
         
         rail_exit_TWR = AccelerationToTWR(rail_exit_accel)
-    
-    initial_thrust = ((jet_thrust) - (c.GRAVITY * wet_mass)) / wet_mass
-    
-    if worst_case_tanks_too_big or initial_thrust <= 0:
+
+    initial_acceleration = ((jet_thrust) - (c.GRAVITY * wet_mass)) / wet_mass
+
+    if worst_case_tanks_too_big or initial_acceleration <= 0:
         rail_exit_accel = np.nan
         rail_exit_velocity = np.nan
         rail_exit_TWR = np.nan
@@ -231,17 +200,7 @@ def run_rocket_function(idx, variable_input_combination):
         max_accel = np.nan
         estimated_apogee = np.nan
 
-
-    # for output_name in output_names:
-    #     if output_name == "JET_THRUST":
-    #         output_list.append(jet_thrust)
-    #     elif output_name == "ISP":
-    #         output_list.append(isp)
-    #     elif output_name == "MASS_FLOW_RATE":
-    #         output_list.append(mass_flow_rate)
-    #     elif output_name == "APOGEE":
-    #         output_list.append(estimated_apogee)
-            
+ 
 
     output_list = np.array([])
 
@@ -253,7 +212,7 @@ def run_rocket_function(idx, variable_input_combination):
         "CHAMBER_TEMPERATURE": chamber_temperature,
         
         "CHAMBER_DIAMETER": chamber_radius*2,
-        "CHAMBER_LENGTH": chamber_length,
+        "CHAMBER_STRAIGHT_WALL_LENGTH": chamber_length,
         "THROAT_DIAMETER": throat_radius*2,
         
         "TANK_PRESSURE": tank_pressure,
@@ -293,7 +252,7 @@ def run_rocket_function(idx, variable_input_combination):
         if limit_rail_exit_accel:
             exists = (any((name == "RAIL_EXIT_ACCELERATION") and not(np.isnan(mapping[name])) for name, value in dtype))
             if exists:
-                within_bounds = ((rail_exit_accel > (5 * c.GRAVITY)) and (rail_exit_accel < (9 * c.GRAVITY)))
+                within_bounds = ((rail_exit_accel > (5 * c.GRAVITY)) and (rail_exit_accel < (10 * c.GRAVITY)))
             
             if exists and within_bounds:
                 output_list[name] = mapping[name]
@@ -359,17 +318,18 @@ print(f"Fuel: {numpy_ndarray_handler.GetFrom_ndarray("FUEL_NAME", constant_input
 print(f"Chamber Pressure: {desired_input["CHAMBER_PRESSURE"] * c.PA2PSI} PSI")
 print(f"OF Ratio: {numpy_ndarray_handler.GetFrom_ndarray("OF_RATIO", constant_inputs_array, desired_input)}")
 print(f"Contraction Ratio: {desired_input["CONTRACTION_RATIO"]}")
-print(f"Fuel Tank Length: {desired_input["FUEL_TANK_LENGTH"] * c.M2FT} feet")
+print(f"Fuel Tank Length: {numpy_ndarray_handler.GetFrom_ndarray("FUEL_TANK_LENGTH", constant_inputs_array, desired_input) * c.M2IN:.3f} inches")
 
 print(f"\n-------Outputs-------")
 print(f"Tank Pressure: {desired_rocket_output_list["TANK_PRESSURE"] * c.PA2PSI} psi")
+# print(f"Tank Pressure: {numpy_ndarray_handler.GetFrom_ndarray("TANK_PRESSURE", constant_inputs_array, desired_input) * c.PA2PSI} psi")
 print(f"JET_THRUST: {desired_rocket_output_list["JET_THRUST"] * c.N2LBF} lbf")
 print(f"ISP: {desired_rocket_output_list["ISP"]} seconds")
 print(f"MASS_FLOW_RATE: {desired_rocket_output_list["MASS_FLOW_RATE"] * c.KG2LB} lbm/s")
 print(f"CHAMBER_TEMPERATURE: {desired_rocket_output_list["CHAMBER_TEMPERATURE"]} kelvin")
 print("")
 print(f"CHAMBER_DIAMETER: {desired_rocket_output_list["CHAMBER_DIAMETER"] * c.M2IN} in")
-print(f"CHAMBER LENGTH: {desired_rocket_output_list["CHAMBER_LENGTH"] * c.M2IN} in")
+print(f"CHAMBER LENGTH: {desired_rocket_output_list["CHAMBER_STRAIGHT_WALL_LENGTH"] * c.M2IN} in")
 print(f"THROAT_DIAMETER: {desired_rocket_output_list["THROAT_DIAMETER"]* c.M2IN} in")
 print("")
 print(f"OXIDIZER_TANK_LENGTH: {desired_rocket_output_list["OXIDIZER_TANK_LENGTH"] * c.M2IN} in")

@@ -226,7 +226,14 @@ def CalculateMassFlowRate(throat_radius, chamber_pressure, chamber_molar_mass, c
     return expected_total_mass_flow_rate
 
 def CalculateEngineDimensions(PROPELLANT_TANK_OUTER_DIAMETER, fuel_name, oxidizer_name, contraction_ratio):
-    chamber_radius = (PROPELLANT_TANK_OUTER_DIAMETER/2) - (1 * c.IN2M) # lowkey a guess
+    chamber_wall_thickness = 0.25 * c.IN2M # kinda vibed out
+    # chamber_wall_thickness = 0.5 * c.IN2M # kinda vibed out
+    
+    flange_thickness = 0.2 * c.IN2M # kinda vibed out
+    
+    chamber_radius = (PROPELLANT_TANK_OUTER_DIAMETER/2) - (2 * chamber_wall_thickness) - (2 * flange_thickness) # lowkey a guess
+    # chamber_radius = PROPELLANT_TANK_OUTER_DIAMETER/2
+    
     chamber_area = RadiusToArea(chamber_radius)
 
     throat_area = chamber_area/contraction_ratio
@@ -243,9 +250,15 @@ def RadiusToArea(radius):
     area = np.pi*(radius**2)
     return area
 
-def CalculateChamberLength(throat_area, chamber_area, fuel_name, oxidizer_name):
+def CalculateChamberLength(throat_area, cylinder_area, fuel_name, oxidizer_name):
     L_star = FindLstar(fuel_name, oxidizer_name)
-    chamber_length = (throat_area * L_star) / (chamber_area)
+    
+    cylinder_volume = (L_star * throat_area)
+    
+    pintle_length = 1 * c.IN2M
+    converging_section_effective_length = 2.164247 * c.IN2M # the effective length that the converging section contributes to residence time
+    
+    chamber_length = (cylinder_volume / cylinder_area) + pintle_length - converging_section_effective_length
     return chamber_length
 
 def FindLstar(fuel_name, oxidizer_name):

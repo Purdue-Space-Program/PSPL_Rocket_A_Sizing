@@ -16,11 +16,10 @@ variable_inputs = {
     "CHAMBER_PRESSURE":           np.linspace(80, 400, step_size) * c.PSI2PA, # [pa] pressure in the chamber during combustion
 
 
-    "FUEL_TANK_LENGTH":   np.linspace(6 * c.IN2M, 3 * c.FT2M, step_size), # [meters] speedy metals pipe lengths: https://www.speedymetals.com/pc-4648-8371-6-od-x-0125-wall-tube-6061-t6-aluminum.aspx
-    "CONTRACTION_RATIO":          np.linspace(2, 7, step_size), # [dimensionless] area ratio of chamber to throat (3 to 6 recommended by textbook)
+    # "FUEL_TANK_LENGTH":   np.linspace(6 * c.IN2M, 3 * c.FT2M, step_size), # [meters] speedy metals pipe lengths: https://www.speedymetals.com/pc-4648-8371-6-od-x-0125-wall-tube-6061-t6-aluminum.aspx
+    "CONTRACTION_RATIO":          np.linspace(2, 8, step_size), # [dimensionless] area ratio of chamber to throat (3 to 6 recommended by textbook)
     
     # "OXIDIZER_ON_TOP_FUEL_ON_BOTTOM": [True, False], # [boolean (true or false)] whether the oxidizer tank is above the fuel tank or not
-    # "WET_MASS_TO_USABLE_PROPELLANT_MASS_RATIO": np.linspace(1.2, 5, step_size) # assume total mass is a ratio of the wet mass (estimated ratio for copperhead was 2.154)
     
     # "a":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size), # stress testing
     # "b":   np.linspace(6 * c.IN2M, 288 * c.IN2M, step_size), # stress testing
@@ -35,7 +34,7 @@ constant_inputs = {
     # "CHAMBER_PRESSURE":                         150 * c.PSI2PA, # [psi] pressure in the chamber during combustion
     "OF_RATIO":                                 1, # [dimensionless] ratio of oxygen to fuel by mass
     
-    # "FUEL_TANK_LENGTH":                         6 * c.IN2M, # [meters] speedy metals pipe lengths: https://www.speedymetals.com/pc-4648-8371-6-od-x-0125-wall-tube-6061-t6-aluminum.aspx
+    "FUEL_TANK_LENGTH":                         6 * c.IN2M, # [meters] speedy metals pipe lengths: https://www.speedymetals.com/pc-4648-8371-6-od-x-0125-wall-tube-6061-t6-aluminum.aspx
     # "CONTRACTION_RATIO":                        2.5, # [dimensionless] area ratio of chamber to throat (3 to 6 recommended by textbook)
     
     "FUEL_NAME":                                "IPA",
@@ -45,7 +44,6 @@ constant_inputs = {
 
     "PROPELLANT_TANK_OUTER_DIAMETER":           6.0 * c.IN2M, # [meters] from speedy metals pipe (link above)
     "PROPELLANT_TANK_THICKNESS":                0.125 * c.IN2M,   # [meters] from speedy metals pipe (link above)
-    # "PROPELLANT_TANK_INNER_DIAMETER":         5.75  * c.IN2M, # [meters] from speedy metals pipe (link above)
 
     # "ALUMINUM_ENGINE_COVER_OUTER_DIAMETER":   4.5   * c.IN2M, # [meters] from speedy metals pipe (link above)
     # "ALUMINUM_ENGINE_COVER_INNER_DIAMETER":   4.25  * c.IN2M, # [meters] from speedy metals pipe (link above)

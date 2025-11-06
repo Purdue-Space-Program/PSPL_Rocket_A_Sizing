@@ -276,9 +276,9 @@ def FormatPlot(axis_name_list, axis_values_list, output_name, output_values, sho
         output_values_factor = c.KG2LB
         output_label="Fuel Tank Mass [lbm]"        
     
-    elif output_name == "CHAMBER_LENGTH":
+    elif output_name == "CHAMBER_STRAIGHT_WALL_LENGTH":
         output_values_factor = c.M2IN
-        output_label="CHAMBER_LENGTH [in]"        
+        output_label="CHAMBER_STRAIGHT_WALL_LENGTH [in]"        
         
     else:
         raise ValueError(f"{output_name} not recognized for plotting")
