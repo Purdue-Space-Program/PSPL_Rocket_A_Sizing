@@ -26,14 +26,14 @@ def ThrustyBusty(FUEL_NAME, OXIDIZER_NAME, PROPELLANT_TANK_OUTER_DIAMETER, CONTR
 
     expected_exhaust_velocity = expected_isp * c.GRAVITY
     
-    chamber_radius, chamber_length, throat_radius = CalculateEngineDimensions(PROPELLANT_TANK_OUTER_DIAMETER, FUEL_NAME, OXIDIZER_NAME, CONTRACTION_RATIO)
+    chamber_radius, chamber_length, throat_radius, injector_to_throat_length = CalculateEngineDimensions(PROPELLANT_TANK_OUTER_DIAMETER, FUEL_NAME, OXIDIZER_NAME, CONTRACTION_RATIO)
     expected_total_mass_flow_rate = CalculateMassFlowRate(throat_radius, CHAMBER_PRESSURE, cea_results["c_mw"], cea_results["c_gamma"], chamber_temperature)
 
     expected_jet_thrust = CalculateExpectedThrust(expected_isp, expected_total_mass_flow_rate)
 
     # print(expected_total_mass_flow_rate, expected_exhaust_velocity)
     # return(expected_thrust, expected_isp, total_mass_flow_rate, chamber_radius, chamber_length, throat_radius)
-    return(expected_jet_thrust, expected_isp, expected_total_mass_flow_rate, chamber_temperature, chamber_radius, throat_radius, chamber_length)
+    return(expected_jet_thrust, expected_isp, expected_total_mass_flow_rate, chamber_temperature, chamber_radius, throat_radius, chamber_length, injector_to_throat_length)
 
 
 def CreateMassiveCEAArray(constant_inputs_array, variable_inputs_array):
@@ -231,16 +231,18 @@ def CalculateEngineDimensions(PROPELLANT_TANK_OUTER_DIAMETER, fuel_name, oxidize
     
     flange_thickness = 0.2 * c.IN2M # kinda vibed out
     
-    chamber_radius = (PROPELLANT_TANK_OUTER_DIAMETER/2) - (2 * chamber_wall_thickness) - (2 * flange_thickness) # lowkey a guess
-    # chamber_radius = PROPELLANT_TANK_OUTER_DIAMETER/2
+    # chamber_radius = (PROPELLANT_TANK_OUTER_DIAMETER/2) - (2 * chamber_wall_thickness) - (2 * flange_thickness)
+    chamber_radius = (PROPELLANT_TANK_OUTER_DIAMETER/2) - chamber_wall_thickness - flange_thickness
+
+    # chamber_radius = (PROPELLANT_TANK_OUTER_DIAMETER/2) - (1 * c.IN2M) # lowkey a guess
     
     chamber_area = RadiusToArea(chamber_radius)
 
     throat_area = chamber_area/contraction_ratio
     throat_radius = AreaToRadius(throat_area)
     
-    chamber_length = CalculateChamberLength(throat_area, chamber_area, fuel_name, oxidizer_name)
-    return (chamber_radius, chamber_length, throat_radius)
+    chamber_length, injector_to_throat_length = CalculateChamberLength(throat_area, chamber_area, fuel_name, oxidizer_name)
+    return (chamber_radius, chamber_length, throat_radius, injector_to_throat_length)
 
 def AreaToRadius(area):
     radius = (area/np.pi)**0.5
@@ -256,10 +258,14 @@ def CalculateChamberLength(throat_area, cylinder_area, fuel_name, oxidizer_name)
     cylinder_volume = (L_star * throat_area)
     
     pintle_length = 1 * c.IN2M
-    converging_section_effective_length = 2.164247 * c.IN2M # the effective length that the converging section contributes to residence time
+    converging_section_effective_length = 1.887355326317635 * c.IN2M # the effective length that the converging section contributes to residence time
+    non_straight_wall_before_throat_length =  3.1744 * c.IN2M # [inches] constant from chamber contour script
     
-    chamber_length = (cylinder_volume / cylinder_area) + pintle_length - converging_section_effective_length
-    return chamber_length
+    straight_wall_length = (cylinder_volume / cylinder_area) + pintle_length - converging_section_effective_length
+    injector_to_throat_length = straight_wall_length + non_straight_wall_before_throat_length
+    
+    
+    return straight_wall_length, injector_to_throat_length
 
 def FindLstar(fuel_name, oxidizer_name):
     if (oxidizer_name == "liquid oxygen"):

@@ -9,11 +9,11 @@ from vehicle_scripts import numpy_ndarray_handler
 from coding_utils import constants as c
 from inputs import constant_inputs as constant_inputs_dict
 
-def ThreadedRun(run_rocket_function, variable_inputs_array, output_names, USE_AI_SLOP):
+def ThreadedRun(run_rocket_function, variable_inputs_array, plotting_output_names, USE_AI_SLOP):
 
     fields_dtype = [] # datatype for output array
 
-    for output_name in output_names:
+    for output_name in plotting_output_names:
         fields_dtype.append((output_name, np.float64))
     
     output_array = np.zeros(variable_inputs_array.size, dtype=np.dtype(fields_dtype))
@@ -29,10 +29,10 @@ def ThreadedRun(run_rocket_function, variable_inputs_array, output_names, USE_AI
 
 
         with ThreadPoolExecutor() as executor:
-            futures = [executor.submit(run_rocket_function, idx, v) for idx, v in jobs]
+            futures = [executor.submit(run_rocket_function, idx, variable_input_combination, plotting_output_names) for idx, variable_input_combination in jobs]
             for f in tqdm(as_completed(futures), total=len(futures), desc="Threaded Run"):
                 idx, output_list = f.result()
-              
+                
                 output_array[idx] = output_list
 
     else:

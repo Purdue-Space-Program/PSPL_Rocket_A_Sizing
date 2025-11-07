@@ -17,7 +17,7 @@ variable_inputs = {
 
 
     # "FUEL_TANK_LENGTH":   np.linspace(6 * c.IN2M, 3 * c.FT2M, step_size), # [meters] speedy metals pipe lengths: https://www.speedymetals.com/pc-4648-8371-6-od-x-0125-wall-tube-6061-t6-aluminum.aspx
-    "CONTRACTION_RATIO":          np.linspace(2, 8, step_size), # [dimensionless] area ratio of chamber to throat (3 to 6 recommended by textbook)
+    "CONTRACTION_RATIO":          np.linspace(6, 10, step_size), # [dimensionless] area ratio of chamber to throat (3 to 6 recommended by textbook)
     
     # "OXIDIZER_ON_TOP_FUEL_ON_BOTTOM": [True, False], # [boolean (true or false)] whether the oxidizer tank is above the fuel tank or not
     

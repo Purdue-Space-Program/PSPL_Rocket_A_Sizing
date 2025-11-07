@@ -1,7 +1,7 @@
 problem rocket equilibrium
-   p(psi) = 262.85714
+   p(psi) = 377.14286
    o/f = 1.00000
-   pip = 17.52381
+   pip = 25.14286
 react  
    fuel=C3H8O,2propanol wt=100.00000  t,k=290.00000 
    ox=O2(L) wt=100.00000  t,k=90.00000 

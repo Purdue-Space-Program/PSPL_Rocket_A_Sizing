@@ -113,9 +113,6 @@ def PlotColorMaps3D(axis_names, variable_inputs_array, output_names, output_arra
     for ax in axes[num_outputs:]:
         ax.set_visible(False)
 
-    plt.tight_layout()
-    plt.show()
-
 
 def SetupArrays3D(variable_inputs_array, x_axis_name, y_axis_name, z_axis_name, output_name, output_array):
     
@@ -279,6 +276,10 @@ def FormatPlot(axis_name_list, axis_values_list, output_name, output_values, sho
     elif output_name == "CHAMBER_STRAIGHT_WALL_LENGTH":
         output_values_factor = c.M2IN
         output_label="CHAMBER_STRAIGHT_WALL_LENGTH [in]"        
+    
+    elif output_name == "INJECTOR_TO_THROAT_LENGTH":
+        output_values_factor = c.M2IN
+        output_label="INJECTOR_TO_THROAT_LENGTH [in]"        
         
     else:
         raise ValueError(f"{output_name} not recognized for plotting")
