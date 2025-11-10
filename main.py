@@ -272,7 +272,7 @@ def run_rocket_function(idx, variable_input_combination, specified_output_names)
     
     return (idx, output_list)
 
-if False:
+if True:
     # p.PlotColorMaps3D(*load_last_run())
     pass
 else:
