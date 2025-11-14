@@ -229,7 +229,7 @@ def CalculateEngineDimensions(PROPELLANT_TANK_OUTER_DIAMETER, fuel_name, oxidize
     chamber_wall_thickness = 0.25 * c.IN2M # kinda vibed out
     # chamber_wall_thickness = 0.5 * c.IN2M # kinda vibed out
     
-    flange_thickness = 0.2 * c.IN2M # kinda vibed out
+    flange_thickness = 0.3 * c.IN2M # kinda vibed out
     
     # chamber_radius = (PROPELLANT_TANK_OUTER_DIAMETER/2) - (2 * chamber_wall_thickness) - (2 * flange_thickness)
     chamber_radius = (PROPELLANT_TANK_OUTER_DIAMETER/2) - chamber_wall_thickness - flange_thickness

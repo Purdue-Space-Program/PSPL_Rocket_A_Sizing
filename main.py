@@ -76,7 +76,7 @@ plotting_output_names = [
     "BURN_TIME",                             # [s]
     # "CHAMBER_TEMPERATURE",                   # [k]
     
-    "CHAMBER_DIAMETER",                      # [in]
+    "CHAMBER_INNER_DIAMETER",                      # [in]
     "CHAMBER_STRAIGHT_WALL_LENGTH",          # [in]
     "THROAT_DIAMETER",                       # [in]
     "INJECTOR_TO_THROAT_LENGTH",             # [in]
@@ -187,7 +187,7 @@ def run_rocket_function(idx, variable_input_combination, specified_output_names)
                                 total_length,
                                 False
                             )
-        
+            
         rail_exit_TWR = AccelerationToTWR(rail_exit_accel)
 
     initial_acceleration = ((jet_thrust) - (c.GRAVITY * wet_mass)) / wet_mass
@@ -211,7 +211,7 @@ def run_rocket_function(idx, variable_input_combination, specified_output_names)
         "MASS_FLOW_RATE": mass_flow_rate,
         "CHAMBER_TEMPERATURE": chamber_temperature,
         
-        "CHAMBER_DIAMETER": chamber_radius*2,
+        "CHAMBER_INNER_DIAMETER": chamber_radius*2,
         "CHAMBER_STRAIGHT_WALL_LENGTH": chamber_length,
         "INJECTOR_TO_THROAT_LENGTH": injector_to_throat_length,
         "THROAT_DIAMETER": throat_radius*2,
@@ -253,7 +253,7 @@ def run_rocket_function(idx, variable_input_combination, specified_output_names)
         if limit_rail_exit_accel:
             exists = (any((name == "RAIL_EXIT_ACCELERATION") and not(np.isnan(mapping[name])) for name, value in dtype))
             if exists:
-                within_bounds = ((rail_exit_accel > (5 * c.GRAVITY)) and (rail_exit_accel < (10 * c.GRAVITY)))
+                within_bounds = ((rail_exit_accel > (5 * c.GRAVITY)))# and (rail_exit_accel < (10 * c.GRAVITY)))
             
             if exists and within_bounds:
                 output_list[name] = mapping[name]
@@ -299,7 +299,7 @@ values = []
 for variable_input in list(inputs.variable_inputs):
     fields_dtype.append((variable_input, np.float32))
     if variable_input == "CHAMBER_PRESSURE":
-        values.append(220 * c.PSI2PA)
+        values.append(250 * c.PSI2PA)
     
     elif variable_input == "CONTRACTION_RATIO":
         values.append(7)
@@ -321,7 +321,7 @@ full_output_names = [
     "BURN_TIME",                             # [s]
     "CHAMBER_TEMPERATURE",                   # [k]
     
-    "CHAMBER_DIAMETER",                      # [in]
+    "CHAMBER_INNER_DIAMETER",                      # [in]
     "CHAMBER_STRAIGHT_WALL_LENGTH",          # [in]
     "THROAT_DIAMETER",                       # [in]
     "INJECTOR_TO_THROAT_LENGTH",             # [in]
@@ -361,7 +361,7 @@ print(f"ISP: {desired_rocket_output_list["ISP"]} seconds")
 print(f"Mass Flow Rate: {desired_rocket_output_list["MASS_FLOW_RATE"] * c.KG2LB} lbm/s")
 print(f"Chamber Temperature: {desired_rocket_output_list["CHAMBER_TEMPERATURE"]} kelvin")
 print("")
-print(f"Chamber Diameter: {desired_rocket_output_list["CHAMBER_DIAMETER"] * c.M2IN} in")
+print(f"Chamber Inner Diameter: {desired_rocket_output_list["CHAMBER_INNER_DIAMETER"] * c.M2IN} in")
 print(f"Throat Diameter: {desired_rocket_output_list["THROAT_DIAMETER"]* c.M2IN} in")
 print(f"Chamber Straight Wall Length: {desired_rocket_output_list["CHAMBER_STRAIGHT_WALL_LENGTH"] * c.M2IN} in")
 print(f"Injector to Throat Length: {desired_rocket_output_list["INJECTOR_TO_THROAT_LENGTH"] * c.M2IN} in")
@@ -387,7 +387,7 @@ print(f"Total Impulse: {desired_rocket_output_list["TOTAL_IMPULSE"]} Newton-seco
 
 
 
-# METRIC VERSION (MISSING SOME VALUES, IF YOU WANNA FIX IT JUST COMBINE THIS WITH THE IMPERIAL ONE WITH AN IF STATEMENT)
+# METRIC VERSION (MISSING SOME VALUES, IF YOU WANNA FIX IT JUST COMBINE THIS WITH THE IMPERIAL ONE WITH AN IF STATEMENT AND CONVERSION FACTOR)
 
 # print(f"\n-------Inputs-------")
 # print(f"Chamber Pressure: {desired_input["CHAMBER_PRESSURE"]} Pa")

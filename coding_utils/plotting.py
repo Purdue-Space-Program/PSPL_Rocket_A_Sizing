@@ -211,9 +211,9 @@ def FormatPlot(axis_name_list, axis_values_list, output_name, output_values, sho
     
     
     
-    elif output_name == "CHAMBER_DIAMETER":
+    elif output_name == "CHAMBER_INNER_DIAMETER":
         output_values_factor = c.M2IN
-        output_label="Chamber Diameter [in]"
+        output_label="Chamber Inner Diameter [in]"
     elif output_name == "THROAT_DIAMETER":
         output_values_factor = c.M2IN
         output_label="Throat Diameter [in]"
