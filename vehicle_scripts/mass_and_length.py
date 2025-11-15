@@ -317,8 +317,8 @@ def calculate_mass(fuel_tank_length,
     #     component_range_mask = (x >= component.bottom_distance_from_aft) & (x <= component.bottom_distance_from_aft + component.length)
     #     y[component_range_mask] += component.mass / component.length
     
-    dry_mass = sum(component.mass for component in mass_distribution)
-    wet_mass = dry_mass - (fuel_total_propellant_mass + oxidizer_total_propellant_mass)
+    wet_mass = sum(component.mass for component in mass_distribution)
+    dry_mass = wet_mass - (fuel_total_propellant_mass + oxidizer_total_propellant_mass)
     total_length = mass_distribution.components[-1].StartAfter()
     return(dry_mass, wet_mass, total_length)
 

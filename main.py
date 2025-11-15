@@ -185,7 +185,7 @@ def run_rocket_function(idx, variable_input_combination, specified_output_names)
                                 15 * c.PSI2PA,
                                 engine_burn_time, 
                                 total_length,
-                                False
+                                True
                             )
             
         rail_exit_TWR = AccelerationToTWR(rail_exit_accel)
@@ -358,7 +358,7 @@ print(f"Tank Pressure: {desired_rocket_output_list["TANK_PRESSURE"] * c.PA2PSI} 
 # print(f"Tank Pressure: {numpy_ndarray_handler.GetFrom_ndarray("TANK_PRESSURE", constant_inputs_array, desired_input) * c.PA2PSI} psi")
 print(f"Jet Thrust: {desired_rocket_output_list["JET_THRUST"] * c.N2LBF} lbf")
 print(f"ISP: {desired_rocket_output_list["ISP"]} seconds")
-print(f"Mass Flow Rate: {desired_rocket_output_list["MASS_FLOW_RATE"] * c.KG2LB} lbm/s")
+print(f"Total Mass Flow Rate: {desired_rocket_output_list["MASS_FLOW_RATE"] * c.KG2LB} lbm/s")
 print(f"Chamber Temperature: {desired_rocket_output_list["CHAMBER_TEMPERATURE"]} kelvin")
 print("")
 print(f"Chamber Inner Diameter: {desired_rocket_output_list["CHAMBER_INNER_DIAMETER"] * c.M2IN} in")
@@ -366,6 +366,7 @@ print(f"Throat Diameter: {desired_rocket_output_list["THROAT_DIAMETER"]* c.M2IN}
 print(f"Chamber Straight Wall Length: {desired_rocket_output_list["CHAMBER_STRAIGHT_WALL_LENGTH"] * c.M2IN} in")
 print(f"Injector to Throat Length: {desired_rocket_output_list["INJECTOR_TO_THROAT_LENGTH"] * c.M2IN} in")
 print("")
+# print("what")
 print(f"Oxidizer Tank Length: {desired_rocket_output_list["OXIDIZER_TANK_LENGTH"] * c.M2IN} in")
 print(f"Oxidizer Tank Volume: {desired_rocket_output_list["OXIDIZER_TANK_VOLUME"] * c.M32L} liter")
 print(f"Oxidizer Total Mass: {desired_rocket_output_list["OXIDIZER_TOTAL_MASS"] * c.KG2LB} lbm")
