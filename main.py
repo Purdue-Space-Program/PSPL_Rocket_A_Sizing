@@ -18,6 +18,7 @@
 # (_ o _)(_ o _)(_ o _)(_ o _)(_ o _)(_ o _)(_ o _)(_ o _)(_ o _)(_ o _)(_ o _)(_ o _)(_ o _)(_ o _)
 #  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)
 
+
 import inputs
 import threaded_run
 
@@ -29,6 +30,7 @@ from vehicle_scripts import (
     mass_and_length,
     # structures,
 )
+
 from coding_utils import (
     constants as c,
     plotting as p,
@@ -47,18 +49,20 @@ import pandas as pd
 # https://numpy.org/doc/stable/user/basics.rec.html
 # good visual: https://www.w3resource.com/numpy/ndarray/index.php
 
-def save_last_run(AXES, variable_inputs_array, output_names, output_array, show_copv_limiting_factor, filename="last_run.npz"):
+
+
+def save_last_run(variable_inputs_array, plotting_output_names, output_array, show_copv_limiting_factor, filename="last_run.npz"):
 # def save_arrays_npz(X, Y, Z, values, filename="data.npz"):
-    np.savez_compressed(filename, AXES=AXES, variable_inputs_array=variable_inputs_array, output_names=output_names, output_array=output_array, show_copv_limiting_factor=show_copv_limiting_factor)
+    np.savez_compressed(filename, variable_inputs_array=variable_inputs_array, plotting_output_names=plotting_output_names, output_array=output_array, show_copv_limiting_factor=show_copv_limiting_factor)
 
 def load_last_run(filename="last_run.npz"):
     data = np.load(filename)
-    return data["AXES"], data["variable_inputs_array"], data["output_names"], data["output_array"], data["show_copv_limiting_factor"]
+    return data["variable_inputs_array"], data["plotting_output_names"], data["output_array"], data["show_copv_limiting_factor"]
 
 
-ignore_copv_limit = False
+ignore_copv_limit = True
 show_copv_limiting_factor = False
-limit_rail_exit_accel = True
+limit_rail_exit_accel = False
 
 
 # The variable_inputs_array will be separate from the constant_inputs_array to save memory size and hopefully increase speed
@@ -70,11 +74,11 @@ plotting_output_names = [
     "MASS_FLOW_RATE",                        # [kg/s]
     "ISP",                                   # [s]
     "JET_THRUST",                            # [lbf]
-    # "TOTAL_LENGTH",                          # [ft]
+    "TOTAL_LENGTH",                          # [ft]
     "WET_MASS",                              # [lbm]
     "DRY_MASS",                              # [lbm]
     "BURN_TIME",                             # [s]
-    # "CHAMBER_TEMPERATURE",                   # [k]
+    "CHAMBER_TEMPERATURE",                   # [k]
     
     "CHAMBER_INNER_DIAMETER",                      # [in]
     "CHAMBER_STRAIGHT_WALL_LENGTH",          # [in]
@@ -82,19 +86,19 @@ plotting_output_names = [
     "INJECTOR_TO_THROAT_LENGTH",             # [in]
     
     "TANK_PRESSURE",                         # [psi]
-    # "OXIDIZER_TANK_VOLUME",                
-    # "OXIDIZER_TOTAL_MASS",
-    # "FUEL_TANK_VOLUME",
-    # "FUEL_TOTAL_MASS",
-    # "OXIDIZER_TANK_LENGTH",                  # [ft]
+    "OXIDIZER_TANK_VOLUME",                
+    "OXIDIZER_TOTAL_MASS",
+    "FUEL_TANK_VOLUME",
+    "FUEL_TOTAL_MASS",
+    "OXIDIZER_TANK_LENGTH",                  # [ft]
 
-    # "APOGEE",                                # [ft]
-    # "MAX_ACCELERATION",                      # [G's]
-    # "MAX_VELOCITY",                          # [m/s]
-    # "RAIL_EXIT_VELOCITY",                    # [ft/s]
+    "APOGEE",                                # [ft]
+    "MAX_ACCELERATION",                      # [G's]
+    "MAX_VELOCITY",                          # [m/s]
+    "RAIL_EXIT_VELOCITY",                    # [ft/s]
     "RAIL_EXIT_ACCELERATION",                # [ft/s]
     "RAIL_EXIT_TWR",                         # [n/a] 
-    # "TOTAL_IMPULSE"                          # [newton-seconds]    
+    "TOTAL_IMPULSE"                          # [newton-seconds]    
 ]
 
 # USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA USE A FUCKING COMMA 
@@ -174,7 +178,7 @@ def run_rocket_function(idx, variable_input_combination, specified_output_names)
 
     # avoid calculating trajectory if the value is not going to be used
     if any(output in specified_output_names for output in ["APOGEE", "MAX_ACCELERATION", "RAIL_EXIT_VELOCITY", "RAIL_EXIT_ACCELERATION", "TAKEOFF_TWR", "RAIL_EXIT_TWR", "MAX_ACCELERATION"]):
-        estimated_apogee, max_accel, max_velocity, rail_exit_velocity, rail_exit_accel, total_impulse = trajectory.calculate_trajectory(
+        estimated_apogee, max_accel, max_velocity, rail_exit_velocity, rail_exit_accel, total_impulse, off_the_rail_time = trajectory.calculate_trajectory(
                                 wet_mass, 
                                 mass_flow_rate,
                                 jet_thrust,
@@ -185,12 +189,14 @@ def run_rocket_function(idx, variable_input_combination, specified_output_names)
                                 15 * c.PSI2PA,
                                 engine_burn_time, 
                                 total_length,
-                                True
+                                True,
                             )
-            
+        # print(f"\n\noff_the_rail_time: {off_the_rail_time} [s]")
         rail_exit_TWR = AccelerationToTWR(rail_exit_accel)
 
     initial_acceleration = ((jet_thrust) - (c.GRAVITY * wet_mass)) / wet_mass
+    # initial_TWR = AccelerationToTWR(initial_acceleration)
+    # print(f"initial_TWR: {initial_TWR}")
 
     if worst_case_tanks_too_big or initial_acceleration <= 0:
         rail_exit_accel = np.nan
@@ -200,7 +206,7 @@ def run_rocket_function(idx, variable_input_combination, specified_output_names)
         max_accel = np.nan
         estimated_apogee = np.nan
 
- 
+
 
     output_list = np.array([])
 
@@ -268,45 +274,57 @@ def run_rocket_function(idx, variable_input_combination, specified_output_names)
     # if (CR > 4.9) & (CR < 5.1) & (FTL > 3.9 * c.FT2M) & (FTL < 4.1 * c.FT2M):
     #     print(f"Contraction Ratio: {CR}, Fuel Tank Length: {FTL * c.M2FT}, Estimated Apogee: {estimated_apogee * c.M2FT}, Takeoff TWR: {takeoff_TWR}")
     
-    
-    
     return (idx, output_list)
 
-if True:
-    # p.PlotColorMaps3D(*load_last_run())
-    pass
+
+
+# avoid calculating all the rocket outputs if the last run was with the same inputs
+last_run_variable_inputs_array, last_run_plotting_output_names, _, last_run_show_copv_limiting_factor = load_last_run()
+
+are_inputs_same_from_last_run = (
+    np.array_equal(last_run_variable_inputs_array, variable_inputs_array)
+    and np.array_equal(last_run_plotting_output_names, plotting_output_names)
+    and np.array_equal(last_run_show_copv_limiting_factor, show_copv_limiting_factor)
+)
+
+if are_inputs_same_from_last_run:
+    variable_inputs_array, plotting_output_names, output_array, show_copv_limiting_factor = load_last_run()
 else:
     use_threading = True
     # if __debug__:
     #     use_threading = False 
     output_array = threaded_run.ThreadedRun(run_rocket_function, variable_inputs_array, plotting_output_names, use_threading)
-    print(constant_inputs_array)
-    axis_names = [variable_inputs_array.dtype.names[i] for i in range(len(variable_inputs_array.dtype))]
-    
-    if len(axis_names) == 2:
-        # make axes automated (idc to do that rn)
-        p.PlotColorMaps(axis_names[0], axis_names[1], variable_inputs_array, plotting_output_names, output_array, show_copv_limiting_factor)
-    elif len(axis_names) == 3:
-        save_last_run(axis_names, variable_inputs_array, plotting_output_names, output_array, show_copv_limiting_factor, filename="last_run.npz")
-        p.PlotColorMaps3D(axis_names, variable_inputs_array, plotting_output_names, output_array, show_copv_limiting_factor)
 
-    else:
-        raise ValueError(f"{len(axis_names)} is an unsupported number of axes")
+
+axes_names = [variable_inputs_array.dtype.names[i] for i in range(len(variable_inputs_array.dtype))]
+
+
+if len(axes_names) == 2:
+    save_last_run(variable_inputs_array, plotting_output_names, output_array, show_copv_limiting_factor, filename="last_run.npz")
+    p.PlotColorMaps(variable_inputs_array, plotting_output_names, output_array, show_copv_limiting_factor)
+
+elif len(axes_names) == 3:
+    save_last_run(variable_inputs_array, plotting_output_names, output_array, show_copv_limiting_factor, filename="last_run.npz")
+    p.PlotColorMaps3D(variable_inputs_array, plotting_output_names, output_array, show_copv_limiting_factor)
+
+else:
+    raise ValueError(f"{len(axes_names)} is an unsupported number of axes")
 
 
 fields_dtype = []
-values = []
+desired_input_values = []
 for variable_input in list(inputs.variable_inputs):
     fields_dtype.append((variable_input, np.float32))
+    
     if variable_input == "CHAMBER_PRESSURE":
-        values.append(250 * c.PSI2PA)
+        desired_input_values.append(250 * c.PSI2PA)
     
     elif variable_input == "CONTRACTION_RATIO":
-        values.append(7)
-        
+        desired_input_values.append(4)
+
     elif variable_input == "FUEL_TANK_LENGTH":
-        values.append(6 * c.IN2M)
-        
+        desired_input_values.append(1 * c.IN2M)
+    
     else:
         raise ValueError
 
@@ -342,15 +360,15 @@ full_output_names = [
     "TOTAL_IMPULSE"                          # [newton-seconds]    
 ]
 
-desired_input = np.array([tuple(values)], dtype=np.dtype(fields_dtype))
+desired_input = np.array([tuple(desired_input_values)], dtype=np.dtype(fields_dtype))
 _, desired_rocket_output_list = run_rocket_function(69 / 420, desired_input, full_output_names)
 
-print(desired_rocket_output_list)
+# print(desired_rocket_output_list)
 print(f"\n-------Inputs-------")
 print(f"Fuel: {numpy_ndarray_handler.GetFrom_ndarray("FUEL_NAME", constant_inputs_array, desired_input).title()}, Oxidizer: {numpy_ndarray_handler.GetFrom_ndarray("OXIDIZER_NAME", constant_inputs_array, desired_input).title()}")
-print(f"Chamber Pressure: {desired_input["CHAMBER_PRESSURE"] * c.PA2PSI} PSI")
+print(f"Chamber Pressure: {numpy_ndarray_handler.GetFrom_ndarray("CHAMBER_PRESSURE", constant_inputs_array, desired_input) * c.PA2PSI} PSI")
 print(f"OF Ratio: {numpy_ndarray_handler.GetFrom_ndarray("OF_RATIO", constant_inputs_array, desired_input)}")
-print(f"Contraction Ratio: {desired_input["CONTRACTION_RATIO"]}")
+print(f"Contraction Ratio: {numpy_ndarray_handler.GetFrom_ndarray("CONTRACTION_RATIO", constant_inputs_array, desired_input)}")
 print(f"Fuel Tank Length: {numpy_ndarray_handler.GetFrom_ndarray("FUEL_TANK_LENGTH", constant_inputs_array, desired_input) * c.M2IN:.3f} inches")
 
 print(f"\n-------Outputs-------")
@@ -421,3 +439,5 @@ print(f"Total Impulse: {desired_rocket_output_list["TOTAL_IMPULSE"]} Newton-seco
 # print(f"Max Velocity: {desired_rocket_output_list["MAX_VELOCITY"] / 343} Mach")
 
 # print(f"Total Impulse: {desired_rocket_output_list["TOTAL_IMPULSE"]} Newton-seconds")
+
+# kill me

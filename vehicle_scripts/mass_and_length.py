@@ -15,72 +15,6 @@ def calculate_mass(fuel_tank_length,
                    fuel_total_propellant_mass, 
                    oxidizer_total_propellant_mass,
                    ):
-# def calculate_mass(fuel_name, oxidizer_name, PROPELLANT_TANK_OUTER_DIAMETER, PROPELLANT_TANK_INNER_DIAMETER, chamber_pressure):
-    # @dataclass(frozen=True)
-    # class VehicleParameters:
-
-    #     fuel_name: str 
-    #     oxidizer_name: str
-    #     tube_outer_diameter: float     # Outer diameter of all sections of the rocket
-    #     tube_inner_diameter: float = 5.75 * c.IN2M    # Inner diameter of some sections of the rocket
-        
-    #     chamber_pressure: float = 0      # The target combustion pressure in the engine [Pascals]
-    #     jet_thrust: float = 577.52 * c.LBF2N          # The targeted engine thrust (not accounting for exhaust gas expansion thrust) [Newtons]
-    #     ISP: float = 162.21                           # The estimated ISP of the engine [seconds]
-    #     mass_flow_rate: float = 3.56 * c.LB2KG        # The targeted mass flow rate through the engine [kilograms/second]
-    #     OF_ratio: float = 1.0                         # The target ratio of oxygen to fuel combustion in the engine [dimensionless] 
-    #     burn_time: float = 2.24                       # The estimated burn time of the engine [seconds]
-    #     contraction_ratio: float = 3.0                # The target ratio of chamber area to throat area [dimensionless]
-    #     exit_pressure: float = 15.0 * c.PSI2PA        # The target exit pressure of the exhaust gas [Pascals]
-    #     # combustion_temperature: float = 2170          # The estimated combustion temperature [Kelvin]
-        
-    #     tank_pressure: float = 250.0 * c.PSI2PA       # The estimated required tank pressure to sustain the combustion pressure in the engine [Pascals]
-        
-    #     # FYI the sizing of the tanks accounted for ullage and residuals, so (burn_time * mass_flow_rate) will not equal total_propellant_mass.
-
-    #     fuel_tank_length: float = 0.5 * c.FT2M        # The length of the fuel tank that needs to be filled with fuel (the actual tank may be longer) [meters]
-    #     fuel_tank_volume: float = 2.55 * c.L2M3       # The required loaded volume of fuel needed for the burn time [meter^3]
-    #     fuel_total_mass: float = 4.42 * c.LB2KG       # The required loaded mass of fuel needed for the burn time [kilograms]
-
-    #     oxidizer_tank_length: float = 4.57 * c.IN2M   # The length of the oxidizer tank that needs to be filled with oxidizer (the actual tank may be longer) [meters]
-    #     oxidizer_tank_volume: float = 1.95 * c.L2M3   # The required loaded volume of oxidizer needed for the burn time [meter^3]
-    #     oxidizer_total_mass: float = 4.42 * c.LB2KG   # The required loaded mass of oxidizer needed for the burn time [kilograms]
-
-    #     total_propellant_mass: float = fuel_total_mass + oxidizer_total_mass # (4.42 + 4.42) * c.LB2KG # The total mass of propellant needed for the burn time [kilograms]
-
-    #     total_length: float = 8.80 * c.FT2M           # The estimated length of the rocket [meter]
-    #     wet_mass: float = 77.29 * c.LB2KG             # The estimated dry mass of the rocket [kilograms]
-    #     dry_mass: float = 69.32 * c.LB2KG             # The estimated dry mass of the rocket [kilograms]
-    #     estimated_apogee: float = 3300 * c.FT2M       # The estimated 1-DOF altitude [meters]
-    #     off_the_rail_TWR: float = 7.81                # The target thrust-to-weight ratio of the rocket off the launch rail [dimensionless]
-    #     off_the_rail_acceleration: float = 6.81       # The target acceleration of the rocket off the launch rail [standard gravity]
-    #     off_the_rail_velocity: float = 29.72          # The target velocity of the rocket off the launch rail [meters/second]
-    #     max_acceleration: float = 7.47 # (upwards)    # The maximum acceleration of the rocket during flight [standard gravity]
-    #     max_mach: float = 0.454                       # The maximum speed of the rocket during flight [Mach (speed of sound of air)]
-    #     max_velocity: float = 155.722                 # The maximum speed of the rocket during flight [meters/second]
-    #     total_impulse: float = 5934                   # The total impulse of the rocket over the duration of flight [newton seconds]
-        
-    # parameters = VehicleParameters(
-    #     fuel_name=fuel_name,
-    #     oxidizer_name=oxidizer_name,
-    #     tube_outer_diameter=PROPELLANT_TANK_OUTER_DIAMETER,
-    #     tube_inner_diameter=PROPELLANT_TANK_INNER_DIAMETER,
-    #     chamber_pressure=chamber_pressure,
-        
-    #     )
-
-
-
-
-
-    # Center of mass !
-    # - 5:53 AM, 10/25/2025
-
-
-    # TO ADD:
-    # - changing mass over time
-    # - how do i add structures?
-    #     - strut mass
 
 
     def CalcCylinderVolume(diameter, length):
@@ -91,7 +25,7 @@ def calculate_mass(fuel_tank_length,
     def CalcTubeVolume(OD, ID, length):
         volume = CalcCylinderVolume(OD, length) - CalcCylinderVolume(ID, length)
         return volume
-        
+
     engine_length = 1 * c.FT2M
     injector_length = 2 * c.IN2M
     lower_length = 1 * c.FT2M
@@ -109,10 +43,10 @@ def calculate_mass(fuel_tank_length,
     panels_inner_diameter = propellant_tank_inner_diameter
 
     engine_wall_thickness = 0.25 * c.IN2M
-    # engine_ID = propellant_tank_outer_diameter - (2 * engine_wall_thickness)
-    engine_OD = 7 * c.IN2M
+    engine_OD = propellant_tank_outer_diameter
     engine_ID = engine_OD - (2 * engine_wall_thickness)
     engine_mass = c.DENSITY_SS316 * CalcTubeVolume(engine_OD, engine_ID, engine_length)
+    # print(f"engine_mass: {engine_mass * c.KG2LB} [lbm]")
 
     injector_mass = c.DENSITY_SS316 * CalcCylinderVolume(propellant_tank_outer_diameter, injector_length)
 

@@ -8,8 +8,11 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import inputs
 
 
-def PlotColorMaps(x_axis_name, y_axis_name, variable_inputs_array, output_names, output_array, show_copv_limiting_factor):
+def PlotColorMaps(variable_inputs_array, output_names, output_array, show_copv_limiting_factor):
     num_outputs = len(output_names)
+    
+    axes_names = [variable_inputs_array.dtype.names[i] for i in range(len(variable_inputs_array.dtype))]
+    x_axis_name, y_axis_name = axes_names[0], axes_names[1]
     
     # Create a 2x2 grid
     square_grid_length = int(np.ceil(np.sqrt(num_outputs) - 0.0001)) # minus small number to avoid floating point rounding bs
@@ -91,10 +94,12 @@ def UpdateContinuousColorMap(X, Y, Z, color_variable_label="this dumbass did not
 
 
 
-def PlotColorMaps3D(axis_names, variable_inputs_array, output_names, output_array, show_copv_limiting_factor):
+def PlotColorMaps3D(variable_inputs_array, output_names, output_array, show_copv_limiting_factor):
     num_outputs = len(output_names)
     
-    x_axis_name, y_axis_name, z_axis_name = axis_names[0], axis_names[1], axis_names[2]
+    axes_names = [variable_inputs_array.dtype.names[i] for i in range(len(variable_inputs_array.dtype))]
+    x_axis_name, y_axis_name, z_axis_name = axes_names[0], axes_names[1], axes_names[2]
+    
     
     # Create a 2x2 grid
     square_grid_length = int(np.ceil(np.sqrt(num_outputs) - 0.0001)) # minus small number to avoid floating point rounding bs

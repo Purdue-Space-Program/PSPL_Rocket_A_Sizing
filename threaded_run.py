@@ -46,7 +46,7 @@ def ThreadedRun(run_rocket_function, variable_inputs_array, plotting_output_name
             
             idx = (count // inputs.step_size), (count % inputs.step_size)
             
-            idx, output_list = run_rocket_function(idx, variable_input_combination)
+            idx, output_list = run_rocket_function(idx, variable_input_combination, plotting_output_names)
             output_array[idx] = output_list
             
             # X, Y, Z = p.SetupArrays(variable_inputs_array, isp_map)
