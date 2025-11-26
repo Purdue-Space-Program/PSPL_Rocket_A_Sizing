@@ -1,7 +1,7 @@
 import coding_utils.constants as c
 import numpy as np
 
-step_size = 15 # number of values to use for each variable input
+step_size = 50 # number of values to use for each variable input
 # DONT GOT OVER 30 FOR 3D GRAPHS ITS SLOW ASF, 20 IS A GOOD NUMBER
 
 # A dictionary used to define the possible definitions where each key is an input (constant or variable)

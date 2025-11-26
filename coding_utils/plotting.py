@@ -52,24 +52,36 @@ def PlotColorMap(X, Y, output_values, x_axis_name, y_axis_name, output_name, sho
     if ax is None:
         ax = plt.gca()  # default to current axes
         
-        
-    axis_label_list, axis_values_list, output_label, output_values, color_scheme = FormatPlot([x_axis_name, y_axis_name], [X, Y], output_name, output_values, show_copv_limiting_factor)
-    
-    ax.set_xlabel(axis_label_list[0], fontsize=8)
-    ax.set_ylabel(axis_label_list[1], fontsize=8)
+    axis_label_list, axis_values_list, output_label, output_values, color_scheme = FormatPlot([x_axis_name, y_axis_name], [X, Y], output_name, output_values, show_copv_limiting_factor)        
 
     X, Y = *axis_values_list,
     
     if show_copv_limiting_factor:
-        mesh = ax.pcolormesh(X, Y, output_values, cmap=color_scheme, vmin=0, vmax=1*c.N2LBF)
+        output_values_mesh = ax.pcolormesh(X, Y, output_values, cmap=color_scheme, vmin=0, vmax=1*c.N2LBF)
     else:
-        mesh = ax.pcolormesh(X, Y, output_values, cmap=color_scheme)
+        output_values_mesh = ax.pcolormesh(X, Y, output_values, cmap=color_scheme)
         # mesh = ax.contourf(X, Y, Z, 100, cmap=color_scheme)
 
-        
-    ax.set_title(f"{output_name.title()} of {inputs.constant_inputs['FUEL_NAME'][0].title()}", fontsize=12)
+
+    ax.set_title(f"{output_name.title()} of {inputs.constant_inputs['FUEL_NAME'][0].title()}", fontsize=8)
     ax.set_facecolor("lightgray")
-    plt.colorbar(mesh, label=output_label)
+    
+    color_bar = plt.colorbar(output_values_mesh)
+    color_bar.set_label(output_label, fontsize=8)
+    color_bar.ax.tick_params(labelsize=8)
+    
+    # Make the colorbar use ~5 nice, round ticks over its value range
+    color_bar.ax.yaxis.set_major_locator(plt.MaxNLocator(nbins=3))
+    color_bar.update_ticks()
+
+    ax.set_xlabel(axis_label_list[0], fontsize=8)
+    ax.set_ylabel(axis_label_list[1], fontsize=6)
+
+    ax.tick_params(axis='x', labelsize=8)  # X-axis tick numbers
+    ax.tick_params(axis='y', labelsize=8)  # Y-axis tick numbers
+
+    ax.xaxis.set_major_locator(plt.MaxNLocator(nbins=6))
+    ax.yaxis.set_major_locator(plt.MaxNLocator(nbins=6))
 
 
 
@@ -280,11 +292,11 @@ def FormatPlot(axis_name_list, axis_values_list, output_name, output_values, sho
     
     elif output_name == "CHAMBER_STRAIGHT_WALL_LENGTH":
         output_values_factor = c.M2IN
-        output_label="CHAMBER_STRAIGHT_WALL_LENGTH [in]"        
+        output_label="Chamber Straight Wall Length [in]"        
     
     elif output_name == "INJECTOR_TO_THROAT_LENGTH":
         output_values_factor = c.M2IN
-        output_label="INJECTOR_TO_THROAT_LENGTH [in]"        
+        output_label="Injector To Throat Length [in]"        
         
     else:
         raise ValueError(f"{output_name} not recognized for plotting")

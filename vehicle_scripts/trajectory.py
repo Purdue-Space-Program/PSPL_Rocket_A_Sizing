@@ -126,19 +126,18 @@ def calculate_trajectory(
             0.5 * rho * velocity**2 * ascent_drag_coefficient * reference_area
         )  # [N] force of drag
         weight = c.GRAVITY * mass  # [N] downward force due to gravity
+        da_TWR = thrust / weight  # acceleration equation of motion
 
         acceleration = (thrust - drag_force - weight) / mass  # acceleration equation of motion
-        da_TWR = thrust / weight  # acceleration equation of motion
         acceleration_array.append(acceleration)
-        # print(f"accel: {accel}")
-        # print(f"vel: {velocity}")
+
         velocity += acceleration * dt  # velocity integration
         velocity_array.append(velocity)
 
-        altitude = altitude + velocity * dt  # position integration
+        altitude += velocity * dt  # position integration
         altitude_array.append(altitude)
 
-        time = time + dt  # time step
+        time = time + dt  # time is inevitable
         time_array.append(time)
         
         count += 1
@@ -156,28 +155,32 @@ def calculate_trajectory(
     estimated_apogee = altitude * 0.651 # what the fuck is this for
 
     if plots == True:
-        plt.plot(time_array, np.array(acceleration_array, dtype=float) * c.M2FT)
-        plt.title("Acceleration v. Time")
-        plt.ylabel("Acceleration (any direction) [m/s^2]")
+        plt.plot(
+                 time_array, 
+                 np.array(acceleration_array, dtype=float) * c.M2FT,
+                 label="Acceleration (any direction) [ft/s^2]",
+                 )
+      
+        plt.plot(
+                 time_array, 
+                 np.array(velocity_array, dtype=float) * c.M2FT,
+                 label="Velocity (any direction) [ft/s]",
+                 )
+   
+        
+        plt.plot(time_array,
+                 np.array(altitude_array, dtype=float) * c.M2FT * 0.651,
+                label="Height [ft]"
+                )
+        plt.title("Height, Velocity, Acceleration v. Time")
+        plt.legend()
+        
+        plt.ylabel("Height [ft], Velocity (any direction) [ft/s], Acceleration (any direction) [ft/s^2]")
         plt.xlabel("Time [s]")
         
-        plt.plot(time_array, np.array(velocity_array, dtype=float) * c.M2FT)
-        plt.title("Velocity v. Time")
-        plt.ylabel("Velocity (any direction) [m/s]")
-        plt.xlabel("Time [s]")
-        
-        
-        plt.figure(1)
-        plt.plot(time_array, np.array(altitude_array, dtype=float) * 0.651 * c.M2FT)
-        plt.title("Height v. Time")
-        plt.ylabel("Height [ft]")
-        plt.xlabel("Time [s]")
         
         # plot estimated apogee
         # plt.axhline(y=estimated_apogee * c.M2FT, color='r', linestyle='--', label="Estimated Apogee")
-        
-        
-        
         
         # # compare with OpenRocket trajectory
         # OR_df = pd.read_csv('open_rocket_altitude_data.csv', comment='#')
@@ -185,7 +188,6 @@ def calculate_trajectory(
         # OR_altitude = OR_df.iloc[:, 1]
         # plt.plot(OR_time, OR_altitude + (c.INDIANA_ALTITUDE * c.M2FT))
 
-        # print(f"max: {accelArray[np.argmax(np.abs(accelArray))]}")
 
         plt.grid()
         plt.show()

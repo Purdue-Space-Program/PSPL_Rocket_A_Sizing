@@ -50,7 +50,6 @@ import pandas as pd
 # good visual: https://www.w3resource.com/numpy/ndarray/index.php
 
 
-
 def save_last_run(variable_inputs_array, plotting_output_names, output_array, show_copv_limiting_factor, filename="last_run.npz"):
 # def save_arrays_npz(X, Y, Z, values, filename="data.npz"):
     np.savez_compressed(filename, variable_inputs_array=variable_inputs_array, plotting_output_names=plotting_output_names, output_array=output_array, show_copv_limiting_factor=show_copv_limiting_factor)
@@ -85,12 +84,12 @@ plotting_output_names = [
     "THROAT_DIAMETER",                       # [in]
     "INJECTOR_TO_THROAT_LENGTH",             # [in]
     
-    "TANK_PRESSURE",                         # [psi]
-    "OXIDIZER_TANK_VOLUME",                
-    "OXIDIZER_TOTAL_MASS",
-    "FUEL_TANK_VOLUME",
-    "FUEL_TOTAL_MASS",
-    "OXIDIZER_TANK_LENGTH",                  # [ft]
+    # "TANK_PRESSURE",                         # [psi]
+    # "OXIDIZER_TANK_VOLUME",                
+    # "OXIDIZER_TOTAL_MASS",
+    # "FUEL_TANK_VOLUME",
+    # "FUEL_TOTAL_MASS",
+    # "OXIDIZER_TANK_LENGTH",                  # [ft]
 
     "APOGEE",                                # [ft]
     "MAX_ACCELERATION",                      # [G's]
@@ -177,6 +176,8 @@ def run_rocket_function(idx, variable_input_combination, specified_output_names)
             chamber_temperature = np.nan
 
     # avoid calculating trajectory if the value is not going to be used
+    
+    plot_trajectory = False
     if any(output in specified_output_names for output in ["APOGEE", "MAX_ACCELERATION", "RAIL_EXIT_VELOCITY", "RAIL_EXIT_ACCELERATION", "TAKEOFF_TWR", "RAIL_EXIT_TWR", "MAX_ACCELERATION"]):
         estimated_apogee, max_accel, max_velocity, rail_exit_velocity, rail_exit_accel, total_impulse, off_the_rail_time = trajectory.calculate_trajectory(
                                 wet_mass, 
@@ -189,7 +190,7 @@ def run_rocket_function(idx, variable_input_combination, specified_output_names)
                                 15 * c.PSI2PA,
                                 engine_burn_time, 
                                 total_length,
-                                True,
+                                plot_trajectory,
                             )
         # print(f"\n\noff_the_rail_time: {off_the_rail_time} [s]")
         rail_exit_TWR = AccelerationToTWR(rail_exit_accel)
@@ -279,16 +280,16 @@ def run_rocket_function(idx, variable_input_combination, specified_output_names)
 
 
 # avoid calculating all the rocket outputs if the last run was with the same inputs
-last_run_variable_inputs_array, last_run_plotting_output_names, _, last_run_show_copv_limiting_factor = load_last_run()
+last_run_variable_inputs_array, last_run_plotting_output_names, last_run_output_array, last_run_show_copv_limiting_factor = load_last_run()
 
 are_inputs_same_from_last_run = (
     np.array_equal(last_run_variable_inputs_array, variable_inputs_array)
-    and np.array_equal(last_run_plotting_output_names, plotting_output_names)
+    # and np.array_equal(last_run_plotting_output_names, plotting_output_names)    # allow different plot outputs? might lead to an error if trajectory wasn't calculated for a past run
     and np.array_equal(last_run_show_copv_limiting_factor, show_copv_limiting_factor)
 )
 
 if are_inputs_same_from_last_run:
-    variable_inputs_array, plotting_output_names, output_array, show_copv_limiting_factor = load_last_run()
+    output_array = last_run_output_array
 else:
     use_threading = True
     # if __debug__:
