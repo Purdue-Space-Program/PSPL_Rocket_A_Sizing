@@ -177,7 +177,7 @@ def run_rocket_function(idx, variable_input_combination, specified_output_names)
 
     # avoid calculating trajectory if the value is not going to be used
     
-    plot_trajectory = False
+    plot_trajectory = True
     if any(output in specified_output_names for output in ["APOGEE", "MAX_ACCELERATION", "RAIL_EXIT_VELOCITY", "RAIL_EXIT_ACCELERATION", "TAKEOFF_TWR", "RAIL_EXIT_TWR", "MAX_ACCELERATION"]):
         estimated_apogee, max_accel, max_velocity, rail_exit_velocity, rail_exit_accel, total_impulse, off_the_rail_time = trajectory.calculate_trajectory(
                                 wet_mass, 
@@ -321,10 +321,10 @@ for variable_input in list(inputs.variable_inputs):
         desired_input_values.append(250 * c.PSI2PA)
     
     elif variable_input == "CONTRACTION_RATIO":
-        desired_input_values.append(4)
+        desired_input_values.append(7)
 
     elif variable_input == "FUEL_TANK_LENGTH":
-        desired_input_values.append(1 * c.IN2M)
+        desired_input_values.append(6 * c.IN2M)
     
     else:
         raise ValueError
