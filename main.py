@@ -59,10 +59,10 @@ def load_last_run(filename="last_run.npz"):
     return data["variable_inputs_array"], data["plotting_output_names"], data["output_array"], data["show_copv_limiting_factor"]
 
 
-ignore_copv_limit = True
+ignore_copv_limit = False
 show_copv_limiting_factor = False
-limit_rail_exit_accel = False
-
+limit_rail_exit_accel = True
+use_threading = True
 
 # The variable_inputs_array will be separate from the constant_inputs_array to save memory size and hopefully increase speed
 variable_inputs_array = numpy_ndarray_handler.dictionary_to_ndarray(inputs.variable_inputs)
@@ -177,7 +177,11 @@ def run_rocket_function(idx, variable_input_combination, specified_output_names)
 
     # avoid calculating trajectory if the value is not going to be used
     
-    plot_trajectory = True
+    plot_trajectory = False
+    
+    if (plot_trajectory == True) and (use_threading == True):
+        raise ValueError("Cannot plot trajectory and while threading dumbass")
+    
     if any(output in specified_output_names for output in ["APOGEE", "MAX_ACCELERATION", "RAIL_EXIT_VELOCITY", "RAIL_EXIT_ACCELERATION", "TAKEOFF_TWR", "RAIL_EXIT_TWR", "MAX_ACCELERATION"]):
         estimated_apogee, max_accel, max_velocity, rail_exit_velocity, rail_exit_accel, total_impulse, off_the_rail_time = trajectory.calculate_trajectory(
                                 wet_mass, 
@@ -291,9 +295,9 @@ are_inputs_same_from_last_run = (
 if are_inputs_same_from_last_run:
     output_array = last_run_output_array
 else:
-    use_threading = True
     # if __debug__:
-    #     use_threading = False 
+    #     use_threading = False
+ 
     output_array = threaded_run.ThreadedRun(run_rocket_function, variable_inputs_array, plotting_output_names, use_threading)
 
 

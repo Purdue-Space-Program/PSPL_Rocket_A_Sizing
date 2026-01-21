@@ -200,7 +200,7 @@ def CalculateExpectedThrust(expected_isp, total_mass_flow_rate):
     expected_jet_exhaust_velocity = expected_isp * c.GRAVITY
     expected_jet_thrust = total_mass_flow_rate * expected_jet_exhaust_velocity
     
-    print(f"expected_jet_exhaust_velocity: {expected_jet_exhaust_velocity:.2f} m/s")
+    # print(f"expected_jet_exhaust_velocity: {expected_jet_exhaust_velocity:.2f} m/s")
     
     return(expected_jet_thrust)
 

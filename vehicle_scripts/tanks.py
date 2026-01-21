@@ -62,12 +62,12 @@ def GoFluids(PROPELLANT_TANK_INNER_DIAMETER,
 
 def CalculateIfTanksTooBig(tank_pressure, oxidizer_total_tank_volume, fuel_total_tank_volume):
     
-    collapse_method = "copperhead shit"
-
     # COPV: https://a.co/d/brRSB7G
     COPV_pressure_1 = 4500 * c.PSI2PA
     COPV_temp_1 = c.T_AMBIENT + 15
     COPV_volume = 4.7 * c.L2M3 
+
+    collapse_method = "copperhead shit"
 
     # pressurant = "helium"
     pressurant = "nitrogen"
