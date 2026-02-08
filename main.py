@@ -63,6 +63,7 @@ ignore_copv_limit = False
 show_copv_limiting_factor = False
 limit_rail_exit_accel = True
 use_threading = True
+show_plots = False
 
 # The variable_inputs_array will be separate from the constant_inputs_array to save memory size and hopefully increase speed
 variable_inputs_array = numpy_ndarray_handler.dictionary_to_ndarray(inputs.variable_inputs)
@@ -294,7 +295,7 @@ are_inputs_same_from_last_run = (
 
 if are_inputs_same_from_last_run:
     output_array = last_run_output_array
-else:
+elif show_plots == True:
     # if __debug__:
     #     use_threading = False
  
@@ -303,17 +304,17 @@ else:
 
 axes_names = [variable_inputs_array.dtype.names[i] for i in range(len(variable_inputs_array.dtype))]
 
+if show_plots == True:
+    if len(axes_names) == 2:
+        save_last_run(variable_inputs_array, plotting_output_names, output_array, show_copv_limiting_factor, filename="last_run.npz")
+        p.PlotColorMaps(variable_inputs_array, plotting_output_names, output_array, show_copv_limiting_factor)
 
-if len(axes_names) == 2:
-    save_last_run(variable_inputs_array, plotting_output_names, output_array, show_copv_limiting_factor, filename="last_run.npz")
-    p.PlotColorMaps(variable_inputs_array, plotting_output_names, output_array, show_copv_limiting_factor)
+    elif len(axes_names) == 3:
+        save_last_run(variable_inputs_array, plotting_output_names, output_array, show_copv_limiting_factor, filename="last_run.npz")
+        p.PlotColorMaps3D(variable_inputs_array, plotting_output_names, output_array, show_copv_limiting_factor)
 
-elif len(axes_names) == 3:
-    save_last_run(variable_inputs_array, plotting_output_names, output_array, show_copv_limiting_factor, filename="last_run.npz")
-    p.PlotColorMaps3D(variable_inputs_array, plotting_output_names, output_array, show_copv_limiting_factor)
-
-else:
-    raise ValueError(f"{len(axes_names)} is an unsupported number of axes")
+    else:
+        raise ValueError(f"{len(axes_names)} is an unsupported number of axes")
 
 
 fields_dtype = []

@@ -1,0 +1,10 @@
+problem rocket equilibrium
+   p(psi) = 500.00000
+   o/f = 1.10000
+   pip = 33.33333
+react  
+   fuel=C2H5OH(L) wt=100.00000  t,k=290.00000 
+   ox=O2(L) wt=100.00000  t,k=90.00000 
+output trans
+   plot p t isp ivac m mw cp gam o/f cf rho son mach phi h cond pran ae pip
+end
