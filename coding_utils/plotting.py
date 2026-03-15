@@ -1,26 +1,26 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import coding_utils.constants as c
 
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import inputs
+import coding_utils.constants as c
 
 
 def PlotColorMaps(variable_inputs_array, output_names, output_array, show_copv_limiting_factor):
     num_outputs = len(output_names)
-    
+
     axes_names = [variable_inputs_array.dtype.names[i] for i in range(len(variable_inputs_array.dtype))]
     x_axis_name, y_axis_name = axes_names[0], axes_names[1]
-    
+
     # Create a 2x2 grid
     square_grid_length = int(np.ceil(np.sqrt(num_outputs) - 0.0001)) # minus small number to avoid floating point rounding bs
-    fig, axes = plt.subplots(square_grid_length, square_grid_length, figsize=(12, 10))  
-    
+    fig, axes = plt.subplots(square_grid_length, square_grid_length, figsize=(12, 10))
+
     if num_outputs == 1:
         axes = [axes]  # make it iterable
-    else:   
+    else:
         # Flatten axes to iterate
         axes = axes.flatten()
 
@@ -33,29 +33,29 @@ def PlotColorMaps(variable_inputs_array, output_names, output_array, show_copv_l
         ax.set_visible(False)
 
     plt.tight_layout()
-    
-    
+
+
     plt.show()
-    
+
 def SetupArrays(variable_inputs_array, x_axis_name, y_axis_name, output_name, output_array):
     x = np.array(variable_inputs_array[0, :][y_axis_name])
     y = np.array(variable_inputs_array[:, 0][x_axis_name])
     z = np.array(output_array[output_name])
-    
+
     Y, X = np.meshgrid(x, y) # I don't know why you have to swap X and Y but you do!
     Z = z.reshape(len(x), len(y))
-    
+
     return (X, Y, Z)
 
 
 def PlotColorMap(X, Y, output_values, x_axis_name, y_axis_name, output_name, show_copv_limiting_factor, ax=None):
     if ax is None:
         ax = plt.gca()  # default to current axes
-        
-    axis_label_list, axis_values_list, output_label, output_values, color_scheme = FormatPlot([x_axis_name, y_axis_name], [X, Y], output_name, output_values, show_copv_limiting_factor)        
+
+    axis_label_list, axis_values_list, output_label, output_values, color_scheme = FormatPlot([x_axis_name, y_axis_name], [X, Y], output_name, output_values, show_copv_limiting_factor)
 
     X, Y = *axis_values_list,
-    
+
     if show_copv_limiting_factor:
         output_values_mesh = ax.pcolormesh(X, Y, output_values, cmap=color_scheme, vmin=0, vmax=1*c.N2LBF)
     else:
@@ -65,11 +65,11 @@ def PlotColorMap(X, Y, output_values, x_axis_name, y_axis_name, output_name, sho
 
     ax.set_title(f"{output_name.title()} of {inputs.constant_inputs['FUEL_NAME'][0].title()}", fontsize=8)
     ax.set_facecolor("lightgray")
-    
+
     color_bar = plt.colorbar(output_values_mesh)
     color_bar.set_label(output_label, fontsize=8)
     color_bar.ax.tick_params(labelsize=8)
-    
+
     # Make the colorbar use ~5 nice, round ticks over its value range
     color_bar.ax.yaxis.set_major_locator(plt.MaxNLocator(nbins=3))
     color_bar.update_ticks()
@@ -87,7 +87,7 @@ def PlotColorMap(X, Y, output_values, x_axis_name, y_axis_name, output_name, sho
 
 # if you want to continuously update a colormap plot as each value is calculated
 def UpdateContinuousColorMap(X, Y, Z, color_variable_label="this dumbass did not change the label"):
-    
+
     try:
         mesh.set_array(Z.ravel())
         mesh.set_clim(np.min(Z), np.max(Z))
@@ -99,7 +99,7 @@ def UpdateContinuousColorMap(X, Y, Z, color_variable_label="this dumbass did not
         plt.ylabel('Chamber Pressure [psi]', fontsize=12)
         # plt.title(f"ISP of {inputs.constant_inputs['FUEL_NAME'].item().title()} For Different {x_axis} and OF Ratios", fontsize=20)
         plt.colorbar(mesh, label=color_variable_label)
-        
+
     plt.draw()
     plt.pause(0.5)
 
@@ -108,18 +108,18 @@ def UpdateContinuousColorMap(X, Y, Z, color_variable_label="this dumbass did not
 
 def PlotColorMaps3D(variable_inputs_array, output_names, output_array, show_copv_limiting_factor):
     num_outputs = len(output_names)
-    
+
     axes_names = [variable_inputs_array.dtype.names[i] for i in range(len(variable_inputs_array.dtype))]
     x_axis_name, y_axis_name, z_axis_name = axes_names[0], axes_names[1], axes_names[2]
-    
-    
+
+
     # Create a 2x2 grid
     square_grid_length = int(np.ceil(np.sqrt(num_outputs) - 0.0001)) # minus small number to avoid floating point rounding bs
-    fig, axes = plt.subplots(square_grid_length, square_grid_length, figsize=(12, 10))  
-    
+    fig, axes = plt.subplots(square_grid_length, square_grid_length, figsize=(12, 10))
+
     if num_outputs == 1:
         axes = [axes]  # make it iterable
-    else:   
+    else:
         # Flatten axes to iterate
         axes = axes.flatten()
 
@@ -132,7 +132,7 @@ def PlotColorMaps3D(variable_inputs_array, output_names, output_array, show_copv
 
 
 def SetupArrays3D(variable_inputs_array, x_axis_name, y_axis_name, z_axis_name, output_name, output_array):
-    
+
     # type shit !
     x = np.unique(variable_inputs_array[x_axis_name])
     y = np.unique(variable_inputs_array[y_axis_name])
@@ -149,11 +149,11 @@ def SetupArrays3D(variable_inputs_array, x_axis_name, y_axis_name, z_axis_name, 
 def PlotColorMap3D(X, Y, Z, output_values, x_axis_name, y_axis_name, z_axis_name, output_name, show_copv_limiting_factor, ax=None):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
-    
-    
+
+
     axis_label_list, axis_values_list, output_label, output_values, color_scheme = FormatPlot([x_axis_name, y_axis_name, z_axis_name], [X, Y, Z], output_name, output_values, show_copv_limiting_factor)
 
-    
+
     # print("X values:", np.unique(X))
     # print("Y values:", np.unique(Y))
 
@@ -165,7 +165,7 @@ def PlotColorMap3D(X, Y, Z, output_values, x_axis_name, y_axis_name, z_axis_name
 
     # choose color scheme
     cmap = "RdYlGn" if show_copv_limiting_factor else "RdBu_r"
-    
+
     ax.set_xlabel(axis_label_list[0], fontsize=8)
     ax.set_ylabel(axis_label_list[1], fontsize=8)
     ax.set_zlabel(axis_label_list[2], fontsize=8)
@@ -173,24 +173,24 @@ def PlotColorMap3D(X, Y, Z, output_values, x_axis_name, y_axis_name, z_axis_name
     fig.colorbar(sc, ax=ax, label=output_label)
 
     plt.show()
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
 def FormatPlot(axis_name_list, axis_values_list, output_name, output_values, show_copv_limiting_factor):
 
     axis_label_list = [""] * len(axis_name_list)
 
-    for count, axis_name in enumerate(axis_name_list):    
+    for count, axis_name in enumerate(axis_name_list):
         axis_values_factor = 1 # in case no factor is needed
         if axis_name == "OF_RATIO":
             axis_label = "OF Ratio"
@@ -207,9 +207,9 @@ def FormatPlot(axis_name_list, axis_values_list, output_name, output_values, sho
 
         axis_label_list[count] = axis_label
         axis_values_list[count] = axis_values_list[count] * axis_values_factor
-    
+
     output_values_factor = 1 # in case no factor is needed
-    contour_lines = -1        
+    contour_lines = -1
     if output_name == "JET_THRUST":
         output_values_factor = c.N2LBF
         output_label="Jet Thrust [lbf]"
@@ -225,16 +225,16 @@ def FormatPlot(axis_name_list, axis_values_list, output_name, output_values, sho
     elif output_name == "TANK_PRESSURE":
         output_values_factor = c.PA2PSI
         output_label="Tank Pressure [psi]"
-    
-    
-    
+
+
+
     elif output_name == "CHAMBER_INNER_DIAMETER":
         output_values_factor = c.M2IN
         output_label="Chamber Inner Diameter [in]"
     elif output_name == "THROAT_DIAMETER":
         output_values_factor = c.M2IN
         output_label="Throat Diameter [in]"
-    
+
     elif output_name == "TOTAL_IMPULSE":
         output_label="Total Impulse [newtons-seconds]"
     elif output_name == "APOGEE":
@@ -265,93 +265,77 @@ def FormatPlot(axis_name_list, axis_values_list, output_name, output_values, sho
     elif output_name == "MAX_VELOCITY":
         output_values_factor = 1 / 343 # [m/s] 343 is da speed of sound
         output_label="Max Velocity [Mach]"
-    
+
     elif output_name == "TOTAL_LENGTH":
         output_values_factor = c.M2FT
         output_label="Total Length [ft]"
-    
+
     elif output_name == "OXIDIZER_TANK_LENGTH":
         output_values_factor = c.M2FT
         output_label="Oxidizer Tank Length [ft]"
-    
+
     elif output_name == "OXIDIZER_TANK_VOLUME":
         output_values_factor = c.M32L
         output_label="Oxidizer Tank Volume [liters]"
-        
+
     elif output_name == "OXIDIZER_TOTAL_MASS":
         output_values_factor = c.KG2LB
         output_label="Oxidizer Tank Mass [lbm]"
-    
+
     elif output_name == "FUEL_TANK_VOLUME":
         output_values_factor = c.M32L
         output_label="Fuel Tank Volume [liters]"
-        
+
     elif output_name == "FUEL_TOTAL_MASS":
         output_values_factor = c.KG2LB
-        output_label="Fuel Tank Mass [lbm]"        
-    
+        output_label="Fuel Tank Mass [lbm]"
+
     elif output_name == "CHAMBER_STRAIGHT_WALL_LENGTH":
         output_values_factor = c.M2IN
-        output_label="Chamber Straight Wall Length [in]"        
-    
+        output_label="Chamber Straight Wall Length [in]"
+
     elif output_name == "INJECTOR_TO_THROAT_LENGTH":
         output_values_factor = c.M2IN
-        output_label="Injector To Throat Length [in]"        
-        
+        output_label="Injector To Throat Length [in]"
+
     else:
         raise ValueError(f"{output_name} not recognized for plotting")
 
 
     output_values = output_values * output_values_factor
-    
+
     # if contour_lines == -1:
     #     ax.contour(X, Y, Z)
     # else:
     #     ax.contour(X, Y, Z, contour_lines)
 
-    
+
     if show_copv_limiting_factor:
         color_scheme = "RdYlGn"
-        
+
     else:
         color_scheme = "RdBu_r"
         "Spectral_r"
-    
-    return (axis_label_list, axis_values_list, output_label, output_values, color_scheme)
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-def SetupHolyFuckArrays(variable_inputs_array, x_axis_name, y_axis_name, output_name, output_array):
-    x = np.array(variable_inputs_array[0, :][y_axis_name])
-    y = np.array(variable_inputs_array[:, 0][x_axis_name])
-    z = np.array(output_array[output_name])
-    
-    Y, X = np.meshgrid(x, y) # I don't know why you have to swap X and Y but you do
-    Z = z.reshape(len(x), len(y))
-    
-    return (X, Y, Z)
 
-    
-    
+    return (axis_label_list, axis_values_list, output_label, output_values, color_scheme)
+
+
+
+
+
+
+
+
+
+
+
+
+
 def HolyFuck(X, Y, Z):
     from matplotlib import cm
     from mpl_toolkits.mplot3d import axes3d
-    
-    
+
+
 
     ax = plt.figure().add_subplot(projection='3d')
     X, Y, Z = axes3d.get_test_data(0.05)
@@ -359,6 +343,6 @@ def HolyFuck(X, Y, Z):
     ax.contour(X, Y, Z, cmap=cm.coolwarm)  # Plot contour curves
 
     plt.show()
-    
+
 if __name__ == "__main__":
     HolyFuck(1,1,1)
