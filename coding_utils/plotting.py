@@ -25,16 +25,13 @@ def PlotColorMaps(variable_inputs_array, output_names, output_array, show_copv_l
         axes = axes.flatten()
 
     for ax, output_name in zip(axes, output_names):
-        X, Y, Z = SetupArrays(variable_inputs_array, x_axis_name, y_axis_name, output_name, output_array)
-        PlotColorMap(X, Y, Z, x_axis_name, y_axis_name, output_name, show_copv_limiting_factor, ax=ax)
+        PlotColorMap(variable_inputs_array, output_array, x_axis_name, y_axis_name, output_name, show_copv_limiting_factor, ax=ax)
 
     # Hide any unused subplots
     for ax in axes[num_outputs:]:
         ax.set_visible(False)
 
     plt.tight_layout()
-
-
     plt.show()
 
 def SetupArrays(variable_inputs_array, x_axis_name, y_axis_name, output_name, output_array):
@@ -44,11 +41,17 @@ def SetupArrays(variable_inputs_array, x_axis_name, y_axis_name, output_name, ou
 
     Y, X = np.meshgrid(x, y) # I don't know why you have to swap X and Y but you do!
     Z = z.reshape(len(x), len(y))
+    # maybe change to this:
+    # X, Y = np.meshgrid(x, y)
+    # Z = z.reshape(len(y), len(x))
 
     return (X, Y, Z)
 
 
-def PlotColorMap(X, Y, output_values, x_axis_name, y_axis_name, output_name, show_copv_limiting_factor, ax=None):
+def PlotColorMap(variable_inputs_array, output_array, x_axis_name, y_axis_name, output_name, show_copv_limiting_factor, ax=None):
+
+    X, Y, output_values = SetupArrays(variable_inputs_array, x_axis_name, y_axis_name, output_name, output_array)
+
     if ax is None:
         ax = plt.gca()  # default to current axes
 
@@ -60,7 +63,7 @@ def PlotColorMap(X, Y, output_values, x_axis_name, y_axis_name, output_name, sho
         output_values_mesh = ax.pcolormesh(X, Y, output_values, cmap=color_scheme, vmin=0, vmax=1*c.N2LBF)
     else:
         output_values_mesh = ax.pcolormesh(X, Y, output_values, cmap=color_scheme)
-        # mesh = ax.contourf(X, Y, Z, 100, cmap=color_scheme)
+        mesh = ax.contourf(X, Y, output_values, 100, cmap=color_scheme)
 
 
     ax.set_title(f"{output_name.title()} of {inputs.constant_inputs['FUEL_NAME'][0].title()}", fontsize=8)
@@ -103,9 +106,6 @@ def UpdateContinuousColorMap(X, Y, Z, color_variable_label="this dumbass did not
     plt.draw()
     plt.pause(0.5)
 
-
-
-
 def PlotColorMaps3D(variable_inputs_array, output_names, output_array, show_copv_limiting_factor):
     num_outputs = len(output_names)
 
@@ -138,13 +138,12 @@ def SetupArrays3D(variable_inputs_array, x_axis_name, y_axis_name, z_axis_name, 
     y = np.unique(variable_inputs_array[y_axis_name])
     z = np.unique(variable_inputs_array[z_axis_name])
 
-    # make 3D meshgrid
     X, Y, Z = np.meshgrid(x, y, z, indexing="ij")
 
     # reshape output array into 3D
-    values = np.array(output_array[output_name]).reshape(len(x), len(y), len(z))
+    output_values = np.array(output_array[output_name]).reshape(len(x), len(y), len(z))
 
-    return (X, Y, Z, values)
+    return (X, Y, Z, output_values)
 
 def PlotColorMap3D(X, Y, Z, output_values, x_axis_name, y_axis_name, z_axis_name, output_name, show_copv_limiting_factor, ax=None):
     fig = plt.figure()

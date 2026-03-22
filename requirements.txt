@@ -18,4 +18,4 @@ matplotlib
 # pyqt5
 
 # why u fail :(
-CoolProp == 6.8 # newer version errors when debugging
+CoolProp # new version works? #== 6.8 # newer version errors when debugging
