@@ -25,6 +25,10 @@ def calculate_mass(fuel_tank_length,
     def CalcTubeVolume(OD, ID, length):
         volume = CalcCylinderVolume(OD, length) - CalcCylinderVolume(ID, length)
         return volume
+    
+    def CalcCubeVolume(X, Y, Z):
+        volume = X*Y*Z
+        return volume
 
     film = 0.1
 
@@ -33,6 +37,7 @@ def calculate_mass(fuel_tank_length,
     lower_length = 20 * c.IN2M
 
     bulkhead_length = 3 * c.IN2M
+    middle_length = 1 * c.FT2M
 
     upper_length = 17 * c.IN2M + fuel_tank_length * film * c.IN2M
     helium_bay_length = 25 * c.IN2M
@@ -54,7 +59,8 @@ def calculate_mass(fuel_tank_length,
 
     valves_mass = 2 * 3.26 * c.LB2KG # fuel and ox 3/4 inch valve https://habonim.com/wp-content/uploads/2020/08/C47-BD_C47__2023_VO4_28-06-23.pdf
     lower_panels_mass = c.DENSITY_AL * CalcTubeVolume(panels_outer_diameter, panels_inner_diameter, lower_length)
-    lower_mass = valves_mass + lower_panels_mass
+    lower_struts = 3 * CalcCubeVolume(0.5*c.IN2M, c.IN2M, lower_length*c.IN2M)
+    lower_mass = valves_mass + lower_panels_mass + lower_struts
 
     bulkhead_wall_thickness = 0.25 * c.IN2M
     bulkhead_top_thickness = 0.76 * c.IN2M
@@ -64,13 +70,19 @@ def calculate_mass(fuel_tank_length,
         CalcCylinderVolume(propellant_tank_outer_diameter - (2 * bulkhead_wall_thickness), bulkhead_length - bulkhead_top_thickness))
     )
 
-    connector_mass = c.DENSITY_AL * (CalcCylinderVolume(propellant_tank_outer_diameter, propellant_tank_outer_diameter/2) - CalcCylinderVolume(propellant_tank_outer_diameter - 0.25, propellant_tank_outer_diameter/2))
+    connector_mass = c.DENSITY_AL * (
+        CalcCylinderVolume(propellant_tank_outer_diameter, propellant_tank_outer_diameter/2) - CalcCylinderVolume(propellant_tank_outer_diameter - 0.25, propellant_tank_outer_diameter/2)
+    ) + CalcCylinderVolume(propellant_tank_outer_diameter - 0.25, 0.25)
 
     fuel_tank_wall_mass = c.DENSITY_AL * CalcTubeVolume(propellant_tank_outer_diameter, propellant_tank_inner_diameter, fuel_tank_length)
     fuel_tank_wet_mass = fuel_tank_wall_mass + fuel_total_propellant_mass + film * fuel_total_propellant_mass + film * fuel_tank_wall_mass
     #fuel_tank_wet_mass = fuel_tank_wall_mass + fuel_total_propellant_mass
     oxidizer_tank_wall_mass = c.DENSITY_AL * CalcTubeVolume(propellant_tank_outer_diameter, propellant_tank_inner_diameter, oxidizer_tank_length)
     oxidizer_tank_wet_mass = oxidizer_tank_wall_mass + oxidizer_total_propellant_mass
+
+    middle_struts = 3 * CalcTubeVolume(0.5*c.IN2M, 0.25*c.IN2M, middle_length*c.IN2M)
+    middle_plumbing = 0
+    middle_mass = middle_struts + middle_plumbing
 
     regulator_mass = 1.200 # regulator https://valvesandregulators.aquaenvironment.com/item/high-flow-reducing-regulators-2/873-d-high-flow-dome-loaded-reducing-regulators/item-1659
     upper_panels_mass = c.DENSITY_AL * CalcTubeVolume(panels_outer_diameter, panels_inner_diameter, upper_length)
@@ -87,11 +99,14 @@ def calculate_mass(fuel_tank_length,
     parachute_mass = 12 * c.LB2KG  # [kg] 1/3 cuz 1/3 of dry mass compared to --> https://github.com/Purdue-Space-Program/PSPL_Rocket_4_Sizing/blob/2b15e1dc508a56731056ff594a3c6b5afb639b4c/scripts/structures.py#L75
     recovery_bay_mass = recovery_bay_panels_mass + parachute_mass + connector_mass
 
-    #nose_cone_mass = c.DENSITY_AL * CalcTubeVolume(panels_outer_diameter, panels_inner_diameter, nosecone_length) + connector_mass # guess
-    nose_cone_mass = c.DENSITY_AL * ((1/3)*(3.14159)*(nosecone_length)*(((panels_outer_diameter/2)*(panels_outer_diameter/2)) - ((panels_inner_diameter/2)*(panels_inner_diameter/2)))) + connector_mass # guess
+    nose_cone_mass = c.DENSITY_AL * ((1/3)*(math.pi)*(nosecone_length)*(((panels_outer_diameter/2)*(panels_outer_diameter/2)) - ((panels_inner_diameter/2)*(panels_inner_diameter/2)))) + connector_mass # guess
 
-    structures = 30 * c.LB2KG # structures !
-
+    structures = c.DENSITY_AL * (
+        3 * CalcCubeVolume(0.5*c.IN2M, c.IN2M, lower_length*c.IN2M) +
+        3 * CalcTubeVolume(0.5*c.IN2M, 0.25*c.IN2M, middle_length*c.IN2M)
+    ) + c.DENSITY_SS316 * (
+        3 * CalcCubeVolume(0.5*c.IN2M, c.IN2M, lower_length*c.IN2M)
+    )
 
 
     @dataclass(frozen=True)
@@ -125,7 +140,9 @@ def calculate_mass(fuel_tank_length,
     fuel_tank =               MassComponent(name = 'fuel_tank',                   mass = fuel_tank_wet_mass,     bottom_distance_from_aft = lower_fuel_bulkhead.StartAfter(),                 length = fuel_tank_length)
     upper_fuel_bulkhead =     MassComponent(name = 'upper_fuel_bulkhead',         mass = bulkhead_mass,          bottom_distance_from_aft = fuel_tank.StartAfter() - (bulkhead_length),       length = bulkhead_length)
 
-    lower_oxidizer_bulkhead = MassComponent(name = 'lower_oxidizer_bulkhead',     mass = bulkhead_mass,          bottom_distance_from_aft = upper_fuel_bulkhead.StartAfter(),                 length = bulkhead_length)
+    middle =                  MassComponent(name = 'middle',                      mass = middle_mass,            bottom_distance_from_aft = upper_fuel_bulkhead.StartAfter(),                 length = middle_length)
+
+    lower_oxidizer_bulkhead = MassComponent(name = 'lower_oxidizer_bulkhead',     mass = bulkhead_mass,          bottom_distance_from_aft = middle.StartAfter(),                              length = bulkhead_length)
     oxidizer_tank =           MassComponent(name = 'oxidizer_tank',               mass = oxidizer_tank_wet_mass, bottom_distance_from_aft = lower_oxidizer_bulkhead.StartAfter(),             length = oxidizer_tank_length)
     upper_oxidizer_bulkhead = MassComponent(name = 'upper_oxidizer_bulkhead',     mass = bulkhead_mass,          bottom_distance_from_aft = oxidizer_tank.StartAfter() - (bulkhead_length),   length = bulkhead_length)
 
@@ -147,6 +164,8 @@ def calculate_mass(fuel_tank_length,
         fuel_tank,
         upper_fuel_bulkhead,
         
+        middle,
+
         lower_oxidizer_bulkhead,
         oxidizer_tank,
         upper_oxidizer_bulkhead,
