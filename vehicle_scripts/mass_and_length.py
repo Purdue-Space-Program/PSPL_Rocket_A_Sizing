@@ -67,7 +67,8 @@ def calculate_mass(fuel_tank_length,
     lower_struts = 3 * c.DENSITY_AL * CalcCubeVolume(0.25*c.IN2M, c.IN2M, lower_length)
     lower_plumbing = 2 * c.DENSITY_SS316 * CalcTubeVolume(0.5 * c.IN2M, 0.4 * c.IN2M, lower_length)
     actuator = c.DENSITY_SS316 * CalcTubeVolume(3 * c.IN2M, 2.5 * c.IN2M, 9 * c.IN2M) 
-    lower_mass = valves_mass + lower_panels_mass + lower_struts + lower_plumbing + actuator
+    fins = 3 * c.DENSITY_AL * (CalcCubeVolume(0.25*c.IN2M, c.IN2M, lower_length) + (0.5) * CalcCubeVolume(0.25*c.IN2M, c.IN2M, lower_length))
+    lower_mass = valves_mass + lower_panels_mass + lower_struts + lower_plumbing + actuator + fins
 
     bulkhead_wall_thickness = 0.25 * c.IN2M
     bulkhead_top_thickness = 0.76 * c.IN2M
