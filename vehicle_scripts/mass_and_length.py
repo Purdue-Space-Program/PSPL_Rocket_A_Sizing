@@ -52,7 +52,12 @@ def calculate_mass(fuel_tank_length,
     engine_wall_thickness = 0.125 * c.IN2M
     engine_OD = 5.5 * c.IN2M
     engine_ID = engine_OD - (2 * engine_wall_thickness)
-    engine_mass = c.DENSITY_SS316 * CalcTubeVolume(engine_OD, engine_ID, engine_length)
+    insert_OD = 5.0 * c.IN2M
+    insert_ID = 4.5 * c.IN2M
+    insert_length = 4.0 * c.IN2M
+    insert_mass = c.DENSITY_SS316 * CalcTubeVolume(insert_OD, insert_ID, insert_length)
+    chamber_mass = c.DENSITY_SS316 * CalcTubeVolume(engine_OD, engine_ID, engine_length)
+    engine_mass = insert_mass + chamber_mass
     # print(f"engine_mass: {engine_mass * c.KG2LB} [lbm]")
 
     injector_mass = c.DENSITY_SS316 * CalcCylinderVolume(propellant_tank_outer_diameter, injector_length)
