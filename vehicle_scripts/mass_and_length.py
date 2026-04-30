@@ -64,6 +64,8 @@ def calculate_mass(fuel_tank_length,
         CalcCylinderVolume(propellant_tank_outer_diameter - (2 * bulkhead_wall_thickness), bulkhead_length - bulkhead_top_thickness))
     )
 
+    connector_mass = c.DENSITY_AL * (CalcCylinderVolume(propellant_tank_outer_diameter, propellant_tank_outer_diameter/2) - CalcCylinderVolume(propellant_tank_outer_diameter - 0.25, propellant_tank_outer_diameter/2))
+
     fuel_tank_wall_mass = c.DENSITY_AL * CalcTubeVolume(propellant_tank_outer_diameter, propellant_tank_inner_diameter, fuel_tank_length)
     fuel_tank_wet_mass = fuel_tank_wall_mass + fuel_total_propellant_mass + film * fuel_total_propellant_mass + film * fuel_tank_wall_mass
     #fuel_tank_wet_mass = fuel_tank_wall_mass + fuel_total_propellant_mass
@@ -76,58 +78,19 @@ def calculate_mass(fuel_tank_length,
 
     copv_mass = 11 
     helium_bay_panels_mass = c.DENSITY_AL * CalcTubeVolume(panels_outer_diameter, panels_inner_diameter, helium_bay_length)
-    helium_bay_mass = copv_mass + helium_bay_panels_mass
+    helium_bay_mass = copv_mass + helium_bay_panels_mass + bulkhead_mass
 
     avionics_bay_panels_mass = c.DENSITY_AL * CalcTubeVolume(panels_outer_diameter, panels_inner_diameter, avionics_bay_length)
     avionics_bay_mass = avionics_bay_panels_mass + (1 * c.LB2KG) # avionics doesn't weigh anything...
 
     recovery_bay_panels_mass = c.DENSITY_AL * CalcTubeVolume(panels_outer_diameter, panels_inner_diameter, recovery_bay_length)
     parachute_mass = 12 * c.LB2KG  # [kg] 1/3 cuz 1/3 of dry mass compared to --> https://github.com/Purdue-Space-Program/PSPL_Rocket_4_Sizing/blob/2b15e1dc508a56731056ff594a3c6b5afb639b4c/scripts/structures.py#L75
-    recovery_bay_mass = recovery_bay_panels_mass + parachute_mass
+    recovery_bay_mass = recovery_bay_panels_mass + parachute_mass + connector_mass
 
-    nose_cone_mass = c.DENSITY_AL * CalcTubeVolume(panels_outer_diameter, panels_inner_diameter, nosecone_length) # guess
-
-
+    #nose_cone_mass = c.DENSITY_AL * CalcTubeVolume(panels_outer_diameter, panels_inner_diameter, nosecone_length) + connector_mass # guess
+    nose_cone_mass = c.DENSITY_AL * ((1/3)*(3.14159)*(nosecone_length)*(((panels_outer_diameter/2)*(panels_outer_diameter/2)) - ((panels_inner_diameter/2)*(panels_inner_diameter/2)))) + connector_mass # guess
 
     structures = 30 * c.LB2KG # structures !
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
-    structures
 
 
 
