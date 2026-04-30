@@ -19,7 +19,7 @@ def calculate_mass(fuel_tank_length,
 
     def CalcCylinderVolume(diameter, length):
         radius = diameter/2
-        volume = 3.14159265358979 * (radius**2) * length # off the dome!
+        volume = np.pi * (radius**2) * length # off the dome!
         return volume
 
     def CalcTubeVolume(OD, ID, length):
@@ -49,7 +49,7 @@ def calculate_mass(fuel_tank_length,
     panels_outer_diameter = propellant_tank_outer_diameter
     panels_inner_diameter = propellant_tank_inner_diameter
 
-    engine_wall_thickness = 0.25 * c.IN2M
+    engine_wall_thickness = 0.125 * c.IN2M
     engine_OD = 5.5 * c.IN2M
     engine_ID = engine_OD - (2 * engine_wall_thickness)
     engine_mass = c.DENSITY_SS316 * CalcTubeVolume(engine_OD, engine_ID, engine_length)
@@ -59,9 +59,10 @@ def calculate_mass(fuel_tank_length,
 
     valves_mass = 2 * 3.26 * c.LB2KG # fuel and ox 3/4 inch valve https://habonim.com/wp-content/uploads/2020/08/C47-BD_C47__2023_VO4_28-06-23.pdf
     lower_panels_mass = c.DENSITY_AL * CalcTubeVolume(panels_outer_diameter, panels_inner_diameter, lower_length)
-    lower_struts = 3 * CalcCubeVolume(0.5*c.IN2M, c.IN2M, lower_length*c.IN2M)
-    lower_plumbing = 0
-    lower_mass = valves_mass + lower_panels_mass + lower_struts + lower_plumbing
+    lower_struts = 3 * c.DENSITY_AL * CalcCubeVolume(0.25*c.IN2M, c.IN2M, lower_length)
+    lower_plumbing = 2 * c.DENSITY_SS316 * CalcTubeVolume(0.5 * c.IN2M, 0.4 * c.IN2M, lower_length)
+    actuator = c.DENSITY_SS316 * CalcTubeVolume(3 * c.IN2M, 2.5 * c.IN2M, 9 * c.IN2M) 
+    lower_mass = valves_mass + lower_panels_mass + lower_struts + lower_plumbing + actuator
 
     bulkhead_wall_thickness = 0.25 * c.IN2M
     bulkhead_top_thickness = 0.76 * c.IN2M
@@ -72,24 +73,24 @@ def calculate_mass(fuel_tank_length,
     )
 
     connector_mass = c.DENSITY_AL * (
-        CalcCylinderVolume(propellant_tank_outer_diameter, propellant_tank_outer_diameter/2) - CalcCylinderVolume(propellant_tank_outer_diameter - 0.25, propellant_tank_outer_diameter/2)
-    ) + CalcCylinderVolume(propellant_tank_outer_diameter - 0.25, 0.25)
+        CalcTubeVolume(propellant_tank_inner_diameter, propellant_tank_inner_diameter - 0.25 * c.IN2M, propellant_tank_outer_diameter/2)
+    ) + CalcCylinderVolume(propellant_tank_inner_diameter - 0.25 * c.IN2M, 0.25 * c.IN2M)
 
     fuel_tank_wall_mass = c.DENSITY_AL * CalcTubeVolume(propellant_tank_outer_diameter, propellant_tank_inner_diameter, fuel_tank_length)
     fuel_tank_wet_mass = fuel_tank_wall_mass + fuel_total_propellant_mass + film * fuel_total_propellant_mass + film * fuel_tank_wall_mass
     oxidizer_tank_wall_mass = c.DENSITY_AL * CalcTubeVolume(propellant_tank_outer_diameter, propellant_tank_inner_diameter, oxidizer_tank_length)
     oxidizer_tank_wet_mass = oxidizer_tank_wall_mass + oxidizer_total_propellant_mass
 
-    middle_struts = 3 * CalcTubeVolume(0.5*c.IN2M, 0.25*c.IN2M, middle_length*c.IN2M)
-    middle_plumbing = 0
+    middle_struts = c.DENSITY_AL * 3 * CalcTubeVolume(0.5 * c.IN2M, 0.25 * c.IN2M, middle_length)
+    middle_plumbing = c.DENSITY_SS316 * CalcTubeVolume(0.5 * c.IN2M, 0.4 * c.IN2M, fuel_tank_length + middle_length + propellant_tank_outer_diameter)
     middle_mass = middle_struts + middle_plumbing
 
     regulator_mass = 1.200 # regulator https://valvesandregulators.aquaenvironment.com/item/high-flow-reducing-regulators-2/873-d-high-flow-dome-loaded-reducing-regulators/item-1659
     upper_panels_mass = c.DENSITY_AL * CalcTubeVolume(panels_outer_diameter, panels_inner_diameter, upper_length)
-    upper_struts = 3 * CalcTubeVolume(0.5*c.IN2M, 0.25*c.IN2M, upper_length*c.IN2M)
-    upper_plumbing = 0
-    upper_manifold = 0
-    upper_mass = regulator_mass + upper_panels_mass + upper_plumbing + upper_manifold
+    upper_struts = c.DENSITY_AL * 3 * CalcTubeVolume(0.5 * c.IN2M, 0.25 * c.IN2M, upper_length)
+    upper_plumbing = c.DENSITY_SS316 * CalcTubeVolume(0.5 * c.IN2M, 0.4 * c.IN2M, oxidizer_tank_length + upper_length + propellant_tank_outer_diameter)
+    upper_manifold = c.DENSITY_AL * CalcCubeVolume(4 * c.IN2M, 2 * c.IN2M, 2 * c.IN2M)
+    upper_mass = regulator_mass + upper_panels_mass + upper_struts + upper_plumbing + upper_manifold
 
     copv_mass = 11 
     copv_bulkhead_mass = bulkhead_mass*0.5
