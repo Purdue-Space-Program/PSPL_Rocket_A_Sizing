@@ -42,7 +42,7 @@ def calculate_mass(fuel_tank_length,
     upper_length = 17 * c.IN2M + fuel_tank_length * film * c.IN2M
     helium_bay_length = 25 * c.IN2M
 
-    avionics_bay_length = 0.01 * c.FT2M
+    avionics_bay_length = 0.0 * c.FT2M
     recovery_bay_length = 30 * c.IN2M
     nosecone_length = 20 * c.IN2M
 
