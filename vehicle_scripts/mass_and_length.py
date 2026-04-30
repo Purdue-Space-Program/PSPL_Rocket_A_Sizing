@@ -26,13 +26,15 @@ def calculate_mass(fuel_tank_length,
         volume = CalcCylinderVolume(OD, length) - CalcCylinderVolume(ID, length)
         return volume
 
+    film = 0.1
+
     engine_length = 20 * c.IN2M
     injector_length = 1 * c.IN2M
     lower_length = 20 * c.IN2M
 
     bulkhead_length = 3 * c.IN2M
 
-    upper_length = 17 * c.IN2M
+    upper_length = 17 * c.IN2M + fuel_tank_length * film * c.IN2M
     helium_bay_length = 25 * c.IN2M
 
     avionics_bay_length = 0.01 * c.FT2M
@@ -63,7 +65,8 @@ def calculate_mass(fuel_tank_length,
     )
 
     fuel_tank_wall_mass = c.DENSITY_AL * CalcTubeVolume(propellant_tank_outer_diameter, propellant_tank_inner_diameter, fuel_tank_length)
-    fuel_tank_wet_mass = fuel_tank_wall_mass + fuel_total_propellant_mass
+    fuel_tank_wet_mass = fuel_tank_wall_mass + fuel_total_propellant_mass + film * fuel_total_propellant_mass + film * fuel_tank_wall_mass
+    #fuel_tank_wet_mass = fuel_tank_wall_mass + fuel_total_propellant_mass
     oxidizer_tank_wall_mass = c.DENSITY_AL * CalcTubeVolume(propellant_tank_outer_diameter, propellant_tank_inner_diameter, oxidizer_tank_length)
     oxidizer_tank_wet_mass = oxidizer_tank_wall_mass + oxidizer_total_propellant_mass
 

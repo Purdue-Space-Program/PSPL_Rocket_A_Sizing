@@ -126,7 +126,7 @@ def run_rocket_function(idx, variable_input_combination, specified_output_names)
     jet_thrust, isp, mass_flow_rate, chamber_temperature, chamber_radius, throat_radius, chamber_length, injector_to_throat_length = engine.ThrustyBusty(
                 fuel_name,
                 numpy_ndarray_handler.GetFrom_ndarray("OXIDIZER_NAME", constant_inputs_array, variable_input_combination),
-                propellant_tank_outer_diameter,
+                (5.0+1.1) * c.IN2M,
                 numpy_ndarray_handler.GetFrom_ndarray("CONTRACTION_RATIO", constant_inputs_array, variable_input_combination),
                 numpy_ndarray_handler.GetFrom_ndarray("OF_RATIO", constant_inputs_array, variable_input_combination),
                 numpy_ndarray_handler.GetFrom_ndarray("CHAMBER_PRESSURE", constant_inputs_array, variable_input_combination),
@@ -327,11 +327,11 @@ for variable_input in list(inputs.variable_inputs):
         desired_input_values.append(250 * c.PSI2PA)
 
     elif variable_input == "CONTRACTION_RATIO":
-        desired_input_values.append(5)
+        desired_input_values.append(3.3)
 
     elif variable_input == "FUEL_TANK_LENGTH":
-        desired_input_values.append(4 * c.FT2M)
-        
+        desired_input_values.append(3 * c.FT2M)
+
     else:
         raise ValueError
 
