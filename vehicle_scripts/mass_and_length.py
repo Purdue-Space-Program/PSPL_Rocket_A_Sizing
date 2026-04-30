@@ -86,27 +86,24 @@ def calculate_mass(fuel_tank_length,
 
     regulator_mass = 1.200 # regulator https://valvesandregulators.aquaenvironment.com/item/high-flow-reducing-regulators-2/873-d-high-flow-dome-loaded-reducing-regulators/item-1659
     upper_panels_mass = c.DENSITY_AL * CalcTubeVolume(panels_outer_diameter, panels_inner_diameter, upper_length)
+    upper_struts = 3 * CalcTubeVolume(0.5*c.IN2M, 0.25*c.IN2M, upper_length*c.IN2M)
     upper_mass = regulator_mass + upper_panels_mass
 
     copv_mass = 11 
     helium_bay_panels_mass = c.DENSITY_AL * CalcTubeVolume(panels_outer_diameter, panels_inner_diameter, helium_bay_length)
-    helium_bay_mass = copv_mass + helium_bay_panels_mass + bulkhead_mass
+    helium_bay_mass = copv_mass + helium_bay_panels_mass + bulkhead_mass*0.5
 
+    avionics_mass = 1
     avionics_bay_panels_mass = c.DENSITY_AL * CalcTubeVolume(panels_outer_diameter, panels_inner_diameter, avionics_bay_length)
-    avionics_bay_mass = avionics_bay_panels_mass + (1 * c.LB2KG) # avionics doesn't weigh anything...
+    avionics_bay_mass = avionics_bay_panels_mass + (avionics_mass * c.LB2KG) # avionics doesn't weigh anything...
 
     recovery_bay_panels_mass = c.DENSITY_AL * CalcTubeVolume(panels_outer_diameter, panels_inner_diameter, recovery_bay_length)
     parachute_mass = 12 * c.LB2KG  # [kg] 1/3 cuz 1/3 of dry mass compared to --> https://github.com/Purdue-Space-Program/PSPL_Rocket_4_Sizing/blob/2b15e1dc508a56731056ff594a3c6b5afb639b4c/scripts/structures.py#L75
     recovery_bay_mass = recovery_bay_panels_mass + parachute_mass + connector_mass
 
-    nose_cone_mass = c.DENSITY_AL * ((1/3)*(math.pi)*(nosecone_length)*(((panels_outer_diameter/2)*(panels_outer_diameter/2)) - ((panels_inner_diameter/2)*(panels_inner_diameter/2)))) + connector_mass # guess
+    nose_cone_mass = c.DENSITY_AL * ((1/3)*(np.pi)*(nosecone_length)*(((panels_outer_diameter/2)**2) - ((panels_inner_diameter/2)**2))) + connector_mass # guess
 
-    structures = c.DENSITY_AL * (
-        3 * CalcCubeVolume(0.5*c.IN2M, c.IN2M, lower_length*c.IN2M) +
-        3 * CalcTubeVolume(0.5*c.IN2M, 0.25*c.IN2M, middle_length*c.IN2M)
-    ) + c.DENSITY_SS316 * (
-        3 * CalcCubeVolume(0.5*c.IN2M, c.IN2M, lower_length*c.IN2M)
-    )
+    structures = 30
 
 
     @dataclass(frozen=True)
