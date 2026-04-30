@@ -40,14 +40,14 @@ def calculate_mass(fuel_tank_length,
     middle_length = 1 * c.FT2M
 
     upper_length = 17 * c.IN2M + fuel_tank_length * film * c.IN2M
-    helium_bay_length = 25 * c.IN2M
+    helium_bay_length = 22 * c.IN2M
 
     avionics_bay_length = 0.01 * c.FT2M
     recovery_bay_length = 30 * c.IN2M
     nosecone_length = 20 * c.IN2M
 
     panels_outer_diameter = propellant_tank_outer_diameter
-    panels_inner_diameter = propellant_tank_outer_diameter-0.1
+    panels_inner_diameter = propellant_tank_outer_diameter - 0.1 * c.IN2M
 
     chamber_wall_thickness = 0.125 * c.IN2M
     chamber_OD = 5.5 * c.IN2M
@@ -87,9 +87,10 @@ def calculate_mass(fuel_tank_length,
     oxidizer_tank_wall_mass = c.DENSITY_AL * CalcTubeVolume(propellant_tank_outer_diameter, propellant_tank_inner_diameter, oxidizer_tank_length)
     oxidizer_tank_wet_mass = oxidizer_tank_wall_mass + oxidizer_total_propellant_mass
 
+    middle_pannels_mass = c.DENSITY_AL * CalcTubeVolume(panels_outer_diameter, panels_inner_diameter, middle_length)
     middle_struts = c.DENSITY_AL * 3 * CalcTubeVolume(0.5 * c.IN2M, 0.25 * c.IN2M, middle_length)
     middle_plumbing = c.DENSITY_SS316 * CalcTubeVolume(0.5 * c.IN2M, 0.4 * c.IN2M, fuel_tank_length + middle_length + propellant_tank_outer_diameter)
-    middle_mass = middle_struts + middle_plumbing
+    middle_mass = middle_pannels_mass + middle_struts + middle_plumbing
 
     regulator_mass = 1.200 # regulator https://valvesandregulators.aquaenvironment.com/item/high-flow-reducing-regulators-2/873-d-high-flow-dome-loaded-reducing-regulators/item-1659
     upper_panels_mass = c.DENSITY_AL * CalcTubeVolume(panels_outer_diameter, panels_inner_diameter, upper_length)
@@ -98,7 +99,7 @@ def calculate_mass(fuel_tank_length,
     upper_manifold = c.DENSITY_AL * CalcCubeVolume(4 * c.IN2M, 2 * c.IN2M, 2 * c.IN2M)
     upper_mass = regulator_mass + upper_panels_mass + upper_struts + upper_plumbing + upper_manifold
 
-    copv_mass = 11 
+    copv_mass = 3.9 
     copv_bulkhead_mass = bulkhead_mass*0.5
     helium_bay_panels_mass = c.DENSITY_AL * CalcTubeVolume(panels_outer_diameter, propellant_tank_inner_diameter, helium_bay_length)
     helium_bay_mass = copv_mass + helium_bay_panels_mass + copv_bulkhead_mass
