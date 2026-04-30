@@ -59,9 +59,9 @@ def load_last_run(filename="last_run.npz"):
     return data["variable_inputs_array"], data["plotting_output_names"], data["output_array"], data["show_copv_limiting_factor"]
 
 
-ignore_copv_limit = False
+ignore_copv_limit = True
 show_copv_limiting_factor = False
-limit_rail_exit_accel = True
+limit_rail_exit_accel = False
 use_threading = True
 show_plots = True
 use_last_run = False
@@ -327,11 +327,11 @@ for variable_input in list(inputs.variable_inputs):
         desired_input_values.append(250 * c.PSI2PA)
 
     elif variable_input == "CONTRACTION_RATIO":
-        desired_input_values.append(7)
+        desired_input_values.append(5)
 
     elif variable_input == "FUEL_TANK_LENGTH":
-        desired_input_values.append(6 * c.IN2M)
-
+        desired_input_values.append(4 * c.FT2M)
+        
     else:
         raise ValueError
 

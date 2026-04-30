@@ -26,24 +26,24 @@ def calculate_mass(fuel_tank_length,
         volume = CalcCylinderVolume(OD, length) - CalcCylinderVolume(ID, length)
         return volume
 
-    engine_length = 1 * c.FT2M
-    injector_length = 2 * c.IN2M
-    lower_length = 1 * c.FT2M
+    engine_length = 20 * c.IN2M
+    injector_length = 1 * c.IN2M
+    lower_length = 20 * c.IN2M
 
     bulkhead_length = 3 * c.IN2M
 
-    upper_length = 0.5 * c.FT2M
-    helium_bay_length = 20 * c.IN2M
+    upper_length = 17 * c.IN2M
+    helium_bay_length = 25 * c.IN2M
 
-    avionics_bay_length = 0.25 * c.FT2M
-    recovery_bay_length = 0.5 * c.FT2M
-    nosecone_length = 1 * c.FT2M
+    avionics_bay_length = 0.01 * c.FT2M
+    recovery_bay_length = 30 * c.IN2M
+    nosecone_length = 20 * c.IN2M
 
     panels_outer_diameter = propellant_tank_outer_diameter
     panels_inner_diameter = propellant_tank_inner_diameter
 
     engine_wall_thickness = 0.25 * c.IN2M
-    engine_OD = propellant_tank_outer_diameter
+    engine_OD = 5.5 * c.IN2M
     engine_ID = engine_OD - (2 * engine_wall_thickness)
     engine_mass = c.DENSITY_SS316 * CalcTubeVolume(engine_OD, engine_ID, engine_length)
     # print(f"engine_mass: {engine_mass * c.KG2LB} [lbm]")
@@ -71,7 +71,7 @@ def calculate_mass(fuel_tank_length,
     upper_panels_mass = c.DENSITY_AL * CalcTubeVolume(panels_outer_diameter, panels_inner_diameter, upper_length)
     upper_mass = regulator_mass + upper_panels_mass
 
-    copv_mass = 2.9 
+    copv_mass = 11 
     helium_bay_panels_mass = c.DENSITY_AL * CalcTubeVolume(panels_outer_diameter, panels_inner_diameter, helium_bay_length)
     helium_bay_mass = copv_mass + helium_bay_panels_mass
 
@@ -79,14 +79,14 @@ def calculate_mass(fuel_tank_length,
     avionics_bay_mass = avionics_bay_panels_mass + (1 * c.LB2KG) # avionics doesn't weigh anything...
 
     recovery_bay_panels_mass = c.DENSITY_AL * CalcTubeVolume(panels_outer_diameter, panels_inner_diameter, recovery_bay_length)
-    parachute_mass = 8 * c.LB2KG  # [kg] 1/3 cuz 1/3 of dry mass compared to --> https://github.com/Purdue-Space-Program/PSPL_Rocket_4_Sizing/blob/2b15e1dc508a56731056ff594a3c6b5afb639b4c/scripts/structures.py#L75
+    parachute_mass = 12 * c.LB2KG  # [kg] 1/3 cuz 1/3 of dry mass compared to --> https://github.com/Purdue-Space-Program/PSPL_Rocket_4_Sizing/blob/2b15e1dc508a56731056ff594a3c6b5afb639b4c/scripts/structures.py#L75
     recovery_bay_mass = recovery_bay_panels_mass + parachute_mass
 
     nose_cone_mass = c.DENSITY_AL * CalcTubeVolume(panels_outer_diameter, panels_inner_diameter, nosecone_length) # guess
 
 
 
-    structures = 15 * c.LB2KG # structures !
+    structures = 30 * c.LB2KG # structures !
     structures
     structures
     structures
