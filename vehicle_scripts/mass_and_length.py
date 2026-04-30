@@ -42,7 +42,7 @@ def calculate_mass(fuel_tank_length,
     upper_length = 17 * c.IN2M + fuel_tank_length * film * c.IN2M
     helium_bay_length = 25 * c.IN2M
 
-    avionics_bay_length = 0.0 * c.FT2M
+    avionics_bay_length = 0.01 * c.FT2M
     recovery_bay_length = 30 * c.IN2M
     nosecone_length = 20 * c.IN2M
 
@@ -67,7 +67,7 @@ def calculate_mass(fuel_tank_length,
     lower_struts = 3 * c.DENSITY_AL * CalcCubeVolume(0.25*c.IN2M, c.IN2M, lower_length)
     lower_plumbing = 2 * c.DENSITY_SS316 * CalcTubeVolume(0.5 * c.IN2M, 0.4 * c.IN2M, lower_length)
     actuator = c.DENSITY_SS316 * CalcTubeVolume(3 * c.IN2M, 2.5 * c.IN2M, 9 * c.IN2M) 
-    fins = 3 * c.DENSITY_AL * (CalcCubeVolume(0.25*c.IN2M, c.IN2M, lower_length) + (0.5) * CalcCubeVolume(0.25*c.IN2M, c.IN2M, lower_length))
+    fins = 3 * c.DENSITY_AL * ((0.5) * CalcCubeVolume(0.25 * c.IN2M, 18 * c.IN2M, 8.9 * c.IN2M) + CalcCubeVolume(0.25 * c.IN2M, 7 * c.IN2M, 8.9 * c.IN2M) + (0.5) * CalcCubeVolume(0.25 * c.IN2M, (34-18-7) * c.IN2M, 8.9 * c.IN2M))
     lower_mass = valves_mass + lower_panels_mass + lower_struts + lower_plumbing + actuator + fins
 
     bulkhead_wall_thickness = 0.25 * c.IN2M
