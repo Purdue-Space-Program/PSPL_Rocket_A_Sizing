@@ -42,7 +42,7 @@ constant_inputs = {
 
     "OXIDIZER_NAME":                            "Liquid Oxygen",
 
-    "PROPELLANT_TANK_OUTER_DIAMETER":           7.0 * c.IN2M, # [meters] from speedy metals pipe (link above)
+    "PROPELLANT_TANK_OUTER_DIAMETER":           6.0 * c.IN2M, # [meters] from speedy metals pipe (link above)
     "PROPELLANT_TANK_THICKNESS":                0.125 * c.IN2M,   # [meters] from speedy metals pipe (link above)
 
     # "ALUMINUM_ENGINE_COVER_OUTER_DIAMETER":   4.5   * c.IN2M, # [meters] from speedy metals pipe (link above)

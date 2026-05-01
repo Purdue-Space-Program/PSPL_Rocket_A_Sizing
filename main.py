@@ -327,10 +327,10 @@ for variable_input in list(inputs.variable_inputs):
         desired_input_values.append(250 * c.PSI2PA)
 
     elif variable_input == "CONTRACTION_RATIO":
-        desired_input_values.append(12)
+        desired_input_values.append(4)
 
     elif variable_input == "FUEL_TANK_LENGTH":
-        desired_input_values.append(4.0 * c.FT2M)
+        desired_input_values.append(2.0 * c.FT2M)
 
     else:
         raise ValueError

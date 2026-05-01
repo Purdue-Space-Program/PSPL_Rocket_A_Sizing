@@ -30,7 +30,7 @@ def calculate_mass(fuel_tank_length,
         volume = X*Y*Z
         return volume
 
-    film = 0.15
+    film = 0.30
 
     engine_length = 20 * c.IN2M
     injector_length = 1 * c.IN2M
@@ -99,7 +99,7 @@ def calculate_mass(fuel_tank_length,
     upper_manifold = c.DENSITY_AL * CalcCubeVolume(4 * c.IN2M, 2 * c.IN2M, 2 * c.IN2M)
     upper_mass = regulator_mass + upper_panels_mass + upper_struts + upper_plumbing + upper_manifold
 
-    copv_mass = 3.9 
+    copv_mass = 2
     copv_bulkhead_mass = bulkhead_mass*0.5
     helium_bay_panels_mass = c.DENSITY_AL * CalcTubeVolume(panels_outer_diameter, propellant_tank_inner_diameter, helium_bay_length)
     helium_bay_mass = copv_mass + helium_bay_panels_mass + copv_bulkhead_mass
