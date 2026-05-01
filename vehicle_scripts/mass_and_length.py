@@ -32,7 +32,7 @@ def calculate_mass(fuel_tank_length,
 
     film = 0.30
 
-    engine_length = 20 * c.IN2M
+    engine_length = 15 * c.IN2M
     injector_length = 1 * c.IN2M
     lower_length = 20 * c.IN2M
 
@@ -40,11 +40,11 @@ def calculate_mass(fuel_tank_length,
     middle_length = 1 * c.FT2M
 
     upper_length = 17 * c.IN2M + fuel_tank_length * film * c.IN2M
-    helium_bay_length = 22 * c.IN2M
+    helium_bay_length = 20 * c.IN2M
 
     avionics_bay_length = 0.01 * c.FT2M
     recovery_bay_length = 30 * c.IN2M
-    nosecone_length = 20 * c.IN2M
+    nosecone_length = 15 * c.IN2M
 
     panels_outer_diameter = propellant_tank_outer_diameter
     panels_inner_diameter = propellant_tank_outer_diameter - 0.1 * c.IN2M
