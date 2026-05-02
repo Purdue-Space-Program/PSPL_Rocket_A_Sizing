@@ -333,7 +333,7 @@ for variable_input in list(inputs.variable_inputs):
         desired_input_values.append(6 * c.IN2M)
 
     else:
-        raise ValueError
+        raise ValueError("check input variables")
 
 full_output_names = [
 
@@ -448,3 +448,6 @@ print(f"Total Impulse: {desired_rocket_output_list["TOTAL_IMPULSE"]} Newton-seco
 # print(f"Total Impulse: {desired_rocket_output_list["TOTAL_IMPULSE"]} Newton-seconds")
 
 # kill me
+
+# if __name__ == "__main__":
+#     main()

@@ -28,7 +28,7 @@ def calculate_trajectory(
     exitPressure,
     burnTime,
     totalLength,
-    plots,
+    show_plot,
 ):
     """
     _summary_
@@ -154,7 +154,7 @@ def calculate_trajectory(
 
     estimated_apogee = altitude * 0.651 # what the fuck is this for
 
-    if plots == True:
+    if show_plot == True:
         plt.plot(
                  time_array, 
                  np.array(acceleration_array, dtype=float) * c.M2FT,
