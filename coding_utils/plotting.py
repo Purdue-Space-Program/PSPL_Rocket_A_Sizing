@@ -63,7 +63,7 @@ def PlotColorMap(variable_inputs_array, output_array, x_axis_name, y_axis_name, 
         output_values_mesh = ax.pcolormesh(X, Y, output_values, cmap=color_scheme, vmin=0, vmax=1*c.N2LBF)
     else:
         output_values_mesh = ax.pcolormesh(X, Y, output_values, cmap=color_scheme)
-        mesh = ax.contourf(X, Y, output_values, 100, cmap=color_scheme)
+        # mesh = ax.contourf(X, Y, output_values, 100, cmap=color_scheme)
 
 
     ax.set_title(f"{output_name.title()} of {inputs.constant_inputs['FUEL_NAME'][0].title()}", fontsize=8)

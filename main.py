@@ -59,9 +59,9 @@ def load_last_run(filename="last_run.npz"):
     return data["variable_inputs_array"], data["plotting_output_names"], data["output_array"], data["show_copv_limiting_factor"]
 
 
-ignore_copv_limit = False
+ignore_copv_limit = True
 show_copv_limiting_factor = False
-limit_rail_exit_accel = True
+limit_rail_exit_accel = False
 use_threading = True
 show_plots = True
 use_last_run = False
@@ -73,7 +73,7 @@ constant_inputs_array = numpy_ndarray_handler.dictionary_to_ndarray(inputs.const
 plotting_output_names = [
 
     "MASS_FLOW_RATE",                        # [kg/s]
-    "ISP",                                   # [s]
+    # "ISP",                                   # [s]
     "JET_THRUST",                            # [lbf]
     "TOTAL_LENGTH",                          # [ft]
     "WET_MASS",                              # [lbm]
@@ -81,10 +81,10 @@ plotting_output_names = [
     "BURN_TIME",                             # [s]
     "CHAMBER_TEMPERATURE",                   # [k]
 
-    "CHAMBER_INNER_DIAMETER",                      # [in]
-    "CHAMBER_STRAIGHT_WALL_LENGTH",          # [in]
-    "THROAT_DIAMETER",                       # [in]
-    "INJECTOR_TO_THROAT_LENGTH",             # [in]
+    # "CHAMBER_INNER_DIAMETER",                      # [in]
+    # "CHAMBER_STRAIGHT_WALL_LENGTH",          # [in]
+    # "THROAT_DIAMETER",                       # [in]
+    # "INJECTOR_TO_THROAT_LENGTH",             # [in]
 
     # "TANK_PRESSURE",                         # [psi]
     # "OXIDIZER_TANK_VOLUME",
@@ -288,19 +288,22 @@ def run_rocket_function(idx, variable_input_combination, specified_output_names)
 # avoid calculating all the rocket outputs if the last run was with the same inputs
 last_run_variable_inputs_array, last_run_plotting_output_names, last_run_output_array, last_run_show_copv_limiting_factor = load_last_run()
 
-are_inputs_same_from_last_run = (
-    np.array_equal(last_run_variable_inputs_array, variable_inputs_array)
-    # and np.array_equal(last_run_plotting_output_names, plotting_output_names)    # allow different plot outputs? might lead to an error if trajectory wasn't calculated for a past run
-    and np.array_equal(last_run_show_copv_limiting_factor, show_copv_limiting_factor)
-)
+try:
+    are_inputs_same_from_last_run = (
+        np.array_equal(last_run_variable_inputs_array, variable_inputs_array)
+        # and np.array_equal(last_run_plotting_output_names, plotting_output_names)    # allow different plot outputs? might lead to an error if trajectory wasn't calculated for a past run
+        and np.array_equal(last_run_show_copv_limiting_factor, show_copv_limiting_factor)
+    )
+    if are_inputs_same_from_last_run or use_last_run:
+        output_array = last_run_output_array
+    elif show_plots == True:
+        # if __debug__:
+        #     use_threading = False
 
-if are_inputs_same_from_last_run or use_last_run:
-    output_array = last_run_output_array
-elif show_plots == True:
-    # if __debug__:
-    #     use_threading = False
-
+        output_array = threaded_run.ThreadedRun(run_rocket_function, variable_inputs_array, plotting_output_names, use_threading)
+except:
     output_array = threaded_run.ThreadedRun(run_rocket_function, variable_inputs_array, plotting_output_names, use_threading)
+
 
 
 axes_names = [variable_inputs_array.dtype.names[i] for i in range(len(variable_inputs_array.dtype))]
