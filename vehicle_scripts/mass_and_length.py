@@ -82,8 +82,8 @@ def calculate_mass(fuel_tank_length,
         CalcTubeVolume(propellant_tank_inner_diameter, propellant_tank_inner_diameter - 0.25 * c.IN2M, propellant_tank_outer_diameter/2)
     ) + CalcCylinderVolume(propellant_tank_inner_diameter - 0.25 * c.IN2M, 0.25 * c.IN2M)
 
-    fuel_tank_wall_mass = c.DENSITY_AL * CalcTubeVolume(propellant_tank_outer_diameter, propellant_tank_inner_diameter, fuel_tank_length)
-    fuel_tank_wet_mass = fuel_tank_wall_mass + fuel_total_propellant_mass + film * fuel_total_propellant_mass + film * fuel_tank_wall_mass
+    fuel_tank_wall_mass = c.DENSITY_AL * CalcTubeVolume(propellant_tank_outer_diameter, propellant_tank_inner_diameter, fuel_tank_length) * (1 + film)
+    fuel_tank_wet_mass = fuel_tank_wall_mass + fuel_total_propellant_mass + film * fuel_total_propellant_mass
     oxidizer_tank_wall_mass = c.DENSITY_AL * CalcTubeVolume(propellant_tank_outer_diameter, propellant_tank_inner_diameter, oxidizer_tank_length)
     oxidizer_tank_wet_mass = oxidizer_tank_wall_mass + oxidizer_total_propellant_mass
 
