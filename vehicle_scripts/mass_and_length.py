@@ -30,7 +30,7 @@ def calculate_mass(fuel_tank_length,
         volume = X*Y*Z
         return volume
 
-    film = 0.15
+    film = 0.0
 
     engine_length = 20 * c.IN2M
     injector_length = 1 * c.IN2M
@@ -50,14 +50,24 @@ def calculate_mass(fuel_tank_length,
     panels_inner_diameter = propellant_tank_outer_diameter - 0.1 * c.IN2M
 
     chamber_wall_thickness = 0.125 * c.IN2M
-    chamber_OD = 5.5 * c.IN2M
-    chamber_ID = chamber_OD - (2 * chamber_wall_thickness)
-    insert_OD = 5.0 * c.IN2M
-    insert_ID = 4.5 * c.IN2M
-    insert_length = 4.0 * c.IN2M
+    chamber_ID = 6.0 * c.IN2M
+    chamber_OD = chamber_ID + 2*(chamber_wall_thickness)
+    chamber_length = (3/4)*engine_length
+    chamber_mass = c.DENSITY_T6 * CalcTubeVolume(chamber_OD, chamber_ID, chamber_length)
+
+    ablative_wall_thickness = 0.5 * c.IN2M
+    ablative_OD = chamber_ID
+    ablative_ID = ablative_OD - 2*(ablative_wall_thickness)
+    ablative_length = (3/4)*engine_length
+    ablative_mass = c.DENSITY_T6 * (1/3) * CalcTubeVolume(ablative_OD, ablative_ID, ablative_length)
+
+    insert_wall_thickness = 0.5 * c.IN2M
+    insert_OD = ablative_ID
+    insert_ID = insert_OD - 2*(insert_wall_thickness)
+    insert_length = (1/4)*engine_length
     insert_mass = c.DENSITY_SS316 * CalcTubeVolume(insert_OD, insert_ID, insert_length)
-    chamber_mass = c.DENSITY_SS316 * CalcTubeVolume(chamber_OD, chamber_ID, engine_length)
-    engine_mass = insert_mass + chamber_mass
+    
+    engine_mass = insert_mass + ablative_mass + chamber_mass
     # print(f"engine_mass: {engine_mass * c.KG2LB} [lbm]")
 
     injector_mass = c.DENSITY_SS316 * CalcCylinderVolume(propellant_tank_outer_diameter, injector_length)
