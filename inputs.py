@@ -40,7 +40,7 @@ constant_inputs = {
     "FUEL_NAME":                                "IPA",
     # "FUEL_NAME":                                "Ethanol",
 
-    "OXIDIZER_NAME":                            "Liquid Oxygen",
+    "OXIDIZER_NAME":                            "nitrous",
 
     "PROPELLANT_TANK_OUTER_DIAMETER":           7.0 * c.IN2M, # [meters] from speedy metals pipe (link above)
     "PROPELLANT_TANK_THICKNESS":                0.125 * c.IN2M,   # [meters] from speedy metals pipe (link above)
