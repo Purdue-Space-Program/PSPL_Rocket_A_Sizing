@@ -357,7 +357,8 @@ def TotalTankVolumeToTankDimensions(tank_inner_diameter, total_tank_volume):
     
     return tank_length
 
-def FindPropellantDensity(propellant_name, tank_pressure):    
+def FindPropellantDensity(propellant_name, tank_pressure):   
+    print("test")
     if propellant_name == "ethanol":
         propellant_density = PropsSI('D', 'P', tank_pressure, 'T', c.T_AMBIENT, "Ethanol")
     elif propellant_name == "kerosene":
@@ -367,6 +368,8 @@ def FindPropellantDensity(propellant_name, tank_pressure):
         propellant_density = 786 # No support for IPA in CoolProp :(
     elif propellant_name == "liquid oxygen":
         propellant_density = PropsSI('D', 'P', tank_pressure, 'T', 90, "Oxygen") # 90 K is temperature of oxidizer upon injection into combustion (same as copperhead's sizing)
+    elif propellant_name == "nitrous":
+        propellant_density = PropsSI('D', 'P', tank_pressure, 'T', c.T_AMBIENT, "NitrousOxide")
     else:
         raise ValueError("No Density Found")
 
