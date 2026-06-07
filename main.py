@@ -324,10 +324,11 @@ for variable_input in list(inputs.variable_inputs):
     fields_dtype.append((variable_input, np.float32))
 
     if variable_input == "CHAMBER_PRESSURE":
-        desired_input_values.append(440 * c.PSI2PA)
+        desired_input_values.append(476 * c.PSI2PA)
 
     elif variable_input == "CONTRACTION_RATIO":
-        desired_input_values.append(16)
+        desired_input_values.append(13.5)
+        #halfcats contraction ratio should be 16, but thrust and mass flow closer matches with a lower ratio
 
     elif variable_input == "FUEL_TANK_LENGTH":
         desired_input_values.append((4.0) * c.FT2M)
