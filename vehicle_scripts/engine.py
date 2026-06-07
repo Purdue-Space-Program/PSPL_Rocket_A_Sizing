@@ -237,7 +237,7 @@ def CalculateEngineDimensions(PROPELLANT_TANK_OUTER_DIAMETER, fuel_name, oxidize
     
     # chamber_radius = (PROPELLANT_TANK_OUTER_DIAMETER/2) - (2 * chamber_wall_thickness) - (2 * flange_thickness)
     # chamber_radius = (PROPELLANT_TANK_OUTER_DIAMETER/2) - chamber_wall_thickness - flange_thickness
-    chamber_radius = 2.5 * c.IN2M 
+    chamber_radius = 1.0 * c.IN2M 
     # chamber_radius = (PROPELLANT_TANK_OUTER_DIAMETER/2) - (1 * c.IN2M) # lowkey a guess
     
     chamber_area = RadiusToArea(chamber_radius)
@@ -258,16 +258,18 @@ def RadiusToArea(radius):
 
 def CalculateChamberLength(throat_area, cylinder_area, fuel_name, oxidizer_name):
     #L_star = FindLstar(fuel_name, oxidizer_name)
-    L_star = 50 * c.IN2M
-    cylinder_volume = (L_star * throat_area)
+    L_star = 56 * c.IN2M
+    #cylinder_volume = (L_star * throat_area)
     
-    pintle_length = 1 * c.IN2M
-    converging_section_effective_length = 1.887355326317635 * c.IN2M # the effective length that the converging section contributes to residence time
-    non_straight_wall_before_throat_length =  3.1744 * c.IN2M # [inches] constant from chamber contour script
+    #pintle_length = 1 * c.IN2M
+    #converging_section_effective_length = 1.887355326317635 * c.IN2M # the effective length that the converging section contributes to residence time
+    #non_straight_wall_before_throat_length =  3.1744 * c.IN2M # [inches] constant from chamber contour script
     
-    straight_wall_length = (cylinder_volume / cylinder_area) + pintle_length - converging_section_effective_length
-    injector_to_throat_length = straight_wall_length + non_straight_wall_before_throat_length
+    #straight_wall_length = (cylinder_volume / cylinder_area) + pintle_length - converging_section_effective_length
+    #injector_to_throat_length = straight_wall_length + non_straight_wall_before_throat_length
     
+    straight_wall_length = 2.0 * c.IN2M
+    injector_to_throat_length = 3.5 * c.IN2M
     
     return straight_wall_length, injector_to_throat_length
 
