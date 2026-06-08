@@ -207,8 +207,8 @@ def CalculateExpectedThrust(expected_isp, total_mass_flow_rate):
     return(expected_jet_thrust)
 
 def CalculateExpectedISP(ideal_isp):
-    expected_c_star_efficiency = 0.9 # value used for CMS
-    expected_nozzle_efficiency = 0.9 # value used for CMS
+    expected_c_star_efficiency = 1.0#0.9 # value used for CMS
+    expected_nozzle_efficiency = 1.0#0.9 # value used for CMS
         
     expected_isp = ideal_isp * expected_c_star_efficiency * expected_nozzle_efficiency
     
@@ -225,7 +225,7 @@ def CalculateMassFlowRate(throat_radius, chamber_pressure, chamber_molar_mass, c
     throat_area = RadiusToArea(throat_radius)
     expected_total_mass_flow_rate = throat_area * chamber_pressure * (radicand**0.5)
     
-    expected_c_star_efficiency = 0.9 # value used for CMS
+    expected_c_star_efficiency = 1.0#0.9 # value used for CMS
     expected_total_mass_flow_rate *= expected_c_star_efficiency
     return expected_total_mass_flow_rate
 

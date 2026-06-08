@@ -327,7 +327,7 @@ for variable_input in list(inputs.variable_inputs):
         desired_input_values.append(476 * c.PSI2PA)
 
     elif variable_input == "CONTRACTION_RATIO":
-        desired_input_values.append(13.5)
+        desired_input_values.append(16)
         #halfcats contraction ratio should be 16, but thrust and mass flow closer matches with a lower ratio
 
     elif variable_input == "FUEL_TANK_LENGTH":
