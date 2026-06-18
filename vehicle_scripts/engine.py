@@ -11,6 +11,7 @@ import numpy as np
 from tqdm import tqdm
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from scipy.optimize import fsolve
 
 
 def ThrustyBusty(FUEL_NAME, OXIDIZER_NAME, PROPELLANT_TANK_OUTER_DIAMETER, CONTRACTION_RATIO, OF_RATIO, CHAMBER_PRESSURE, CEA_Array_Result=None):
@@ -30,6 +31,34 @@ def ThrustyBusty(FUEL_NAME, OXIDIZER_NAME, PROPELLANT_TANK_OUTER_DIAMETER, CONTR
     expected_total_mass_flow_rate = CalculateMassFlowRate(throat_radius, CHAMBER_PRESSURE, cea_results["c_mw"], cea_results["c_gamma"], chamber_temperature)
 
     expected_jet_thrust = CalculateExpectedThrust(expected_isp, expected_total_mass_flow_rate)
+
+    M_straight_wall = CalculateMachNumber(cea_results["gamma"], CONTRACTION_RATIO, 0.02)
+
+    heat_transfer_coefficient = CalculateHeatTransferCoefficient(
+        Dt = chamber_radius*2,  # local diameter
+        Rt = ((1.5 * throat_radius) + (0.382 *throat_radius)) / 2,     #radius of throat curve (m)
+        Pr = cea_results["pran"], #Prandtl number of the combustion gas (n/a)
+        gamma = cea_results["gamma"], #specific heat ratio of the combustion gas (n/a)
+        c_star = cea_results.cstar, #characteristic exhaust velocity (m/s)
+        T0 = cea_results["c_t"], #stagnation temperature of the combustion gas ((K))
+        Twg = CalculateRecoveryTemperature( #recovery temperature at the wall
+            T_static = cea_results["c_t"] / (1 + (((cea_results["gamma"] - 1)/2) * M_straight_wall**2)),
+            gamma = cea_results["gamma"],
+            M = M_straight_wall,
+            Pr = cea_results["pran"]
+        ),
+        Cp = cea_results["cp"] * 1000, #specific heat at constant pressure of the combustion
+        P0 = CHAMBER_PRESSURE, #chamber pressure (Pascals)
+        mu = CalculateViscosity(
+            T = cea_results["c_t"] / (1 + (((cea_results["gamma"] - 1)/2) * M_straight_wall**2)), #static temperature at the local axial point (K)
+            T_ref = cea_results["c_t"], #stagnation temperature from CEA (K)
+            mu_ref = cea_results["visc"], #dynamic viscosity from CEA at the stagnation temperature (Pascal - seconds)
+            S = 110.4 #Sutherland's constant for combustion gases (K)
+        ), #dynamic viscosity of the combustion gas (Pascal - seconds)
+        M = M_straight_wall, #Mach number at the local axial point (no units)
+        local_Area_ratio = CONTRACTION_RATIO #area ratio at the local axial point (no units)
+    )
+    print(heat_transfer_coefficient)
 
     # print(expected_total_mass_flow_rate, expected_exhaust_velocity)
     # return(expected_thrust, expected_isp, total_mass_flow_rate, chamber_radius, chamber_length, throat_radius)
@@ -196,6 +225,45 @@ def RunCEA(
     cea_results = rocket.run()
 
     return(cea_results)
+
+def CalculateHeatTransferCoefficient(Dt, Rt, Pr, gamma, c_star, T0, Twg, Cp, P0, mu, M, local_Area_ratio):
+    # sigma (Bartz correction)
+    sigma_parentheses1 = ((0.5 * (Twg / T0) * (1 + (((gamma - 1) * M**2)/2))) + 0.5) ** 0.68
+    sigma_parentheses2 = (1 + (((gamma - 1)/2) * (M**2))) ** 0.12
+    sigma = 1.0 / (sigma_parentheses1 * sigma_parentheses2)
+
+    # Bartz core terms 
+    heat_transfer_term1 = 0.026 / (Dt ** 0.2)
+    heat_transfer_term2 = ((mu ** 0.2) * Cp) / (Pr ** 0.6)
+    heat_transfer_term3 = (P0 / (c_star)) ** 0.8
+    heat_transfer_term4 = (Dt / Rt) ** 0.1
+
+    # using inverse of local_Area_ratio so heat goes up as A goes down 
+    area_factor = (1/local_Area_ratio) ** 0.9
+
+    heat_transfer_coefficient = heat_transfer_term1 * heat_transfer_term2 * heat_transfer_term3 * heat_transfer_term4 * area_factor * sigma
+
+    return heat_transfer_coefficient
+
+def CalculateRecoveryTemperature(T_static, gamma, M, Pr):
+    r = Pr ** (1/2)
+    T_r = T_static * (1 + ((r*(gamma-1)/2) * M**2))
+    return T_r
+
+def CalculateViscosity(T, T_ref, mu_ref, S):
+    mu = mu_ref * ((T / T_ref) ** 1.5) * ((T_ref + S) / (T + S))
+    return mu
+
+def CalculateMachNumber(gamma, area_ratio_value, initial_guess):
+    def f(M):
+        Mach_function_part1 = ((gamma + 1)/2)**(-(gamma + 1)/(2*(gamma-1)))
+        Mach_function_part2 = (1/M) * ((1 + (((gamma - 1)/2) * M**2)) ** ((gamma + 1)/(2*(gamma-1))))
+        Mach_function = (Mach_function_part1 * Mach_function_part2) - area_ratio_value
+        return Mach_function
+    guess = initial_guess
+    guess = min(0.8, max(0.05, guess))
+    M_solution = fsolve(f, guess)
+    return float(M_solution[0])
 
 def CalculateExpectedThrust(expected_isp, total_mass_flow_rate):
     

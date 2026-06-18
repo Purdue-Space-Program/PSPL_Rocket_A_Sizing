@@ -358,7 +358,6 @@ def TotalTankVolumeToTankDimensions(tank_inner_diameter, total_tank_volume):
     return tank_length
 
 def FindPropellantDensity(propellant_name, tank_pressure):   
-    print("test")
     if propellant_name == "ethanol":
         propellant_density = PropsSI('D', 'P', tank_pressure, 'T', c.T_AMBIENT, "Ethanol")
     elif propellant_name == "kerosene":

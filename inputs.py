@@ -31,8 +31,8 @@ variable_inputs = {
 }
 
 constant_inputs = {
-    "CHAMBER_PRESSURE":                         476 * c.PSI2PA, # [psi] pressure in the chamber during combustion
-    "OF_RATIO":                                 3.495, # [dimensionless] ratio of oxygen to fuel by mass
+    "CHAMBER_PRESSURE":                         250,#476 * c.PSI2PA, # [psi] pressure in the chamber during combustion
+    "OF_RATIO":                                 1.0,#3.495, # [dimensionless] ratio of oxygen to fuel by mass
 
     # "FUEL_TANK_LENGTH":                         6 * c.IN2M, # [meters] speedy metals pipe lengths: https://www.speedymetals.com/pc-4648-8371-6-od-x-0125-wall-tube-6061-t6-aluminum.aspx
     # "CONTRACTION_RATIO":                        2.5, # [dimensionless] area ratio of chamber to throat (3 to 6 recommended by textbook)
