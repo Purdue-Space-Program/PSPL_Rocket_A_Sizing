@@ -1,7 +1,7 @@
 import coding_utils.constants as c
 import numpy as np
 
-step_size = 15 # number of values to use for each variable input
+step_size = 20 # number of values to use for each variable input
 # DONT GOT OVER 30 FOR 3D GRAPHS ITS SLOW ASF, 20 IS A GOOD NUMBER
 
 # A dictionary used to define the possible definitions where each key is an input (constant or variable)
@@ -16,7 +16,7 @@ variable_inputs = {
     # "CHAMBER_PRESSURE":           np.linspace(80, 500, step_size) * c.PSI2PA, # [pa] pressure in the chamber during combustion
 
 
-    # "FUEL_TANK_LENGTH":   np.linspace(1 * c.IN2M, 4 * c.FT2M, step_size), # [meters] speedy metals pipe lengths: https://www.speedymetals.com/pc-4648-8371-6-od-x-0125-wall-tube-6061-t6-aluminum.aspx
+    # "FUEL_TANK_LENGTH":   np.linspace(6 * c.IN2M, 3 * c.FT2M, step_size), # [meters] speedy metals pipe lengths: https://www.speedymetals.com/pc-4648-8371-6-od-x-0125-wall-tube-6061-t6-aluminum.aspx
     "CONTRACTION_RATIO":          np.linspace(3, 8, step_size), # [dimensionless] area ratio of chamber to throat (3 to 6 recommended by textbook)
 
     # "OXIDIZER_ON_TOP_FUEL_ON_BOTTOM": [True, False], # [boolean (true or false)] whether the oxidizer tank is above the fuel tank or not
@@ -31,7 +31,7 @@ variable_inputs = {
 }
 
 constant_inputs = {
-    "CHAMBER_PRESSURE":                         150 * c.PSI2PA, # [psi] pressure in the chamber during combustion
+    "CHAMBER_PRESSURE":                         100 * c.PSI2PA, # [psi] pressure in the chamber during combustion
     # "OF_RATIO":                                 1.5, # [dimensionless] ratio of oxygen to fuel by mass
 
     "FUEL_TANK_LENGTH":                         4 * c.FT2M, # [meters] speedy metals pipe lengths: https://www.speedymetals.com/pc-4648-8371-6-od-x-0125-wall-tube-6061-t6-aluminum.aspx

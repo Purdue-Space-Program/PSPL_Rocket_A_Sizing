@@ -73,7 +73,7 @@ constant_inputs_array = numpy_ndarray_handler.dictionary_to_ndarray(inputs.const
 plotting_output_names = [
 
     "MASS_FLOW_RATE",                        # [kg/s]
-    # "ISP",                                   # [s]
+    "ISP",                                   # [s]
     "JET_THRUST",                            # [lbf]
     "TOTAL_LENGTH",                          # [ft]
     "WET_MASS",                              # [lbm]
@@ -88,9 +88,9 @@ plotting_output_names = [
 
     # "TANK_PRESSURE",                         # [psi]
     # "OXIDIZER_TANK_VOLUME",
-    # "OXIDIZER_TOTAL_MASS",
+    "OXIDIZER_TOTAL_MASS",
     # "FUEL_TANK_VOLUME",
-    # "FUEL_TOTAL_MASS",
+    "FUEL_TOTAL_MASS",
     # "OXIDIZER_TANK_LENGTH",                  # [ft]
 
     "APOGEE",                                # [ft]
@@ -177,16 +177,17 @@ def run_rocket_function(idx, variable_input_combination, specified_output_names)
             mass_flow_rate = np.nan
             chamber_temperature = np.nan
 
-    # avoid calculating trajectory if the value is not going to be used
 
     plot_trajectory = False
 
     if (plot_trajectory == True) and (use_threading == True):
         raise ValueError("Cannot plot trajectory and while threading dumbass")
 
+    # avoid calculating trajectory if the value is not going to be used
     if any(output in specified_output_names for output in ["APOGEE", "MAX_ACCELERATION", "RAIL_EXIT_VELOCITY", "RAIL_EXIT_ACCELERATION", "TAKEOFF_TWR", "RAIL_EXIT_TWR", "MAX_ACCELERATION"]):
         estimated_apogee, max_accel, max_velocity, rail_exit_velocity, rail_exit_accel, total_impulse, off_the_rail_time = trajectory.calculate_trajectory(
                                 wet_mass,
+                                dry_mass,
                                 mass_flow_rate,
                                 jet_thrust,
                                 numpy_ndarray_handler.GetFrom_ndarray("PROPELLANT_TANK_OUTER_DIAMETER", constant_inputs_array, variable_input_combination),
@@ -288,21 +289,23 @@ def run_rocket_function(idx, variable_input_combination, specified_output_names)
 # avoid calculating all the rocket outputs if the last run was with the same inputs
 last_run_variable_inputs_array, last_run_plotting_output_names, last_run_output_array, last_run_show_copv_limiting_factor = load_last_run()
 
-try:
-    are_inputs_same_from_last_run = (
-        np.array_equal(last_run_variable_inputs_array, variable_inputs_array)
-        # and np.array_equal(last_run_plotting_output_names, plotting_output_names)    # allow different plot outputs? might lead to an error if trajectory wasn't calculated for a past run
-        and np.array_equal(last_run_show_copv_limiting_factor, show_copv_limiting_factor)
-    )
-    if are_inputs_same_from_last_run or use_last_run:
-        output_array = last_run_output_array
-    elif show_plots == True:
-        # if __debug__:
-        #     use_threading = False
+# try:
+#     are_inputs_same_from_last_run = (
+#         np.array_equal(last_run_variable_inputs_array, variable_inputs_array)
+#         # and np.array_equal(last_run_plotting_output_names, plotting_output_names)    # allow different plot outputs? might lead to an error if trajectory wasn't calculated for a past run
+#         and np.array_equal(last_run_show_copv_limiting_factor, show_copv_limiting_factor)
+#     )
+#     if are_inputs_same_from_last_run or use_last_run:
+#         output_array = last_run_output_array
+#     elif show_plots == True:
+#         # if __debug__:
+#         #     use_threading = False
 
-        output_array = threaded_run.ThreadedRun(run_rocket_function, variable_inputs_array, plotting_output_names, use_threading)
-except:
-    output_array = threaded_run.ThreadedRun(run_rocket_function, variable_inputs_array, plotting_output_names, use_threading)
+#         output_array = threaded_run.ThreadedRun(run_rocket_function, variable_inputs_array, plotting_output_names, use_threading)
+# except:
+#     output_array = threaded_run.ThreadedRun(run_rocket_function, variable_inputs_array, plotting_output_names, use_threading)
+
+output_array = threaded_run.ThreadedRun(run_rocket_function, variable_inputs_array, plotting_output_names, use_threading)
 
 
 
@@ -416,7 +419,7 @@ print(f"Total Impulse: {desired_rocket_output_list["TOTAL_IMPULSE"]} Newton-seco
 
 
 
-# METRIC VERSION (MISSING SOME VALUES, IF YOU WANNA FIX IT JUST COMBINE THIS WITH THE IMPERIAL ONE WITH AN IF STATEMENT AND CONVERSION FACTOR)
+# METRIC VERSION (MISSING SOME VALUES, IF YOU WANNA FIX IT JUST COMBINE THIS WITH THE IMPERIAL ONE WITH AN IF STATEMENT AND CONVERSION FACTOR, MAYBE USING PINT????)
 
 # print(f"\n-------Inputs-------")
 # print(f"Chamber Pressure: {desired_input["CHAMBER_PRESSURE"]} Pa")

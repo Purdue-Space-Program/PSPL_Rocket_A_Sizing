@@ -18,8 +18,9 @@ ATMOSPHERE_DATA = pd.read_csv("atmosphere.csv")
 ATMOSPHERE_DATA = np.array(ATMOSPHERE_DATA)
 
 def calculate_trajectory(
-    wetMass,
-    mDotTotal,
+    wet_mass,
+    dry_mass,
+    full_mass_flow_rate,
     jetThrust,
     tankOD,
     finNumber,
@@ -37,7 +38,7 @@ def calculate_trajectory(
     ----------
     wetMass : float
         Wet mass of the rocket [kg].
-    mDotTotal : float
+    full_mass_flow_rate : float
         Total mass flow rate of the engine [kg/s].
     jetThrust : float
         Engine thrust [N].
@@ -71,10 +72,13 @@ def calculate_trajectory(
     totalImpulse : float
         Total impulse of the rocket [Ns].
     """
+    
+    target_TWR = 1.5 
+    throttle_to_constant_TWR = True
 
     # Rocket Properties
     reference_area = (np.pi * (tankOD) ** 2 / 4) + finNumber * finHeight * c.FIN_THICKNESS # [m^2] reference area of the rocket
-    mass = wetMass  # [kg] initial mass of the rocket
+    current_mass = wet_mass  # [kg] initial mass of the rocket
 
     cD = 0.5
     ascent_drag_coefficient = cD * (totalLength / 6.35) * (tankOD / 0.203)
@@ -82,20 +86,20 @@ def calculate_trajectory(
     # Initial Conditions
     altitude = c.INDIANA_ALTITUDE  # [m] initial altitude of the rocket
     velocity = 0  # [m/s] initial velocity of the rocket
-    acceleration = ((jetThrust + (exitPressure - ATMOSPHERE_DATA[(0, 1)]) * exitArea) - (c.GRAVITY * wetMass)) / wetMass  # [m/s] initial acceleration of the rocket
+    initial_acceleration = ((jetThrust + (exitPressure - ATMOSPHERE_DATA[(0, 1)]) * exitArea) - (c.GRAVITY * wet_mass)) / wet_mass  # [m/s] initial acceleration of the rocket
     time = 0  # [s] initial time of the rocket
     dt = 0.05  # [s] time step of the rocket
 
     # Array Initialization:
     altitude_array = [altitude]
     velocity_array = [velocity]
-    acceleration_array = [acceleration]
+    acceleration_array = [initial_acceleration]
     # accelArray = [((jetThrust - (c.GRAVITY*wetMass))/wetMass) * 0.1]
     time_array = [time]
     
     totalImpulse = 0  # Initialize total impulse
 
-    count = 1
+    acceleration = initial_acceleration
     while (velocity >= 0) or (acceleration > 0):
 
         altitude_index = int(altitude // 10)  # Divide altitude by 10 to find index
@@ -110,25 +114,46 @@ def calculate_trajectory(
             pressure = ATMOSPHERE_DATA[(altitude_index, 1)]
             rho = ATMOSPHERE_DATA[(altitude_index, 2)]
         
-        if time < burnTime:
-            mass = mass - mDotTotal * dt  # [kg] mass of the rocket
-            thrust = (
+        # if time < burnTime:
+        if current_mass > dry_mass:
+            full_thrust = (
                 jetThrust + (exitPressure - pressure) * exitArea
             )  # [N] force of thrust, accounting for pressure thrust
 
-            totalImpulse += thrust * dt  # Accumulate impulse
-            if mass < 0:
+            current_weight = c.GRAVITY * current_mass
+            constant_TWR_thrust = current_weight * target_TWR
+
+            constant_TWR_mass_flow_rate = full_mass_flow_rate * (constant_TWR_thrust / jetThrust)
+
+            # if (constant_TWR_thrust / jetThrust) > 1:
+            #     pass
+            
+            if throttle_to_constant_TWR and ((constant_TWR_thrust / jetThrust) < 1):
+                current_mass = current_mass - constant_TWR_mass_flow_rate * dt  # [kg] mass of the rocket
+                current_thrust = (
+                    constant_TWR_thrust + (exitPressure - pressure) * exitArea
+                )  # [N] force of thrust, accounting for pressure thrust
+            else:
+                current_mass = current_mass - full_mass_flow_rate * dt  # [kg] mass of the rocket
+                current_thrust = (
+                    jetThrust + (exitPressure - pressure) * exitArea
+                )  # [N] force of thrust, accounting for pressure thrust
+
+            totalImpulse += current_thrust * dt  # Accumulate impulse
+            if current_mass < 0:
                 raise ValueError("youre a dumbass, CHECK IF TANK DATA IS FAKE OR NOT!!!!!!!!!!!!!")
         else:
-            thrust = 0  # [N] total thrust of the rocket
+            current_thrust = 0  # [N] total thrust of the rocket
 
         drag_force = (
             0.5 * rho * velocity**2 * ascent_drag_coefficient * reference_area
         )  # [N] force of drag
-        weight = c.GRAVITY * mass  # [N] downward force due to gravity
-        da_TWR = thrust / weight  # acceleration equation of motion
+        weight = c.GRAVITY * current_mass  # [N] downward force due to gravity
+        da_TWR = current_thrust / weight  # acceleration equation of motion
 
-        acceleration = (thrust - drag_force - weight) / mass  # acceleration equation of motion
+        acceleration = (current_thrust - drag_force - weight) / current_mass  # acceleration equation of motion
+        if acceleration > 700:
+            raise
         acceleration_array.append(acceleration)
 
         velocity += acceleration * dt  # velocity integration
@@ -139,9 +164,7 @@ def calculate_trajectory(
 
         time = time + dt  # time is inevitable
         time_array.append(time)
-        
-        count += 1
-        
+                
     # Find the closest altitude to the TRAILER_RAIL_HEIGHT
 
     off_the_rail_velocity, off_the_rail_acceleration, off_the_rail_time = 0, 0, 0
@@ -151,7 +174,9 @@ def calculate_trajectory(
             off_the_rail_acceleration = acceleration_array[time_step_index]
             off_the_rail_time = (time_step_index/len(altitude_array)) * time_array[-1]
             break
-
+    if altitude_array[-1] * c.M2FT > 200000:
+        print(f"time end: {time_array[-1]}")
+        
     estimated_apogee = altitude * 0.651 # what the fuck is this for
 
     if show_plot == True:
