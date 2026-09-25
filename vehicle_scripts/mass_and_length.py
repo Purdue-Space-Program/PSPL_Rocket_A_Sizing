@@ -32,7 +32,7 @@ def calculate_mass(fuel_tank_length,
 
     film = 0.0
 
-    engine_length = 20 * c.IN2M
+    engine_length = 15 * c.IN2M
     injector_length = 1 * c.IN2M
     lower_length = 20 * c.IN2M
 
@@ -52,20 +52,27 @@ def calculate_mass(fuel_tank_length,
     chamber_wall_thickness = 0.125 * c.IN2M
     chamber_ID = 6.0 * c.IN2M
     chamber_OD = chamber_ID + 2*(chamber_wall_thickness)
-    chamber_length = (3/4)*engine_length
+    chamber_length = engine_length
     chamber_mass = c.DENSITY_T6 * CalcTubeVolume(chamber_OD, chamber_ID, chamber_length)
 
-    ablative_wall_thickness = 0.5 * c.IN2M
+    ablative_wall_thickness = 0.25 * c.IN2M
     ablative_OD = chamber_ID
     ablative_ID = ablative_OD - 2*(ablative_wall_thickness)
-    ablative_length = (3/4)*engine_length
-    ablative_mass = c.DENSITY_T6 * (1/3) * CalcTubeVolume(ablative_OD, ablative_ID, ablative_length)
+    ablative_length = engine_length
 
-    insert_wall_thickness = 0.5 * c.IN2M
-    insert_OD = ablative_ID
-    insert_ID = insert_OD - 2*(insert_wall_thickness)
-    insert_length = (1/4)*engine_length
-    insert_mass = c.DENSITY_SS316 * CalcTubeVolume(insert_OD, insert_ID, insert_length)
+    ablative_throat_wall_thickness = 0.5 * c.IN2M
+    ablative_throat_OD = ablative_ID
+    ablative_throat_ID = ablative_throat_OD - 2*(ablative_throat_wall_thickness)
+    ablative_throat_length = (1/4)*engine_length
+
+    ablative_mass = c.DENSITY_T6 * (1/3) * (CalcTubeVolume(ablative_OD, ablative_ID, ablative_length) + CalcTubeVolume(ablative_throat_OD, ablative_throat_ID, ablative_throat_length))
+
+    #insert_wall_thickness = 0.5 * c.IN2M
+    #insert_OD = ablative_ID
+    #insert_ID = insert_OD - 2*(insert_wall_thickness)
+    #insert_length = (1/4)*engine_length
+    #insert_mass = c.DENSITY_SS316 * CalcTubeVolume(insert_OD, insert_ID, insert_length)
+    insert_mass = 0
     
     engine_mass = insert_mass + ablative_mass + chamber_mass
     # print(f"engine_mass: {engine_mass * c.KG2LB} [lbm]")
@@ -118,7 +125,7 @@ def calculate_mass(fuel_tank_length,
     avionics_bay_panels_mass = c.DENSITY_AL * CalcTubeVolume(panels_outer_diameter, propellant_tank_inner_diameter, avionics_bay_length)
     avionics_bay_mass = avionics_bay_panels_mass + (avionics_mass) # avionics doesn't weigh anything...
 
-    recovery_parachute_mass = 12 * c.LB2KG  # [kg] 1/3 cuz 1/3 of dry mass compared to --> https://github.com/Purdue-Space-Program/PSPL_Rocket_4_Sizing/blob/2b15e1dc508a56731056ff594a3c6b5afb639b4c/scripts/structures.py#L75
+    recovery_parachute_mass = 15 * c.LB2KG  # [kg] 1/3 cuz 1/3 of dry mass compared to --> https://github.com/Purdue-Space-Program/PSPL_Rocket_4_Sizing/blob/2b15e1dc508a56731056ff594a3c6b5afb639b4c/scripts/structures.py#L75
     recovery_bay_panels_mass = c.DENSITY_AL * CalcTubeVolume(panels_outer_diameter, propellant_tank_inner_diameter, recovery_bay_length)
     recovery_bay_mass = recovery_bay_panels_mass + recovery_parachute_mass + connector_mass
 
