@@ -330,7 +330,7 @@ for variable_input in list(inputs.variable_inputs):
         desired_input_values.append(3)
 
     elif variable_input == "FUEL_TANK_LENGTH":
-        desired_input_values.append((4.5) * c.FT2M)
+        desired_input_values.append((4.7) * c.FT2M)
 
     else:
         raise ValueError
