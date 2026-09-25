@@ -237,7 +237,7 @@ def CalculateEngineDimensions(PROPELLANT_TANK_OUTER_DIAMETER, fuel_name, oxidize
     
     # chamber_radius = (PROPELLANT_TANK_OUTER_DIAMETER/2) - (2 * chamber_wall_thickness) - (2 * flange_thickness)
     # chamber_radius = (PROPELLANT_TANK_OUTER_DIAMETER/2) - chamber_wall_thickness - flange_thickness
-    chamber_radius = 2.2 * c.IN2M 
+    chamber_radius = 2.75 * c.IN2M 
     # chamber_radius = (PROPELLANT_TANK_OUTER_DIAMETER/2) - (1 * c.IN2M) # lowkey a guess
     
     chamber_area = RadiusToArea(chamber_radius)
@@ -273,7 +273,7 @@ def CalculateChamberLength(throat_area, cylinder_area, fuel_name, oxidizer_name)
 def FindLstar(fuel_name, oxidizer_name):
     if (oxidizer_name == "liquid oxygen"):
         if (fuel_name == "ethanol"):
-            L_star = 45 * c.IN2M # source: my asshole (brazil)
+            L_star = 55 * c.IN2M # source: my asshole (brazil)
         elif (fuel_name == "kerosene"):
             L_star = 45 * c.IN2M # table 4-1 on page 87 of nasa sp-125 https://ntrs.nasa.gov/citations/19710019929
         elif (fuel_name == "ipa"):

@@ -324,13 +324,13 @@ for variable_input in list(inputs.variable_inputs):
     fields_dtype.append((variable_input, np.float32))
 
     if variable_input == "CHAMBER_PRESSURE":
-        desired_input_values.append(300 * c.PSI2PA)
+        desired_input_values.append(180 * c.PSI2PA)
 
     elif variable_input == "CONTRACTION_RATIO":
         desired_input_values.append(3)
 
     elif variable_input == "FUEL_TANK_LENGTH":
-        desired_input_values.append((4.0) * c.FT2M)
+        desired_input_values.append((4.5) * c.FT2M)
 
     else:
         raise ValueError
